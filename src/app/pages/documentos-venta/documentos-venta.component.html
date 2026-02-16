@@ -1,0 +1,173 @@
+<p-toast />
+<p-confirmdialog />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo documento" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="documentos()"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['numero', 'estado']"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Documentos de venta</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width:8rem">Número</th>
+            <th style="min-width:10rem">Cliente</th>
+            <th style="min-width:8rem">Fecha</th>
+            <th style="min-width:8rem">Total</th>
+            <th style="min-width:8rem">Estado</th>
+            <th style="min-width:14rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-row>
+        <tr>
+            <td>{{ row.establecimiento }}-{{ row.puntoEmision }}-{{ row.numero }}</td>
+            <td>{{ getClienteNombre(row.cliente?.id) }}</td>
+            <td>{{ row.fechaEmision }}</td>
+            <td>{{ row.total | number:'1.2-2' }}</td>
+            <td><p-tag [value]="row.estado ?? '-'" [severity]="row.estado === 'EMITIDO' ? 'success' : 'secondary'" /></td>
+            <td>
+                <p-button *ngIf="row.estado === 'BORRADOR'" icon="pi pi-send" label="Emitir" [rounded]="true" [outlined]="true" (click)="emitir(row)" class="mr-2" />
+                <p-button *ngIf="row.estado === 'EMITIDO'" icon="pi pi-times" label="Anular" severity="danger" [rounded]="true" [outlined]="true" (click)="anular(row)" class="mr-2" />
+                <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" (click)="edit(row)" class="mr-2" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr><td colspan="6">No hay documentos.</td></tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialog" [style]="{ width: '90vw', maxWidth: '960px' }" [header]="editing ? 'Editar documento' : 'Nuevo documento'" [modal]="true" (onHide)="onDialogHide()">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label class="block font-bold mb-2">Empresa</label>
+                    <p-select [(ngModel)]="doc.empresa" [options]="empresas" optionLabel="razonSocial" placeholder="Seleccione" styleClass="w-full"
+                        (onChange)="doc.empresa = $event.value ? { id: $event.value.id } : undefined" />
+                </div>
+                <div class="col-span-6">
+                    <label class="block font-bold mb-2">Cliente *</label>
+                    <p-autocomplete
+                        [(ngModel)]="selectedCliente"
+                        [suggestions]="clientesSugeridos"
+                        (completeMethod)="buscarClientes($event)"
+                        (onSelect)="onClienteSelect()"
+                        (onClear)="doc.cliente = undefined"
+                        optionLabel="razonSocial"
+                        placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
+                        styleClass="w-full"
+                        [dropdown]="false"
+                        [showClear]="true"
+                        [minLength]="2"
+                    />
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-4">
+                    <label class="block font-bold mb-2">Tipo documento</label>
+                    <p-select [(ngModel)]="doc.tipoDocumento" [options]="tiposDocumento" optionLabel="nombre" placeholder="Seleccione" styleClass="w-full"
+                        (onChange)="doc.tipoDocumento = $event.value ? { id: $event.value.id } : undefined" />
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-bold mb-2">Estab.</label>
+                    <input pInputText [(ngModel)]="doc.establecimiento" class="w-full" />
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-bold mb-2">Pto. emisión</label>
+                    <input pInputText [(ngModel)]="doc.puntoEmision" class="w-full" />
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-bold mb-2">Número</label>
+                    <input pInputText [(ngModel)]="doc.numero" class="w-full" />
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-bold mb-2">Moneda</label>
+                    <p-select [(ngModel)]="doc.moneda" [options]="monedas" optionLabel="codigo" placeholder="Moneda" styleClass="w-full"
+                        (onChange)="doc.moneda = $event.value ? { id: $event.value.id } : undefined" />
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-4">
+                    <label class="block font-bold mb-2">Fecha emisión</label>
+                    <input pInputText type="date" [(ngModel)]="doc.fechaEmision" class="w-full" />
+                </div>
+                <div class="col-span-4">
+                    <label class="block font-bold mb-2">Condición pago</label>
+                    <p-select [(ngModel)]="doc.condicionPago" [options]="condicionesPago" optionLabel="nombre" placeholder="Seleccione" styleClass="w-full"
+                        (onChange)="doc.condicionPago = $event.value ? { id: $event.value.id } : undefined" />
+                </div>
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Detalle</label>
+                <p-table [value]="doc.detalle ?? []" [tableStyle]="{ 'min-width': '40rem' }" dataKey="nroLinea">
+                    <ng-template #header>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>P. unit. (IVA incl.)</th>
+                            <th>Desc.%</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-line>
+                        <tr>
+                            <td>
+                                <p-autocomplete
+                                    [ngModel]="getProductoForLine(line)"
+                                    (ngModelChange)="onProductoSelect(line, $event)"
+                                    [suggestions]="productosSugeridos"
+                                    (completeMethod)="buscarProductos($event)"
+                                    optionLabel="nombre"
+                                    placeholder="Buscar producto (mín. 2 caracteres)"
+                                    styleClass="w-full"
+                                    [dropdown]="false"
+                                    [showClear]="true"
+                                    [minLength]="2"
+                                />
+                            </td>
+                            <td><p-inputnumber [(ngModel)]="line.cantidad" (ngModelChange)="recalcLine(line)" [min]="0.0001" /></td>
+                            <td><p-inputnumber [(ngModel)]="line.precioUnitario" (ngModelChange)="recalcLine(line)" mode="decimal" [minFractionDigits]="2" /></td>
+                            <td><p-inputnumber [(ngModel)]="line.descuento" (ngModelChange)="recalcLine(line)" [min]="0" [max]="100" /></td>
+                            <td>{{ line.totalLinea | number:'1.2-2' }}</td>
+                            <td><p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="removeLine(line)" /></td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="6">Sin líneas. Agregar abajo.</td></tr>
+                    </ng-template>
+                </p-table>
+                <p-button label="Agregar línea" icon="pi pi-plus" [rounded]="true" [outlined]="true" (click)="addLine()" class="mt-2" />
+            </div>
+            <div class="flex justify-end gap-2">
+                <span class="font-bold">Subtotal:</span><span>{{ doc.subtotal | number:'1.2-2' }}</span>
+                <span class="font-bold">IVA:</span><span>{{ doc.totalIva | number:'1.2-2' }}</span>
+                <span class="font-bold">Total:</span><span>{{ doc.total | number:'1.2-2' }}</span>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="save()" />
+    </ng-template>
+</p-dialog>

@@ -1,0 +1,160 @@
+<div class="parametricos-container">
+    <h2 class="parametricos-title">
+        <i class="pi pi-sliders-h"></i>
+        Paramétricos
+    </h2>
+    <p class="parametricos-desc text-color-secondary mb-4">
+        Datos base usados en documentos, productos, ventas y cobranzas. Aquí se consultan y mantienen las listas maestras.
+    </p>
+
+    <p-tabs [(value)]="activeTab" styleClass="parametricos-tabs">
+        <p-tablist>
+            <p-tab [value]="0">Categorías de producto</p-tab>
+            <p-tab [value]="1">Tipos de documento</p-tab>
+            <p-tab [value]="2">Monedas</p-tab>
+            <p-tab [value]="3">Condiciones de pago</p-tab>
+            <p-tab [value]="4">Unidades de medida</p-tab>
+            <p-tab [value]="5">Medios de pago</p-tab>
+            <p-tab [value]="6">Empresas</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <p-tabpanel [value]="0">
+                <p-table [value]="categorias" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigo ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="2">No hay categorías.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="1">
+                <p-table [value]="tiposDocumento" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código SET</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigoSet ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="2">No hay tipos de documento.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="2">
+                <p-table [value]="monedas" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Símbolo</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigo ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                            <td>{{ row.simbolo ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="3">No hay monedas.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="3">
+                <p-table [value]="condicionesPago" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Días</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigo ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                            <td>{{ row.dias ?? 0 }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="3">No hay condiciones de pago.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="4">
+                <p-table [value]="unidadesMedida" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigo ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="2">No hay unidades de medida.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="5">
+                <p-table [value]="mediosPago" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.codigo ?? '-' }}</td>
+                            <td>{{ row.nombre ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="2">No hay medios de pago.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+            <p-tabpanel [value]="6">
+                <p-table [value]="empresas" [tableStyle]="{ 'min-width': '40rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Razón social</th>
+                            <th>RUC</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.razonSocial ?? '-' }}</td>
+                            <td>{{ row.ruc ?? '-' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="2">No hay empresas.</td></tr>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

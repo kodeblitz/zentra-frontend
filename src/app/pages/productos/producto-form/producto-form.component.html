@@ -1,0 +1,206 @@
+<p-toast />
+<div class="flex flex-col flex-1 min-h-0 bg-surface-ground">
+    <header class="flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary text-primary-contrast shadow-sm">
+        <button type="button" (click)="cancelar()" class="p-2 rounded-full hover:bg-white/20 transition-colors" aria-label="Volver">
+            <i class="pi pi-arrow-left"></i>
+        </button>
+        <h1 class="m-0 text-xl font-semibold">{{ isEdit ? 'Editar producto' : 'Nuevo producto / servicio / combo' }}</h1>
+    </header>
+
+    <div class="flex flex-col gap-6 px-2 md:px-4 max-w-4xl mx-auto w-full pb-8">
+        <!-- Datos generales -->
+        <p-card styleClass="producto-form-card">
+            <ng-template #header>
+                <div class="flex align-items-center gap-2">
+                    <i class="pi pi-box text-primary"></i>
+                    <span>Datos generales</span>
+                </div>
+            </ng-template>
+            <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Código</label>
+                        <input pInputText [(ngModel)]="producto.codigo" class="w-full" placeholder="Ej. PROD-001" />
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Nombre <span class="text-red-500">*</span></label>
+                        <input pInputText [(ngModel)]="producto.nombre" class="w-full" placeholder="Nombre del producto, servicio o combo" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2 text-color">Descripción</label>
+                    <textarea pInputText [(ngModel)]="producto.descripcion" class="w-full" rows="2" placeholder="Opcional"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Categoría</label>
+                        <p-select [(ngModel)]="producto.categoria" [options]="categorias" optionLabel="nombre" placeholder="Opcional" styleClass="w-full" [showClear]="true" />
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Unidad de medida <span class="text-red-500">*</span></label>
+                        <p-select [(ngModel)]="producto.unidadMedida" [options]="unidadesMedida" optionLabel="nombre" placeholder="Seleccionar" styleClass="w-full" />
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-6 pt-2">
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox [(ngModel)]="producto.activo" [binary]="true" inputId="activo" />
+                        <label for="activo" class="font-medium text-color cursor-pointer">Activo</label>
+                    </div>
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox [(ngModel)]="producto.esCombo" [binary]="true" inputId="esCombo" />
+                        <label for="esCombo" class="font-medium text-color cursor-pointer">Es combo</label>
+                    </div>
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox [(ngModel)]="producto.alquilable" [binary]="true" inputId="alquilable" />
+                        <label for="alquilable" class="font-medium text-color cursor-pointer">Alquilable</label>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Precios de venta -->
+        <p-card styleClass="producto-form-card">
+            <ng-template #header>
+                <div class="flex align-items-center gap-2">
+                    <i class="pi pi-tag text-primary"></i>
+                    <span>Precios de venta</span>
+                </div>
+            </ng-template>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block font-semibold mb-2 text-color">Precio de venta <span class="text-red-500">*</span></label>
+                    <p-inputnumber [(ngModel)]="producto.precioVenta" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" inputId="precioVenta" />
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2 text-color">Costo</label>
+                    <p-inputnumber [(ngModel)]="producto.costo" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" inputId="costo" />
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2 text-color">IVA %</label>
+                    <p-inputnumber [(ngModel)]="producto.ivaPorcentaje" mode="decimal" [min]="0" [max]="100" [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" suffix=" %" inputId="iva" />
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Precios mayoristas -->
+        <p-card styleClass="producto-form-card">
+            <ng-template #header>
+                <div class="flex align-items-center gap-2">
+                    <i class="pi pi-briefcase text-primary"></i>
+                    <span>Precios mayoristas</span>
+                </div>
+            </ng-template>
+            <p class="text-color-secondary text-sm m-0 mb-4">Rangos por cantidad (5, 10, 20, 50, 100 u.). Opcional; en presupuestos con lista mayorista se usa según la cantidad.</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+                <div>
+                    <label class="block font-medium mb-1 text-color text-sm">Desde 5 u.</label>
+                    <p-inputnumber [(ngModel)]="producto.precioMayorista5" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1 text-color text-sm">Desde 10 u.</label>
+                    <p-inputnumber [(ngModel)]="producto.precioMayorista10" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1 text-color text-sm">Desde 20 u.</label>
+                    <p-inputnumber [(ngModel)]="producto.precioMayorista20" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1 text-color text-sm">Desde 50 u.</label>
+                    <p-inputnumber [(ngModel)]="producto.precioMayorista50" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+                <div>
+                    <label class="block font-medium mb-1 text-color text-sm">Desde 100 u.</label>
+                    <p-inputnumber [(ngModel)]="producto.precioMayorista100" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+            </div>
+            <div class="max-w-xs">
+                <label class="block font-medium mb-1 text-color text-sm">Precio mayorista único (si no usás rangos)</label>
+                <p-inputnumber [(ngModel)]="producto.precioMayorista" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+            </div>
+        </p-card>
+
+        <!-- Alquiler -->
+        <p-card styleClass="producto-form-card">
+            <ng-template #header>
+                <div class="flex align-items-center gap-2">
+                    <i class="pi pi-calendar text-primary"></i>
+                    <span>Alquiler</span>
+                </div>
+            </ng-template>
+            @if (producto.alquilable) {
+                <div class="max-w-xs">
+                    <label class="block font-semibold mb-2 text-color">Precio por día</label>
+                    <p-inputnumber [(ngModel)]="producto.precioAlquilerDia" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                </div>
+            } @else {
+                <p class="text-color-secondary m-0">Marcá <strong>Alquilable</strong> en datos generales para definir el precio por día.</p>
+            }
+        </p-card>
+
+        <!-- Componentes del combo (solo si es combo y tiene id) -->
+        @if (producto.esCombo) {
+            <p-card styleClass="producto-form-card">
+                <ng-template #header>
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-list text-primary"></i>
+                        <span>Productos del combo</span>
+                    </div>
+                </ng-template>
+                @if (producto.id) {
+                    <p class="text-color-secondary text-sm m-0 mb-4">Definí qué productos componen este combo y la cantidad de cada uno. Se usa para descontar stock al vender.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4 p-3 rounded-lg bg-surface-100">
+                        <p-select
+                            [(ngModel)]="selectedProductoCombo"
+                            [options]="productosParaCombo"
+                            optionLabel="nombre"
+                            placeholder="Producto a agregar"
+                            styleClass="flex-1 min-w-0"
+                            [showClear]="true"
+                        />
+                        <div class="flex gap-2 items-center shrink-0">
+                            <div class="w-28">
+                                <label class="block font-medium text-sm text-color mb-1">Cantidad</label>
+                                <p-inputnumber [(ngModel)]="cantidadCombo" [min]="0.01" [minFractionDigits]="2" [maxFractionDigits]="4" styleClass="w-full" />
+                            </div>
+                            <p-button label="Agregar" icon="pi pi-plus" (onClick)="agregarAlCombo()" [disabled]="!selectedProductoCombo" styleClass="mt-6" />
+                        </div>
+                    </div>
+                    @if (loadingCombo()) {
+                        <p class="text-color-secondary">Cargando...</p>
+                    } @else if (comboDetalleList.length === 0) {
+                        <p class="text-color-secondary py-4">Aún no hay productos en el combo. Agregá al menos uno arriba.</p>
+                    } @else {
+                        <p-table [value]="comboDetalleList" [tableStyle]="{ 'min-width': '24rem' }" dataKey="id">
+                            <ng-template #header>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th style="width: 10rem">Cantidad</th>
+                                    <th style="width: 6rem"></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template #body let-row>
+                                <tr>
+                                    <td>{{ getProductoNombre(row) }}</td>
+                                    <td>
+                                        <p-inputnumber [(ngModel)]="row.cantidad" [min]="0.01" [minFractionDigits]="2" [maxFractionDigits]="4" styleClass="w-full" (onBlur)="actualizarCantidadCombo(row)" />
+                                    </td>
+                                    <td>
+                                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" (click)="quitarDelCombo(row)" title="Quitar" />
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    }
+                } @else {
+                    <p class="text-color-secondary m-0">Guardá primero el producto como combo y luego editá para agregar los productos que lo componen.</p>
+                }
+            </p-card>
+        }
+
+        <!-- Acciones -->
+        <div class="flex flex-wrap gap-2 pt-2">
+            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="cancelar()" [loading]="saving()" />
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="guardar()" [loading]="saving()" [disabled]="!producto.nombre?.trim()" />
+        </div>
+    </div>
+</div>

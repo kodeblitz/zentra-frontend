@@ -1,0 +1,130 @@
+<p-toast />
+<p-confirmdialog />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="clientes()"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['codigo', 'razonSocial', 'ruc', 'ciudad']"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Clientes</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="codigo" style="min-width:8rem">Código <p-sortIcon field="codigo" /></th>
+            <th pSortableColumn="razonSocial" style="min-width:14rem">Razón social <p-sortIcon field="razonSocial" /></th>
+            <th style="min-width:10rem">RUC</th>
+            <th style="min-width:8rem">Ciudad</th>
+            <th style="min-width:8rem">Condición pago</th>
+            <th style="min-width:6rem">Activo</th>
+            <th style="min-width:10rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-row>
+        <tr>
+            <td>{{ row.codigo }}</td>
+            <td>{{ row.razonSocial }}</td>
+            <td>{{ row.ruc }}{{ row.dv != null ? '-' + row.dv : '' }}</td>
+            <td>{{ row.ciudad }}</td>
+            <td>{{ getCondicionPagoNombre(row.condicionPago?.id) }}</td>
+            <td><p-tag [value]="row.activo ? 'Sí' : 'No'" [severity]="row.activo ? 'success' : 'secondary'" /></td>
+            <td>
+                <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" (click)="edit(row)" class="mr-2" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="confirmDelete(row)" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr><td colspan="7">No hay clientes.</td></tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialog" [style]="{ width: '520px' }" [header]="editing ? 'Editar cliente' : 'Nuevo cliente'" [modal]="true" (onHide)="onDialogHide()">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label for="codigo" class="block font-bold mb-2">Código</label>
+                    <input pInputText id="codigo" [(ngModel)]="cliente.codigo" class="w-full" />
+                </div>
+                <div class="col-span-6">
+                    <label for="ruc" class="block font-bold mb-2">RUC</label>
+                    <input pInputText id="ruc" [(ngModel)]="cliente.ruc" class="w-full" (blur)="onRucBlur()" />
+                </div>
+            </div>
+            <div>
+                <label for="razonSocial" class="block font-bold mb-2">Razón social *</label>
+                <input pInputText id="razonSocial" [(ngModel)]="cliente.razonSocial" class="w-full" />
+                <small class="text-red-500" *ngIf="submitted && !cliente.razonSocial">Requerido.</small>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label for="condicionPago" class="block font-bold mb-2">Condición de pago</label>
+                    <p-select
+                        id="condicionPago"
+                        [(ngModel)]="selectedCondicionPago"
+                        [options]="condicionesPago"
+                        optionLabel="nombre"
+                        placeholder="Seleccione"
+                        styleClass="w-full"
+                    />
+                </div>
+                <div class="col-span-6">
+                    <label for="limiteCredito" class="block font-bold mb-2">Límite crédito</label>
+                    <p-inputnumber id="limiteCredito" [(ngModel)]="cliente.limiteCredito" mode="currency" currency="PYG" locale="es-PY" styleClass="w-full" />
+                </div>
+            </div>
+            <div>
+                <label for="direccion" class="block font-bold mb-2">Dirección</label>
+                <input pInputText id="direccion" [(ngModel)]="cliente.direccion" class="w-full" />
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label for="ciudad" class="block font-bold mb-2">Ciudad</label>
+                    <input pInputText id="ciudad" [(ngModel)]="cliente.ciudad" class="w-full" />
+                </div>
+                <div class="col-span-6">
+                    <label for="telefono" class="block font-bold mb-2">Teléfono</label>
+                    <input pInputText id="telefono" [(ngModel)]="cliente.telefono" class="w-full" />
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label for="celular" class="block font-bold mb-2">Celular</label>
+                    <input pInputText id="celular" [(ngModel)]="cliente.celular" class="w-full" />
+                </div>
+                <div class="col-span-6">
+                    <label for="correo" class="block font-bold mb-2">Correo</label>
+                    <input pInputText id="correo" type="email" [(ngModel)]="cliente.correo" class="w-full" />
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <p-checkbox [(ngModel)]="cliente.activo" [binary]="true" inputId="activo" />
+                <label for="activo">Activo</label>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="save()" />
+    </ng-template>
+</p-dialog>

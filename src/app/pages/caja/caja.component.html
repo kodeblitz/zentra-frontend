@@ -1,0 +1,246 @@
+<p-toast />
+<p-confirmdialog />
+
+<div class="grid mb-4">
+    <div class="col-12 md:col-6">
+        <p-card [header]="cajaAbierta() ? ('Caja ' + (cajaAbierta()?.numero ?? cajaAbierta()?.id)) : 'Sin caja abierta'">
+            @if (cajaAbierta()) {
+                <p class="font-bold">Saldo esperado: {{ saldoEsperado() | number:'1.2-2' }}</p>
+                <p class="text-sm text-color-secondary">Apertura: {{ cajaAbierta()?.fechaApertura }}</p>
+                <div class="flex gap-2 mt-3">
+                    <p-button label="Nuevo movimiento" icon="pi pi-plus" (onClick)="openMovimientoDialog()" />
+                    <p-button label="Cerrar caja" icon="pi pi-lock" severity="warn" (onClick)="openCerrarDialog()" />
+                </div>
+            } @else {
+                <p class="text-color-secondary mb-3">No hay sesión de caja abierta.</p>
+                <p-button label="Abrir caja" icon="pi pi-lock-open" (onClick)="openAbrirDialog()" />
+            }
+        </p-card>
+    </div>
+</div>
+
+<p-card header="Sesiones de caja">
+    <p-table
+        #dt
+        [value]="sesiones()"
+        [rows]="10"
+        [paginator]="true"
+        [tableStyle]="{ 'min-width': '40rem' }"
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+        [showCurrentPageReport]="true"
+        [rowsPerPageOptions]="[10, 25, 50]"
+    >
+        <ng-template #header>
+            <tr>
+                <th>Nº</th>
+                <th>Id</th>
+                <th>Apertura</th>
+                <th>Cierre</th>
+                <th>Monto apertura</th>
+                <th>Saldo esperado</th>
+                <th>Saldo real</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-row>
+            <tr>
+                <td>{{ row.numero ?? row.id }}</td>
+                <td>{{ row.id }}</td>
+                <td>{{ row.fechaApertura }}</td>
+                <td>{{ row.fechaCierre || '-' }}</td>
+                <td>{{ row.montoApertura | number:'1.2-2' }}</td>
+                <td>{{ row.montoCierreEsperado != null ? (row.montoCierreEsperado | number:'1.2-2') : '-' }}</td>
+                <td>{{ row.montoCierreReal != null ? (row.montoCierreReal | number:'1.2-2') : '-' }}</td>
+                <td><p-tag [value]="row.estado" [severity]="row.estado === 'ABIERTA' ? 'success' : 'secondary'" /></td>
+                <td>
+                    <p-button icon="pi pi-list" label="Movimientos" [rounded]="true" [outlined]="true" (click)="verMovimientos(row)" />
+                    <p-button icon="pi pi-wallet" label="Desglose" [rounded]="true" [outlined]="true" (click)="verDesglose(row)" class="ml-1" />
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+            <tr><td colspan="9">No hay sesiones.</td></tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+<p-dialog [(visible)]="dialogDesglose" [style]="{ width: '480px' }" [header]="tituloDesglose" [modal]="true" (onHide)="dialogDesglose = false">
+    <ng-template #content>
+        @if (listadoDenominaciones().length === 0) {
+            <p class="text-color-secondary">No hay desglose registrado para esta caja.</p>
+        } @else {
+            <p-table [value]="listadoDenominaciones()" [tableStyle]="{ 'min-width': '20rem' }">
+                <ng-template #header>
+                    <tr>
+                        <th>Momento</th>
+                        <th>Valor (Gs.)</th>
+                        <th>Cant.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </ng-template>
+                <ng-template #body let-d>
+                    <tr>
+                        <td>{{ d.tipo === 'APERTURA' ? 'Apertura' : 'Cierre' }}</td>
+                        <td>{{ d.valorPyg | number }}</td>
+                        <td>{{ d.cantidad }}</td>
+                        <td>{{ (d.valorPyg * d.cantidad) | number }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        }
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="dialogAbrir" [style]="{ width: '520px' }" header="Abrir caja" [modal]="true" (onHide)="dialogAbrir = false">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="block font-bold mb-2">Desglose por denominación (Guaraníes)</label>
+                <p class="text-sm text-color-secondary mb-2">Indique la cantidad por billete/moneda para mayor claridad del flujo de caja.</p>
+                <div class="border border-surface-200 dark:border-surface-700 rounded overflow-hidden">
+                    <table class="w-full text-sm caja-denom-table">
+                        <thead>
+                            <tr class="surface-100 dark:surface-700">
+                                <th class="text-left p-2">Valor (Gs.)</th>
+                                <th class="text-right p-2" style="width: 6rem;">Cant.</th>
+                                <th class="text-right p-2">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (d of denomApertura; track d.valorPyg) {
+                                <tr class="border-t border-surface-200 dark:border-surface-600">
+                                    <td class="p-2">{{ d.valorPyg | number }}</td>
+                                    <td class="p-2 text-right caja-denom-cant">
+                                        <p-inputnumber [(ngModel)]="d.cantidad" [min]="0" [showButtons]="false" inputStyleClass="text-right w-full" styleClass="caja-inputnumber" />
+                                    </td>
+                                    <td class="p-2 text-right">{{ (d.valorPyg * (d.cantidad || 0)) | number }}</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 font-semibold">Total desglose: {{ totalDesdeDenomApertura() | number }}</p>
+                <p-button label="Usar como monto de apertura" icon="pi pi-calculator" [outlined]="true" size="small" (onClick)="aplicarTotalApertura()" class="mt-1" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Monto de apertura</label>
+                <p-inputnumber [(ngModel)]="montoApertura" mode="decimal" [minFractionDigits]="0" [min]="0" styleClass="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Observaciones</label>
+                <textarea pInputText [(ngModel)]="observacionesApertura" class="w-full" rows="2"></textarea>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogAbrir = false" />
+        <p-button label="Abrir" icon="pi pi-check" (click)="abrirCaja()" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="dialogCerrar" [style]="{ width: '520px' }" header="Cerrar caja (arqueo)" [modal]="true" (onHide)="dialogCerrar = false">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <p>Saldo esperado: <strong>{{ saldoEsperado() | number:'1.0-0' }} Gs.</strong></p>
+            <div>
+                <label class="block font-bold mb-2">Desglose por denominación (arqueo)</label>
+                <p class="text-sm text-color-secondary mb-2">Cuente billetes y monedas por valor para registrar el monto real.</p>
+                <div class="border border-surface-200 dark:border-surface-700 rounded overflow-hidden">
+                    <table class="w-full text-sm caja-denom-table">
+                        <thead>
+                            <tr class="surface-100 dark:surface-700">
+                                <th class="text-left p-2">Valor (Gs.)</th>
+                                <th class="text-right p-2" style="width: 6rem;">Cant.</th>
+                                <th class="text-right p-2">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (d of denomCierre; track d.valorPyg) {
+                                <tr class="border-t border-surface-200 dark:border-surface-600">
+                                    <td class="p-2">{{ d.valorPyg | number }}</td>
+                                    <td class="p-2 text-right caja-denom-cant">
+                                        <p-inputnumber [(ngModel)]="d.cantidad" [min]="0" [showButtons]="false" inputStyleClass="text-right w-full" styleClass="caja-inputnumber" />
+                                    </td>
+                                    <td class="p-2 text-right">{{ (d.valorPyg * (d.cantidad || 0)) | number }}</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 font-semibold">Total arqueo: {{ totalDesdeDenomCierre() | number }} Gs.</p>
+                <p-button label="Usar como monto contado" icon="pi pi-calculator" [outlined]="true" size="small" (onClick)="aplicarTotalCierre()" class="mt-1" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Monto contado (arqueo)</label>
+                <p-inputnumber [(ngModel)]="montoCierreReal" mode="decimal" [minFractionDigits]="0" [min]="0" styleClass="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Observaciones</label>
+                <textarea pInputText [(ngModel)]="observacionesCierre" class="w-full" rows="2"></textarea>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogCerrar = false" />
+        <p-button label="Cerrar caja" icon="pi pi-lock" severity="warn" (click)="cerrarCaja()" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="dialogMovimiento" [style]="{ width: '420px' }" header="Nuevo movimiento" [modal]="true" (onHide)="dialogMovimiento = false">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="block font-bold mb-2">Tipo</label>
+                <p-select [(ngModel)]="movTipo" [options]="tiposMovimiento" optionLabel="label" optionValue="value" styleClass="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Monto *</label>
+                <p-inputnumber [(ngModel)]="movMonto" mode="decimal" [minFractionDigits]="2" [min]="0.01" styleClass="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Concepto</label>
+                <input pInputText [(ngModel)]="movConcepto" class="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Referencia</label>
+                <input pInputText [(ngModel)]="movReferencia" class="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Observaciones</label>
+                <textarea pInputText [(ngModel)]="movObservaciones" class="w-full" rows="2"></textarea>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogMovimiento = false" />
+        <p-button label="Registrar" icon="pi pi-check" (click)="registrarMovimiento()" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="dialogVerMovimientos" [style]="{ width: '90vw', maxWidth: '700px' }" [header]="'Movimientos - ' + (cajaSeleccionada?.numero ?? 'Caja #' + (cajaSeleccionada?.id ?? ''))" [modal]="true" (onHide)="cajaSeleccionada = null">
+    <ng-template #content>
+        <p-table [value]="movimientosList()" [tableStyle]="{ 'min-width': '40rem' }">
+            <ng-template #header>
+                <tr>
+                    <th>Fecha/Hora</th>
+                    <th>Tipo</th>
+                    <th>Concepto</th>
+                    <th>Monto</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-m>
+                <tr>
+                    <td>{{ m.fechaHora }}</td>
+                    <td><p-tag [value]="m.tipo" [severity]="m.tipo === 'INGRESO' ? 'success' : 'warn'" /></td>
+                    <td>{{ m.concepto || '-' }}</td>
+                    <td>{{ m.tipo === 'EGRESO' ? '-' : '' }}{{ m.monto | number:'1.2-2' }}</td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr><td colspan="4">Sin movimientos.</td></tr>
+            </ng-template>
+        </p-table>
+    </ng-template>
+</p-dialog>

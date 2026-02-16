@@ -1,0 +1,131 @@
+<p-toast />
+<p-confirmdialog />
+
+<div class="flex flex-col gap-4">
+    <header>
+        <h1 class="m-0 text-2xl font-semibold text-color">Inventario</h1>
+        <p class="text-muted-color mt-1 mb-0">Consulta de movimientos de stock y saldos actuales</p>
+    </header>
+
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab [value]="0">Movimientos de stock</p-tab>
+            <p-tab [value]="1">Stock actual</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <!-- Movimientos -->
+            <p-tabpanel [value]="0">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-wrap items-end gap-4 p-4 rounded-border bg-surface-50 dark:bg-surface-800">
+                        <div>
+                            <label class="block text-sm font-medium text-color mb-1">Desde</label>
+                            <input type="date" pInputText [(ngModel)]="filterDesde" class="w-40" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-color mb-1">Hasta</label>
+                            <input type="date" pInputText [(ngModel)]="filterHasta" class="w-40" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-color mb-1">Depósito</label>
+                            <p-select [(ngModel)]="filterDepositoId" [options]="depositoOpts()" optionLabel="label" optionValue="value" placeholder="Todos" styleClass="w-52" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-color mb-1">Producto</label>
+                            <p-select [(ngModel)]="filterProductoId" [options]="productoOpts()" optionLabel="label" optionValue="value" placeholder="Todos" styleClass="w-52" [filter]="true" filterPlaceholder="Buscar" />
+                        </div>
+                        <p-button label="Buscar" icon="pi pi-search" (onClick)="onFilterMovimientos()" [loading]="loadingMov()" />
+                    </div>
+
+                    <p-table
+                        [value]="movimientosFiltrados()"
+                        [rows]="15"
+                        [paginator]="true"
+                        [loading]="loadingMov()"
+                        [tableStyle]="{ 'min-width': '50rem' }"
+                        dataKey="id"
+                        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                        [rowsPerPageOptions]="[10, 25, 50]"
+                    >
+                        <ng-template #header>
+                            <tr>
+                                <th style="min-width:6rem">Fecha</th>
+                                <th style="min-width:10rem">Producto</th>
+                                <th style="min-width:8rem">Depósito</th>
+                                <th style="min-width:8rem">Tipo</th>
+                                <th style="min-width:6rem">Cantidad</th>
+                                <th style="min-width:8rem">Estado</th>
+                                <th style="min-width:8rem">Referencia</th>
+                                <th style="min-width:12rem">Acciones</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-row>
+                            <tr>
+                                <td>{{ row.fechaMovimiento | date:'shortDate' }}</td>
+                                <td>{{ getProductoNombre(row.producto) }}</td>
+                                <td>{{ getDepositoNombre(row.deposito) }}</td>
+                                <td>{{ getTipoNombre(row) }}</td>
+                                <td><span [class.text-green-600]="row.tipoMovimiento?.sumaStock === true" [class.text-red-600]="row.tipoMovimiento?.sumaStock === false">{{ cantidadDisplay(row) }}</span></td>
+                                <td><p-tag [value]="getEstadoNombre(row)" [severity]="getEstadoSeverity(row.estado?.codigo)" /></td>
+                                <td>{{ row.numeroReferencia || '-' }}</td>
+                                <td>
+                                    @if (row.estado?.codigo === 'BORRADOR') {
+                                        <p-button icon="pi pi-check" label="Confirmar" [rounded]="true" [outlined]="true" size="small" (onClick)="confirmarMovimiento(row)" class="mr-2" />
+                                    }
+                                    @if (row.estado?.codigo === 'CONFIRMADO') {
+                                        <p-button icon="pi pi-times" label="Anular" severity="danger" [rounded]="true" [outlined]="true" size="small" (onClick)="anularMovimiento(row)" />
+                                    }
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template #emptymessage>
+                            <tr><td colspan="8">No hay movimientos en el rango seleccionado.</td></tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabpanel>
+
+            <!-- Stock actual -->
+            <p-tabpanel [value]="1">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-wrap items-end gap-4 p-4 rounded-border bg-surface-50 dark:bg-surface-800">
+                        <div>
+                            <label class="block text-sm font-medium text-color mb-1">Depósito</label>
+                            <p-select [(ngModel)]="filterStockDepositoId" [options]="depositoOpts()" optionLabel="label" optionValue="value" placeholder="Todos" styleClass="w-52" />
+                        </div>
+                        <p-button label="Actualizar" icon="pi pi-refresh" (onClick)="onFilterStock()" [loading]="loadingStock()" />
+                    </div>
+
+                    <p-table
+                        [value]="stockActual()"
+                        [rows]="15"
+                        [paginator]="true"
+                        [loading]="loadingStock()"
+                        [tableStyle]="{ 'min-width': '30rem' }"
+                        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                        [rowsPerPageOptions]="[10, 25, 50]"
+                    >
+                        <ng-template #header>
+                            <tr>
+                                <th style="min-width:10rem">Depósito</th>
+                                <th style="min-width:14rem">Producto</th>
+                                <th style="min-width:8rem">Cantidad</th>
+                                <th style="min-width:10rem">Actualizado</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-row>
+                            <tr>
+                                <td>{{ getDepositoNombre(row.deposito) }}</td>
+                                <td>{{ getProductoNombre(row.producto) }}</td>
+                                <td class="font-semibold">{{ row.cantidad | number:'1.2-2' }}</td>
+                                <td>{{ row.actualizadoEn | date:'short' }}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template #emptymessage>
+                            <tr><td colspan="4">No hay registros de stock.</td></tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

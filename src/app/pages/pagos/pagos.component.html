@@ -1,0 +1,124 @@
+<p-toast />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Registrar pago" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="pagos()"
+    [rows]="10"
+    [paginator]="true"
+    [tableStyle]="{ 'min-width': '40rem' }"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50]"
+>
+    <ng-template #caption>
+        <h5 class="m-0">Pagos / Cobranzas</h5>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width:6rem">Id</th>
+            <th style="min-width:10rem">Cliente</th>
+            <th style="min-width:8rem">Fecha</th>
+            <th style="min-width:8rem">Monto</th>
+            <th style="min-width:8rem">Medio pago</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-row>
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ getClienteNombre(row.cliente?.id) }}</td>
+            <td>{{ row.fechaPago }}</td>
+            <td>{{ row.montoTotal | number:'1.2-2' }}</td>
+            <td>{{ row.medioPago?.id }}</td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr><td colspan="5">No hay pagos.</td></tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialog" [style]="{ width: '580px' }" header="Registrar pago" [modal]="true" (onHide)="onDialogHide()">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="block font-bold mb-2">Cliente *</label>
+                <p-autocomplete
+                    [(ngModel)]="selectedCliente"
+                    [suggestions]="clientesSugeridos"
+                    (completeMethod)="buscarClientes($event)"
+                    (onSelect)="onClienteSelect()"
+                    (onClear)="pago.cliente = undefined; documentosConSaldo = []; cuotasPendientes = []"
+                    optionLabel="razonSocial"
+                    placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
+                    styleClass="w-full"
+                    [dropdown]="false"
+                    [showClear]="true"
+                    [minLength]="2"
+                />
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label class="block font-bold mb-2">Fecha *</label>
+                    <input pInputText type="date" [(ngModel)]="pago.fechaPago" class="w-full" />
+                </div>
+                <div class="col-span-6">
+                    <label class="block font-bold mb-2">Monto total *</label>
+                    <p-inputnumber [(ngModel)]="pago.montoTotal" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
+                </div>
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Moneda</label>
+                <p-select [(ngModel)]="pago.moneda" [options]="monedas" optionLabel="codigo" placeholder="Moneda" styleClass="w-full"
+                    (onChange)="pago.moneda = $event.value ? { id: $event.value.id } : undefined" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Medio de pago</label>
+                <p-select [(ngModel)]="pago.medioPago" [options]="mediosPago" optionLabel="nombre" placeholder="Medio" styleClass="w-full"
+                    (onChange)="pago.medioPago = $event.value ? { id: $event.value.id } : undefined" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Referencia</label>
+                <input pInputText [(ngModel)]="pago.referencia" class="w-full" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Aplicaciones *</label>
+                <p-table [value]="aplicaciones" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Documento / Cuota</th>
+                            <th>Monto</th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-app>
+                        <tr>
+                            <td>
+                                <p-select [(ngModel)]="app.tipoAplicacion" [options]="tiposAplicacion" optionLabel="label" optionValue="value" (onChange)="app.documentoVentaId = undefined; app.creditoCuotaId = undefined" />
+                            </td>
+                            <td>
+                                <p-select *ngIf="app.tipoAplicacion === 'DOCUMENTO'" [(ngModel)]="app.documentoVentaId" [options]="documentosConSaldo" optionLabel="numero" optionValue="documentoVentaId" placeholder="Documento" styleClass="w-full" />
+                                <p-select *ngIf="app.tipoAplicacion === 'CUOTA'" [(ngModel)]="app.creditoCuotaId" [options]="cuotasPendientes" optionLabel="label" optionValue="id" placeholder="Cuota" styleClass="w-full" />
+                            </td>
+                            <td><p-inputnumber [(ngModel)]="app.montoAplicado" mode="decimal" [minFractionDigits]="2" [min]="0" /></td>
+                            <td><p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="removeAplicacion(app)" /></td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="4">Sin aplicaciones. Agregar abajo.</td></tr>
+                    </ng-template>
+                </p-table>
+                <p-button label="Agregar aplicación" icon="pi pi-plus" [rounded]="true" [outlined]="true" (click)="addAplicacion()" class="mt-2" />
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Registrar" icon="pi pi-check" (click)="registrar()" />
+    </ng-template>
+</p-dialog>

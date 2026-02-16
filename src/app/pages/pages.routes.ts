@@ -2,10 +2,46 @@ import { Routes } from '@angular/router';
 import { Documentation } from './documentation/documentation';
 import { Crud } from './crud/crud';
 import { Empty } from './empty/empty';
+import { ClientesComponent } from './clientes/clientes';
+import { ProspectosComponent } from './prospectos/prospectos';
+import { DocumentosVentaComponent } from './documentos-venta/documentos-venta';
+import { DevolucionesComponent } from './devoluciones/devoluciones';
+import { CreditosComponent } from './creditos/creditos';
+import { PagosComponent } from './pagos/pagos';
+import { CarteraComponent } from './cartera/cartera';
+import { PedidosComponent } from './pedidos/pedidos';
+import { PresupuestosComponent } from './presupuestos/presupuestos';
+import { PresupuestoFormComponent } from './presupuestos/presupuesto-form/presupuesto-form';
+import { PresupuestoVerComponent } from './presupuestos/presupuesto-ver/presupuesto-ver';
+import { CajaComponent } from './caja/caja';
+import { PdvComponent } from './pdv/pdv';
+import { ParametricosComponent } from './parametricos/parametricos';
+import { InventarioComponent } from './inventario/inventario';
+import { ProductosComponent } from './productos/productos';
+import { ProductoFormComponent } from './productos/producto-form/producto-form';
 
 export default [
     { path: 'documentation', component: Documentation },
     { path: 'crud', component: Crud },
     { path: 'empty', component: Empty },
+    { path: 'clientes', component: ClientesComponent },
+    { path: 'prospectos', component: ProspectosComponent },
+    { path: 'documentos-venta', component: DocumentosVentaComponent },
+    { path: 'devoluciones', component: DevolucionesComponent },
+    { path: 'creditos', component: CreditosComponent },
+    { path: 'pagos', component: PagosComponent },
+    { path: 'cartera', component: CarteraComponent },
+    { path: 'pedidos', component: PedidosComponent },
+    { path: 'presupuestos', component: PresupuestosComponent },
+    { path: 'presupuestos/nuevo', component: PresupuestoFormComponent },
+    { path: 'presupuestos/editar/:id', component: PresupuestoFormComponent },
+    { path: 'presupuestos/ver/:id', component: PresupuestoVerComponent },
+    { path: 'caja', component: CajaComponent },
+    { path: 'pdv', component: PdvComponent },
+    { path: 'inventario', component: InventarioComponent },
+    { path: 'productos', component: ProductosComponent },
+    { path: 'productos/nuevo', component: ProductoFormComponent },
+    { path: 'productos/editar/:id', component: ProductoFormComponent },
+    { path: 'parametricos', component: ParametricosComponent },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

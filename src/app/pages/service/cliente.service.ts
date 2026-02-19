@@ -70,4 +70,21 @@ export class ClienteService {
     validarDv(numero: string, dv: number): Observable<{ valido: boolean }> {
         return this.api.get<{ valido: boolean }>(`${this.path}/validar-dv`, { numero: numero ?? '', dv });
     }
+
+    /** Descarga la plantilla CSV para importación masiva (blob). */
+    getImportTemplateBlob(): Observable<Blob> {
+        return this.api.getBlob(`${this.path}/import/template`);
+    }
+
+    /** Resultado de importación CSV. */
+    importFromCsv(file: File): Observable<ImportResult> {
+        const form = new FormData();
+        form.append('file', file);
+        return this.api.postFormData<ImportResult>(`${this.path}/import`, form);
+    }
+}
+
+export interface ImportResult {
+    importados: number;
+    errores: { fila: number; mensaje: string }[];
 }

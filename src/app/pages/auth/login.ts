@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
 import { AuthService } from '../../core/auth.service';
+import { FeatureFlagsService } from '../../core/feature-flags.service';
 
 @Component({
     selector: 'app-login',
@@ -74,6 +75,7 @@ export class Login {
 
     constructor(
         private authService: AuthService,
+        private featureFlags: FeatureFlagsService,
         private router: Router,
         private messageService: MessageService
     ) {}
@@ -89,6 +91,7 @@ export class Login {
         this.authService.login(u, p).subscribe({
             next: () => {
                 this.loading = false;
+                this.featureFlags.load();
                 this.router.navigate(['/']);
             },
             error: (err) => {

@@ -64,7 +64,11 @@
             <div class="grid grid-cols-12 gap-4">
                 <div class="col-span-6">
                     <label for="codigo" class="block font-bold mb-2">Código</label>
-                    <input pInputText id="codigo" [(ngModel)]="cliente.codigo" class="w-full" />
+                    @if (editing && cliente.id) {
+                        <input pInputText id="codigo" [ngModel]="cliente.codigo" class="w-full" readonly />
+                    } @else {
+                        <span class="text-color-secondary text-sm">Se asigna automáticamente al guardar (ej. CLI001)</span>
+                    }
                 </div>
                 <div class="col-span-6">
                     <label for="ruc" class="block font-bold mb-2">RUC</label>

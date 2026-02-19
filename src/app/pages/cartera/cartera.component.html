@@ -27,9 +27,9 @@
                 <ng-template #body let-row>
                     <tr>
                         <td>{{ row.razonSocial }}</td>
-                        <td>{{ row.saldoDocumentos | number:'1.2-2' }}</td>
-                        <td>{{ row.saldoCreditos | number:'1.2-2' }}</td>
-                        <td>{{ row.saldoTotal | number:'1.2-2' }}</td>
+                        <td>{{ row.saldoDocumentos | number:'1.0-0' }} Gs.</td>
+                        <td>{{ row.saldoCreditos | number:'1.0-0' }} Gs.</td>
+                        <td>{{ row.saldoTotal | number:'1.0-0' }} Gs.</td>
                     </tr>
                 </ng-template>
                 <ng-template #emptymessage>
@@ -62,10 +62,10 @@
                     <tr>
                         <td>{{ row.razonSocial }}</td>
                         <td>{{ row.numero }}</td>
-                        <td>{{ row.fechaEmision }}</td>
-                        <td>{{ row.fechaVencimiento }}</td>
-                        <td>{{ row.total | number:'1.2-2' }}</td>
-                        <td>{{ row.saldoPendiente | number:'1.2-2' }}</td>
+                        <td>{{ row.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                        <td>{{ row.fechaVencimiento | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                        <td>{{ row.total | number:'1.0-0' }} Gs.</td>
+                        <td>{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
                         <td><p-tag [value]="row.diasVencido?.toString() ?? '0'" [severity]="row.diasVencido && row.diasVencido > 0 ? 'warn' : 'success'" /></td>
                     </tr>
                 </ng-template>
@@ -80,20 +80,20 @@
             </div>
             <div *ngIf="aging()" class="grid grid-cols-12 gap-4 mb-4">
                 <p-card class="col-span-3" header="0-30 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango0_30 | number:'1.2-2' }}</p>
+                    <p class="text-2xl font-bold">{{ aging()!.rango0_30 | number:'1.0-0' }} Gs.</p>
                 </p-card>
                 <p-card class="col-span-3" header="31-60 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango31_60 | number:'1.2-2' }}</p>
+                    <p class="text-2xl font-bold">{{ aging()!.rango31_60 | number:'1.0-0' }} Gs.</p>
                 </p-card>
                 <p-card class="col-span-3" header="61-90 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango61_90 | number:'1.2-2' }}</p>
+                    <p class="text-2xl font-bold">{{ aging()!.rango61_90 | number:'1.0-0' }} Gs.</p>
                 </p-card>
                 <p-card class="col-span-3" header="+90 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango91Mas | number:'1.2-2' }}</p>
+                    <p class="text-2xl font-bold">{{ aging()!.rango91Mas | number:'1.0-0' }} Gs.</p>
                 </p-card>
             </div>
             <p-card *ngIf="aging()" header="Total cartera">
-                <p class="text-2xl font-bold">{{ aging()!.total | number:'1.2-2' }}</p>
+                <p class="text-2xl font-bold">{{ aging()!.total | number:'1.0-0' }} Gs.</p>
             </p-card>
             <p-table
                 *ngIf="aging()?.detalle?.length"
@@ -115,7 +115,7 @@
                     <tr>
                         <td>{{ row.razonSocial }}</td>
                         <td>{{ row.numero }}</td>
-                        <td>{{ row.saldoPendiente | number:'1.2-2' }}</td>
+                        <td>{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
                         <td>{{ row.diasVencido }}</td>
                     </tr>
                 </ng-template>

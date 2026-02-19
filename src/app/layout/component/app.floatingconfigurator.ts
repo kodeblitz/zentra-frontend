@@ -3,7 +3,8 @@ import { ButtonModule } from 'primeng/button';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
-import {CommonModule} from "@angular/common";
+import { ThemePreferenceService } from '../../core/theme-preference.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-floating-configurator',
@@ -20,6 +21,7 @@ import {CommonModule} from "@angular/common";
 })
 export class AppFloatingConfigurator {
     LayoutService = inject(LayoutService);
+    themePreference = inject(ThemePreferenceService);
 
     float = input<boolean>(true);
 
@@ -27,6 +29,6 @@ export class AppFloatingConfigurator {
 
     toggleDarkMode() {
         this.LayoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+        this.themePreference.persist();
     }
-
 }

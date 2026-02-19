@@ -54,9 +54,9 @@
         <tr>
             <td>{{ row.numero || row.id }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.fechaPedido }}</td>
-            <td>{{ row.fechaEntregaEstimada || '-' }}</td>
-            <td>{{ row.total | number:'1.2-2' }}</td>
+            <td>{{ row.fechaPedido | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>{{ row.fechaEntregaEstimada ? (row.fechaEntregaEstimada | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</td>
+            <td>{{ row.total | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="getEstadoLabel(row.estado)" [severity]="getEstadoSeverity(row.estado)" /></td>
             <td>{{ row.documentoVenta?.numero ?? '—' }}</td>
             <td>
@@ -156,8 +156,8 @@
                                 />
                             </td>
                             <td><p-inputnumber [(ngModel)]="line.cantidad" (ngModelChange)="recalcLine(line)" [min]="0.0001" /></td>
-                            <td><p-inputnumber [(ngModel)]="line.precioUnitario" (ngModelChange)="recalcLine(line)" mode="decimal" [minFractionDigits]="2" /></td>
-                            <td>{{ line.totalLinea | number:'1.2-2' }}</td>
+                            <td><p-inputnumber [(ngModel)]="line.precioUnitario" (ngModelChange)="recalcLine(line)" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" /></td>
+                            <td>{{ line.totalLinea | number:'1.0-0' }} Gs.</td>
                             <td><p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="removeLine(line)" /></td>
                         </tr>
                     </ng-template>
@@ -168,7 +168,7 @@
                 <p-button label="Agregar línea" icon="pi pi-plus" [rounded]="true" [outlined]="true" (click)="addLine()" class="mt-2" />
             </div>
             <div class="flex justify-end gap-2">
-                <span class="font-bold">Total:</span><span>{{ pedido.total | number:'1.2-2' }}</span>
+                <span class="font-bold">Total:</span><span>{{ pedido.total | number:'1.0-0' }} Gs.</span>
             </div>
         </div>
     </ng-template>

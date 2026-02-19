@@ -42,7 +42,7 @@
         <tr>
             <td>{{ row.id }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.montoTotal | number:'1.2-2' }}</td>
+            <td>{{ row.montoTotal | number:'1.2-2' }} Gs.</td>
             <td>{{ row.nroCuotas }}</td>
             <td>{{ row.sistemaAmort === 'FR' ? 'Francés' : row.sistemaAmort === 'AL' ? 'Alemán' : row.sistemaAmort }}</td>
             <td><p-tag [value]="row.estado ?? '-'" [severity]="getEstadoSeverity(row.estado)" /></td>
@@ -56,90 +56,3 @@
         <tr><td colspan="7">No hay créditos.</td></tr>
     </ng-template>
 </p-table>
-
-<p-dialog [(visible)]="dialogNuevo" [style]="{ width: '480px' }" header="Nuevo crédito" [modal]="true" (onHide)="dialogNuevo = false">
-    <ng-template #content>
-        <div class="flex flex-col gap-4">
-            <div>
-                <label class="block font-bold mb-2">Cliente *</label>
-                <p-autocomplete
-                    [(ngModel)]="selectedClienteCredito"
-                    [suggestions]="clientesSugeridos"
-                    (completeMethod)="buscarClientes($event)"
-                    (onSelect)="onClienteCreditoSelect()"
-                    (onClear)="credito.cliente = undefined"
-                    optionLabel="razonSocial"
-                    placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
-                    styleClass="w-full"
-                    [dropdown]="false"
-                    [showClear]="true"
-                    [minLength]="2"
-                />
-            </div>
-            <div>
-                <label class="block font-bold mb-2">Moneda *</label>
-                <p-select [(ngModel)]="credito.moneda" [options]="monedas" optionLabel="codigo" placeholder="Moneda" styleClass="w-full"
-                    (onChange)="credito.moneda = $event.value ? { id: $event.value.id } : undefined" />
-            </div>
-            <div>
-                <label class="block font-bold mb-2">Monto total *</label>
-                <p-inputnumber [(ngModel)]="credito.montoTotal" mode="decimal" [minFractionDigits]="2" styleClass="w-full" />
-            </div>
-            <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-6">
-                    <label class="block font-bold mb-2">Nº cuotas</label>
-                    <p-inputnumber [(ngModel)]="credito.nroCuotas" [min]="1" styleClass="w-full" />
-                </div>
-                <div class="col-span-6">
-                    <label class="block font-bold mb-2">Tasa % anual</label>
-                    <p-inputnumber [(ngModel)]="credito.tasaInteresAnual" [min]="0" styleClass="w-full" />
-                </div>
-            </div>
-            <div>
-                <label class="block font-bold mb-2">Sistema amortización</label>
-                <p-select [(ngModel)]="credito.sistemaAmort" [options]="sistemasOpt" optionLabel="label" optionValue="value" styleClass="w-full" />
-            </div>
-            <div>
-                <label class="block font-bold mb-2">Fecha inicio</label>
-                <input pInputText type="date" [(ngModel)]="credito.fechaInicio" class="w-full" />
-            </div>
-            <div>
-                <label class="block font-bold mb-2">Primer vencimiento</label>
-                <input pInputText type="date" [(ngModel)]="credito.fechaPrimerVencimiento" class="w-full" />
-            </div>
-        </div>
-    </ng-template>
-    <ng-template #footer>
-        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogNuevo = false" />
-        <p-button label="Crear" icon="pi pi-check" (click)="crearCredito()" />
-    </ng-template>
-</p-dialog>
-
-<p-dialog [(visible)]="dialogDetalle" [style]="{ width: '560px' }" [header]="'Crédito #' + (creditoSeleccionado?.id ?? '')" [modal]="true" (onHide)="creditoSeleccionado = null">
-    <ng-template #content>
-        <div *ngIf="creditoSeleccionado" class="flex flex-col gap-2">
-            <p><strong>Cliente:</strong> {{ getClienteNombre(creditoSeleccionado.cliente?.id) }}</p>
-            <p><strong>Monto:</strong> {{ creditoSeleccionado.montoTotal | number:'1.2-2' }} | <strong>Estado:</strong> {{ creditoSeleccionado.estado }}</p>
-            <p-table [value]="creditoSeleccionado.cuotas ?? []" [tableStyle]="{ 'min-width': '30rem' }">
-                <ng-template #header>
-                    <tr>
-                        <th>Cuota</th>
-                        <th>Vencimiento</th>
-                        <th>Monto</th>
-                        <th>Saldo</th>
-                        <th>Estado</th>
-                    </tr>
-                </ng-template>
-                <ng-template #body let-c>
-                    <tr>
-                        <td>{{ c.nroCuota }}</td>
-                        <td>{{ c.fechaVencimiento }}</td>
-                        <td>{{ c.montoCuota | number:'1.2-2' }}</td>
-                        <td>{{ c.saldoInsoluto | number:'1.2-2' }}</td>
-                        <td><p-tag [value]="c.estado ?? '-'" [severity]="c.estado === 'PAGADA' ? 'success' : 'secondary'" /></td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-    </ng-template>
-</p-dialog>

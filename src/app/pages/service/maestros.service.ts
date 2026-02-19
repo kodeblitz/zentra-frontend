@@ -52,6 +52,8 @@ export const MAYORISTA_RANGOS = [5, 10, 20, 50, 100] as const;
 export interface Producto {
     id?: number;
     codigo?: string;
+    /** Código escaneable (barras/QR). Usado en visor de precios. */
+    codigoBarras?: string;
     nombre?: string;
     descripcion?: string;
     precioVenta?: number;

@@ -31,6 +31,39 @@ export interface CarteraAgingDTO {
     detalle: DocumentoSaldoDTO[];
 }
 
+export interface CuotaSaldoDTO {
+    cuotaId: number;
+    nroCuota: number;
+    fechaVencimiento?: string;
+    montoCuota?: number;
+    /** Interés moratorio (cuota vencida). */
+    montoMora?: number;
+    /** Total a pagar por esta cuota (monto cuota + mora - aplicado). */
+    saldoPendiente: number;
+    /** Capital pendiente (para cancelación anticipada). */
+    capitalPendiente?: number;
+    /** true si la cuota vence en el futuro (pago adelantado). */
+    adelantada?: boolean;
+}
+
+export interface CancelacionAnticipadaDTO {
+    montoTotal: number;
+    desglose: CuotaSaldoDTO[];
+}
+
+export interface CreditoPendienteDTO {
+    creditoId: number;
+    estado: string;
+    montoTotal: number;
+    nroCuotas: number;
+    cancelacionAnticipada: CancelacionAnticipadaDTO;
+}
+
+export interface PendientesClienteDTO {
+    documentos: DocumentoSaldoDTO[];
+    creditos: CreditoPendienteDTO[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class CarteraService {
     private path = '/cartera';
@@ -54,7 +87,14 @@ export class CarteraService {
         return this.api.get<{ saldoPendiente: number }>(`${this.path}/documento/${documentoVentaId}/saldo`);
     }
 
-    saldoCuota(creditoCuotaId: number): Observable<{ saldoPendiente: number }> {
-        return this.api.get<{ saldoPendiente: number }>(`${this.path}/cuota/${creditoCuotaId}/saldo`);
+    /** Saldo a pagar de la cuota. Si se pasa fechaPago (yyyy-MM-dd) y la cuota es adelantada, devuelve capital + interés proporcional. */
+    saldoCuota(creditoCuotaId: number, fechaPago?: string): Observable<{ saldoPendiente: number }> {
+        const params = fechaPago ? { fechaPago } : {};
+        return this.api.get<{ saldoPendiente: number }>(`${this.path}/cuota/${creditoCuotaId}/saldo`, params as Record<string, string>);
+    }
+
+    /** Documentos con saldo y créditos con cuotas pendientes del cliente (para registro de pagos). */
+    pendientesCliente(clienteId: number): Observable<PendientesClienteDTO> {
+        return this.api.get<PendientesClienteDTO>(`${this.path}/pendientes-cliente/${clienteId}`);
     }
 }

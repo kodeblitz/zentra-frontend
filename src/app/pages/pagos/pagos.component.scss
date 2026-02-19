@@ -1,1 +1,7 @@
 // Estilos del módulo Pagos / Cobranzas
+
+// Overlays de autocomplete y select (se renderizan en body) deben quedar por encima del diálogo
+::ng-deep .p-autocomplete-overlay,
+::ng-deep .p-select-overlay {
+  z-index: 1200 !important;
+}

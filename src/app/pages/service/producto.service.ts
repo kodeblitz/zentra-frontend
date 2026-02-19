@@ -3,6 +3,21 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { Producto } from './maestros.service';
 
+export interface ProductoVisorPreciosDTO {
+    id: number;
+    codigo?: string;
+    codigoBarras?: string;
+    nombre?: string;
+    unidadMedidaNombre?: string;
+    precioVenta?: number;
+    precioMayorista?: number;
+    precioMayorista5?: number;
+    precioMayorista10?: number;
+    precioMayorista20?: number;
+    precioMayorista50?: number;
+    precioMayorista100?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductoService {
     private path = '/productos';
@@ -11,6 +26,11 @@ export class ProductoService {
 
     list(): Observable<Producto[]> {
         return this.api.get<Producto[]>(this.path);
+    }
+
+    /** Visor de precios: busca por código de barras o código interno. */
+    visorPrecios(codigo: string): Observable<ProductoVisorPreciosDTO | null> {
+        return this.api.get<ProductoVisorPreciosDTO | null>(`${this.path}/visor-precios`, { codigo: codigo?.trim() || '' });
     }
 
     getById(id: number): Observable<Producto> {
@@ -33,6 +53,7 @@ export class ProductoService {
         return {
             id: p.id,
             codigo: p.codigo?.trim() || null,
+            codigoBarras: p.codigoBarras?.trim() || null,
             nombre: p.nombre?.trim() || null,
             descripcion: p.descripcion?.trim() || null,
             precioVenta: p.precioVenta ?? 0,

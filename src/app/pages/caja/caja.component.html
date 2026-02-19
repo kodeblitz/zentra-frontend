@@ -5,8 +5,8 @@
     <div class="col-12 md:col-6">
         <p-card [header]="cajaAbierta() ? ('Caja ' + (cajaAbierta()?.numero ?? cajaAbierta()?.id)) : 'Sin caja abierta'">
             @if (cajaAbierta()) {
-                <p class="font-bold">Saldo esperado: {{ saldoEsperado() | number:'1.2-2' }}</p>
-                <p class="text-sm text-color-secondary">Apertura: {{ cajaAbierta()?.fechaApertura }}</p>
+                <p class="font-bold">Saldo esperado: {{ saldoEsperado() | number:'1.0-0' }} Gs.</p>
+                <p class="text-sm text-color-secondary">Apertura: {{ cajaAbierta()?.fechaApertura | date:'dd/MM/yyyy HH:mm:ss' }}</p>
                 <div class="flex gap-2 mt-3">
                     <p-button label="Nuevo movimiento" icon="pi pi-plus" (onClick)="openMovimientoDialog()" />
                     <p-button label="Cerrar caja" icon="pi pi-lock" severity="warn" (onClick)="openCerrarDialog()" />
@@ -48,11 +48,11 @@
             <tr>
                 <td>{{ row.numero ?? row.id }}</td>
                 <td>{{ row.id }}</td>
-                <td>{{ row.fechaApertura }}</td>
-                <td>{{ row.fechaCierre || '-' }}</td>
-                <td>{{ row.montoApertura | number:'1.2-2' }}</td>
-                <td>{{ row.montoCierreEsperado != null ? (row.montoCierreEsperado | number:'1.2-2') : '-' }}</td>
-                <td>{{ row.montoCierreReal != null ? (row.montoCierreReal | number:'1.2-2') : '-' }}</td>
+                <td>{{ row.fechaApertura | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td>{{ row.fechaCierre ? (row.fechaCierre | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</td>
+                <td>{{ row.montoApertura | number:'1.0-0' }} Gs.</td>
+                <td>{{ row.montoCierreEsperado != null ? (row.montoCierreEsperado | number:'1.0-0') + ' Gs.' : '-' }}</td>
+                <td>{{ row.montoCierreReal != null ? (row.montoCierreReal | number:'1.0-0') + ' Gs.' : '-' }}</td>
                 <td><p-tag [value]="row.estado" [severity]="row.estado === 'ABIERTA' ? 'success' : 'secondary'" /></td>
                 <td>
                     <p-button icon="pi pi-list" label="Movimientos" [rounded]="true" [outlined]="true" (click)="verMovimientos(row)" />
@@ -193,11 +193,11 @@
         <div class="flex flex-col gap-4">
             <div>
                 <label class="block font-bold mb-2">Tipo</label>
-                <p-select [(ngModel)]="movTipo" [options]="tiposMovimiento" optionLabel="label" optionValue="value" styleClass="w-full" />
+                <p-select [(ngModel)]="movTipo" [options]="tiposMovimiento" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
             </div>
             <div>
                 <label class="block font-bold mb-2">Monto *</label>
-                <p-inputnumber [(ngModel)]="movMonto" mode="decimal" [minFractionDigits]="2" [min]="0.01" styleClass="w-full" />
+                <p-inputnumber [(ngModel)]="movMonto" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0" [min]="1" styleClass="w-full" />
             </div>
             <div>
                 <label class="block font-bold mb-2">Concepto</label>
@@ -232,10 +232,10 @@
             </ng-template>
             <ng-template #body let-m>
                 <tr>
-                    <td>{{ m.fechaHora }}</td>
+                    <td>{{ m.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                     <td><p-tag [value]="m.tipo" [severity]="m.tipo === 'INGRESO' ? 'success' : 'warn'" /></td>
                     <td>{{ m.concepto || '-' }}</td>
-                    <td>{{ m.tipo === 'EGRESO' ? '-' : '' }}{{ m.monto | number:'1.2-2' }}</td>
+                    <td>{{ m.tipo === 'EGRESO' ? '-' : '' }}{{ m.monto | number:'1.0-0' }} Gs.</td>
                 </tr>
             </ng-template>
             <ng-template #emptymessage>

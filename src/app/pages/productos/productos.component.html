@@ -55,7 +55,7 @@
             <td>{{ row.nombre }}</td>
             <td>{{ row.categoria?.nombre || row.categoria?.codigo || '-' }}</td>
             <td><p-tag [value]="getTipoLabel(row)" [severity]="getTipoSeverity(row)" /></td>
-            <td>{{ row.precioVenta | number:'1.2-2' }}</td>
+            <td>{{ row.precioVenta | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="row.activo !== false ? 'Sí' : 'No'" [severity]="row.activo !== false ? 'success' : 'secondary'" /></td>
             <td>
                 <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" [routerLink]="['/pages/productos/editar', row.id]" class="mr-2" />

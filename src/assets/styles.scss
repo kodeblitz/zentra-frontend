@@ -3,3 +3,9 @@
 @use './layout/layout.scss';
 @use 'primeicons/primeicons.css';
 @use './demo/demo.scss';
+
+/* Overlays de Select y AutoComplete dentro de diálogos: por encima del modal y sin recorte */
+.p-select-overlay,
+.p-autocomplete-overlay {
+  z-index: 1200 !important;
+}

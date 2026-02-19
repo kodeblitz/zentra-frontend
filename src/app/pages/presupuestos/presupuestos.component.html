@@ -54,9 +54,9 @@
         <tr>
             <td>{{ row.numero || row.id }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.fechaEmision }}</td>
-            <td>{{ row.fechaValidez || '-' }}</td>
-            <td>{{ row.total | number:'1.2-2' }}</td>
+            <td>{{ row.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>{{ row.fechaValidez ? (row.fechaValidez | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</td>
+            <td>{{ row.total | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="getEstadoLabel(row.estado)" [severity]="getEstadoSeverity(row.estado)" /></td>
             <td>{{ row.pedidoId ? '#' + row.pedidoId : '—' }}</td>
             <td>

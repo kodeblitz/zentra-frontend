@@ -8,6 +8,20 @@
     min-height: 0;
 }
 
+// Títulos del PDV siempre legibles: header con texto blanco; cards con color de texto del tema
+.pdv-header {
+    color: #fff;
+    h1, .text-white { color: #fff !important; }
+}
+:host ::ng-deep .p-card .p-card-header .p-card-title,
+:host ::ng-deep .p-card .p-card-header {
+    color: var(--p-text-color);
+}
+:host-context(.app-dark) ::ng-deep .p-card .p-card-header .p-card-title,
+:host-context(.app-dark) ::ng-deep .p-card .p-card-header {
+    color: rgba(255, 255, 255, 0.87);
+}
+
 // Asegurar que el contenido del card sea flex para scroll y distribución
 :host ::ng-deep .p-card {
     display: flex;

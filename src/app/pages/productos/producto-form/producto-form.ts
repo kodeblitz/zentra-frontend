@@ -14,7 +14,7 @@ import { TableModule } from 'primeng/table';
 import { MessageService } from 'primeng/api';
 import { ProductoService } from '../../service/producto.service';
 import { ProductoComboDetalleService, ProductoComboDetalle } from '../../service/producto-combo-detalle.service';
-import { MaestrosService, Producto, Categoria, UnidadMedida } from '../../service/maestros.service';
+import { MaestrosService, Producto, Categoria, UnidadMedida, MAYORISTA_RANGOS } from '../../service/maestros.service';
 
 @Component({
     selector: 'app-producto-form',
@@ -48,6 +48,9 @@ export class ProductoFormComponent implements OnInit {
     loadingCombo = signal(false);
     isEdit = false;
     id: number | null = null;
+
+    /** Rangos de cantidad para precios mayoristas (desde N u. → precio). Sincronizado con producto.precioMayorista5, etc. */
+    rangosMayorista: { desde: number; precio: number }[] = [];
 
     constructor(
         private route: ActivatedRoute,
@@ -86,6 +89,7 @@ export class ProductoFormComponent implements OnInit {
                                 categoria: p.categoria?.id != null ? this.categorias.find((c) => c.id === p.categoria!.id) ?? p.categoria : undefined,
                                 unidadMedida: p.unidadMedida?.id != null ? this.unidadesMedida.find((u) => u.id === p.unidadMedida!.id) ?? p.unidadMedida : undefined
                             };
+                            this.actualizarRangosMayoristaDesdeProducto();
                             if (this.producto.esCombo && this.producto.id) this.loadComboDetalle();
                         },
                         error: () => {
@@ -103,9 +107,22 @@ export class ProductoFormComponent implements OnInit {
                     if (this.unidadesMedida.length > 0) {
                         this.producto.unidadMedida = this.unidadesMedida[0];
                     }
+                    this.actualizarRangosMayoristaDesdeProducto();
                 }
             }
         });
+    }
+
+    actualizarRangosMayoristaDesdeProducto(): void {
+        this.rangosMayorista = MAYORISTA_RANGOS.map((desde) => ({
+            desde,
+            precio: (this.producto as Record<string, number | undefined>)[`precioMayorista${desde}`] ?? 0
+        }));
+    }
+
+    /** Escribe el precio del rango en el producto al editar en la tabla. */
+    syncRangoPrecio(r: { desde: number; precio: number }): void {
+        (this.producto as Record<string, number>)[`precioMayorista${r.desde}`] = r.precio ?? 0;
     }
 
     /** Productos que se pueden agregar al combo (excluye el combo actual y los ya agregados). */

@@ -46,11 +46,11 @@
                         </div>
                         <div class="col-12 md:col-2">
                             <span class="text-color-secondary block mb-1">Fecha emisión</span>
-                            <span>{{ presupuesto()?.fechaEmision || '-' }}</span>
+                            <span>{{ presupuesto()?.fechaEmision ? (presupuesto()?.fechaEmision | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</span>
                         </div>
                         <div class="col-12 md:col-2">
                             <span class="text-color-secondary block mb-1">Validez hasta</span>
-                            <span>{{ presupuesto()?.fechaValidez || '-' }}</span>
+                            <span>{{ presupuesto()?.fechaValidez ? (presupuesto()?.fechaValidez | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</span>
                         </div>
                         <div class="col-12 md:col-4">
                             <span class="text-color-secondary block mb-1">Tipo pedido</span>
@@ -88,8 +88,8 @@
                             <tr>
                                 <td>{{ getDescripcionLinea(line) }}</td>
                                 <td class="text-right">{{ line.cantidad | number:'1.2-2' }}</td>
-                                <td class="text-right">{{ line.precioUnitario | number:'1.2-2' }}</td>
-                                <td class="text-right">{{ line.totalLinea | number:'1.2-2' }}</td>
+                                <td class="text-right">{{ line.precioUnitario | number:'1.0-0' }} Gs.</td>
+                                <td class="text-right">{{ line.totalLinea | number:'1.0-0' }} Gs.</td>
                             </tr>
                         </ng-template>
                         <ng-template #emptymessage>
@@ -97,7 +97,7 @@
                         </ng-template>
                     </p-table>
                     <div class="flex justify-end gap-2 mt-3 font-bold text-lg">
-                        <span>Total:</span><span>{{ presupuesto()?.total | number:'1.2-2' }}</span>
+                        <span>Total:</span><span>{{ presupuesto()?.total | number:'1.0-0' }} Gs.</span>
                     </div>
                 </div>
             </div>

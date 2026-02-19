@@ -1,14 +1,14 @@
 <p-toast />
 <div class="flex flex-col flex-1 min-h-0 bg-surface-ground">
     <!-- Barra superior: jerarquía clara -->
-    <header class="flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary text-primary-contrast">
-        <h1 class="m-0 text-xl font-semibold">{{ modoOperacion === 'alquiler' ? 'Punto de alquiler' : 'Punto de venta' }}</h1>
+    <header class="pdv-header flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary">
+        <h1 class="m-0 text-xl font-semibold text-white">{{ modoOperacion === 'alquiler' ? 'Punto de alquiler' : 'Punto de venta' }}</h1>
         <div class="flex gap-1 rounded-full bg-white/20 p-1">
-            <button type="button" (click)="setModoOperacion('venta')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'venta'" [class.text-primary]="modoOperacion === 'venta'" [class.text-primary-contrast]="modoOperacion !== 'venta'">Venta</button>
-            <button type="button" (click)="setModoOperacion('alquiler')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'alquiler'" [class.text-primary]="modoOperacion === 'alquiler'" [class.text-primary-contrast]="modoOperacion !== 'alquiler'">Alquiler</button>
+            <button type="button" (click)="setModoOperacion('venta')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'venta'" [class.text-primary]="modoOperacion === 'venta'" [class.text-white]="modoOperacion !== 'venta'">Venta</button>
+            <button type="button" (click)="setModoOperacion('alquiler')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'alquiler'" [class.text-primary]="modoOperacion === 'alquiler'" [class.text-white]="modoOperacion !== 'alquiler'">Alquiler</button>
         </div>
         @if (carrito().length > 0) {
-            <span class="px-3 py-1 text-sm rounded-full bg-white/20">{{ carrito().length }} ítem(s)</span>
+            <span class="px-3 py-1 text-sm rounded-full bg-white/20 text-white">{{ carrito().length }} ítem(s)</span>
         }
     </header>
 
@@ -109,15 +109,15 @@
                                                 <div class="flex items-center gap-2 flex-wrap">
                                                     <span class="text-muted-color shrink-0">Días</span>
                                                     <p-inputnumber [ngModel]="linea.dias ?? 1" [min]="1" [max]="365" [showButtons]="true" (ngModelChange)="cambiarDiasLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-dias-input" />
-                                                    <span class="text-muted-color shrink-0">× {{ linea.precioUnitario | number:'1.2-2' }} /día</span>
+                                                    <span class="text-muted-color shrink-0">× {{ linea.precioUnitario | number:'1.0-0' }} Gs. /día</span>
                                                 </div>
                                                 <div class="flex flex-wrap items-center gap-3 gap-y-2">
-                                                    <span class="text-muted-color shrink-0">Base (monto config. alquiler): <strong class="text-color">{{ getMontoBaseLinea(linea) | number:'1.2-2' }}</strong></span>
+                                                    <span class="text-muted-color shrink-0">Base (monto config. alquiler): <strong class="text-color">{{ getMontoBaseLinea(linea) | number:'1.0-0' }} Gs.</strong></span>
                                                     <label class="flex items-center gap-2 min-w-0 flex-1 text-muted-color" style="min-width: 10rem;">
                                                         <span class="shrink-0">Monto final:</span>
-                                                        <p-inputnumber [(ngModel)]="linea.montoFinal" [min]="0" [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" (ngModelChange)="cambiarMontoFinalLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-monto-final-input" />
+                                                        <p-inputnumber [(ngModel)]="linea.montoFinal" [min]="0" [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" (ngModelChange)="cambiarMontoFinalLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-monto-final-input" />
                                                     </label>
-                                                    <span class="shrink-0 font-bold text-primary">{{ getTotalEfectivoLinea(linea) | number:'1.2-2' }}</span>
+                                                    <span class="shrink-0 font-bold text-primary">{{ getTotalEfectivoLinea(linea) | number:'1.0-0' }} Gs.</span>
                                                     <span class="flex gap-1 shrink-0">
                                                         <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea); $event.stopPropagation()" title="Menos días" />
                                                         <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea); $event.stopPropagation()" title="Más días" />
@@ -126,8 +126,8 @@
                                                 </div>
                                             </div>
                                         } @else {
-                                            <span class="text-muted-color"><span class="font-semibold text-color">{{ linea.cantidad }}</span> × {{ linea.precioUnitario | number:'1.2-2' }}</span>
-                                            <span class="font-bold text-primary">{{ getTotalEfectivoLinea(linea) | number:'1.2-2' }}</span>
+                                            <span class="text-muted-color"><span class="font-semibold text-color">{{ linea.cantidad }}</span> × {{ linea.precioUnitario | number:'1.0-0' }} Gs.</span>
+                                            <span class="font-bold text-primary">{{ getTotalEfectivoLinea(linea) | number:'1.0-0' }} Gs.</span>
                                             <span class="flex gap-1 shrink-0">
                                                 <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea); $event.stopPropagation()" title="Menos" />
                                                 <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea); $event.stopPropagation()" title="Más" />
@@ -142,18 +142,18 @@
                         <div class="flex flex-col gap-2 pt-4 mt-4 border-t border-surface-200">
                             <div class="flex justify-between text-sm text-muted-color">
                                 <span>Subtotal</span>
-                                <span>{{ totalCarrito() | number:'1.2-2' }}</span>
+                                <span>{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
                             </div>
                             <div class="pdv-descuento-general flex flex-wrap items-center gap-3">
                                 <label class="text-sm font-medium text-color shrink-0">Descuento % (general)</label>
                                 <p-inputnumber [(ngModel)]="descuentoPorcentaje" [min]="0" [max]="100" [minFractionDigits]="0" [maxFractionDigits]="1" mode="decimal" [showButtons]="true" styleClass="pdv-descuento-input" />
                                 @if (descuentoPorcentaje > 0) {
-                                    <span class="text-sm text-orange-500 shrink-0">-{{ descuentoTotal() | number:'1.2-2' }}</span>
+                                    <span class="text-sm text-orange-500 shrink-0">-{{ descuentoTotal() | number:'1.0-0' }} Gs.</span>
                                 }
                             </div>
                             <div class="flex justify-between items-center pt-2 border-t border-surface-200 text-base font-bold text-color">
                                 <span>Total</span>
-                                <span class="text-primary">{{ totalConDescuento() | number:'1.2-2' }}</span>
+                                <span class="text-primary">{{ totalConDescuento() | number:'1.0-0' }} Gs.</span>
                             </div>
                         </div>
                     </div>
@@ -203,7 +203,7 @@
                                     <i class="pi pi-box text-2xl text-muted-color"></i>
                                 </div>
                                 <span class="font-medium text-color text-sm line-clamp-2 mb-1">{{ p.nombre }}</span>
-                                <span class="font-bold text-primary">{{ (modoOperacion === 'alquiler' ? (p.precioAlquilerDia ?? 0) : (p.precioVenta ?? 0)) | number:'1.2-2' }}</span>
+                                <span class="font-bold text-primary">{{ (modoOperacion === 'alquiler' ? (p.precioAlquilerDia ?? 0) : (p.precioVenta ?? 0)) | number:'1.0-0' }} Gs.</span>
                                 @if (modoOperacion === 'alquiler') {
                                     <span class="text-xs text-muted-color">/ día</span>
                                 }

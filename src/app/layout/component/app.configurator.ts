@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, effect, inject, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { $t, updatePreset, updateSurfacePalette } from '@primeuix/themes';
@@ -9,6 +9,7 @@ import Nora from '@primeuix/themes/nora';
 import { PrimeNG } from 'primeng/config';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { LayoutService } from '../service/layout.service';
+import { ThemePreferenceService } from '../../core/theme-preference.service';
 
 const presets = {
     Aura,
@@ -102,6 +103,8 @@ export class AppConfigurator {
 
     layoutService: LayoutService = inject(LayoutService);
 
+    themePreference: ThemePreferenceService = inject(ThemePreferenceService);
+
     platformId = inject(PLATFORM_ID);
 
     primeng = inject(PrimeNG);
@@ -115,11 +118,27 @@ export class AppConfigurator {
         { label: 'Overlay', value: 'overlay' }
     ];
 
-    ngOnInit() {
-        if (isPlatformBrowser(this.platformId)) {
-            this.onPresetChange(this.layoutService.layoutConfig().preset);
-        }
+    constructor() {
+        effect(() => {
+            if (!isPlatformBrowser(this.platformId)) return;
+            const config = this.layoutService.layoutConfig();
+            if (!config?.preset) return;
+            this.applyThemeFromConfigOnly(config);
+        });
     }
+
+    /** Aplica el tema en la UI sin actualizar layoutConfig (evita bucle infinito en el effect). */
+    private applyThemeFromConfigOnly(config: { preset?: string; primary?: string; surface?: string | null }): void {
+        const preset = presets[config.preset as KeyOfType<typeof presets>];
+        if (!preset) return;
+        const surfacePalette = this.surfaces.find((s) => s.name === (config.surface ?? null))?.palette;
+        $t().preset(preset).preset(this.getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
+        const primary = this.primaryColors().find((c) => c.name === config.primary);
+        if (primary) this.applyTheme('primary', primary);
+        const surf = this.surfaces.find((s) => s.name === config.surface);
+        if (surf) this.applyTheme('surface', surf);
+    }
+
 
     surfaces: SurfacesType[] = [
         {
@@ -421,8 +440,8 @@ export class AppConfigurator {
             this.layoutService.layoutConfig.update((state) => ({ ...state, surface: color.name }));
         }
         this.applyTheme(type, color);
-
-        event.stopPropagation();
+        this.themePreference.persist();
+        if (event) event.stopPropagation();
     }
 
     applyTheme(type: string, color: any) {
@@ -438,9 +457,11 @@ export class AppConfigurator {
         const preset = presets[event as KeyOfType<typeof presets>];
         const surfacePalette = this.surfaces.find((s) => s.name === this.selectedSurfaceColor())?.palette;
         $t().preset(preset).preset(this.getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
+        this.themePreference.persist();
     }
 
     onMenuModeChange(event: string) {
         this.layoutService.layoutConfig.update((prev) => ({ ...prev, menuMode: event }));
+        this.themePreference.persist();
     }
 }

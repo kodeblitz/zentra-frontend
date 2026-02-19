@@ -32,6 +32,11 @@ export class PagoService {
         return this.api.get<Pago[]>(this.path);
     }
 
+    /** Resumen para dashboard: montos cobrados hoy y en el mes actual. */
+    resumenDashboard(): Observable<{ montosCobradosHoy: number; montosCobradosMes: number }> {
+        return this.api.get<{ montosCobradosHoy: number; montosCobradosMes: number }>(`${this.path}/resumen-dashboard`);
+    }
+
     listPorCliente(clienteId: number): Observable<Pago[]> {
         return this.api.get<Pago[]>(`${this.path}/por-cliente/${clienteId}`);
     }

@@ -20,6 +20,10 @@ export interface Credito {
     moneda?: { id: number };
     montoTotal?: number;
     tasaInteresAnual?: number;
+    /** Tasa de interés moratorio anual (%) tras días de gracia. */
+    tasaMoraAnual?: number;
+    /** Días sin mora después del vencimiento. */
+    diasGracia?: number;
     nroCuotas?: number;
     sistemaAmort?: string;
     fechaInicio?: string;
@@ -56,6 +60,12 @@ export class CreditoService {
         return this.api.get<Credito>(`${this.path}/${id}`);
     }
 
+    /** Montos a pagar por cuota si se paga hoy (o en fecha). Adelantadas: capital + interés proporcional. Clave = cuotaId. */
+    montosPagarHoy(creditoId: number, fecha?: string): Observable<Record<string, number>> {
+        const params = fecha ? { fecha } : {};
+        return this.api.get<Record<string, number>>(`${this.path}/${creditoId}/montos-pagar-hoy`, params as Record<string, string>);
+    }
+
     create(item: Credito): Observable<void> {
         return this.api.post<void>(this.path, item);
     }
@@ -74,5 +84,9 @@ export class CreditoService {
 
     recalcularEstado(id: number): Observable<Credito> {
         return this.api.post<Credito>(`${this.path}/${id}/recalcular-estado`, {});
+    }
+
+    recalcularEstadosCuotas(id: number): Observable<Credito> {
+        return this.api.post<Credito>(`${this.path}/${id}/recalcular-cuotas`, {});
     }
 }

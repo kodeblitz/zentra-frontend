@@ -1,0 +1,95 @@
+<div class="importacion-container">
+    <h2 class="importacion-title">
+        <i class="pi pi-upload"></i>
+        Importación masiva
+    </h2>
+    <p class="importacion-desc text-color-secondary mb-4">
+        Descargue la plantilla CSV, complétela con sus datos y súbala aquí. Así evita errores de formato.
+    </p>
+
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <p-card header="Paso 1: Descargar plantilla">
+                <p class="mb-3">Elija la entidad y descargue la plantilla. Use la primera fila como guía de columnas.</p>
+                <p-select
+                    [(ngModel)]="entidad"
+                    [options]="opcionesEntidad"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Entidad"
+                    styleClass="w-full mb-3"
+                />
+                <p-button
+                    label="Descargar plantilla"
+                    icon="pi pi-download"
+                    [loading]="loadingTemplate()"
+                    (onClick)="descargarPlantilla()"
+                />
+            </p-card>
+        </div>
+        <div class="col-12 md:col-6">
+            <p-card header="Paso 2: Subir CSV">
+                <p class="mb-3">Seleccione el archivo CSV completado y haga clic en Importar.</p>
+                <label class="block text-color-secondary mb-1" for="codigoPrefijo">Prefijo para códigos (opcional)</label>
+                <input
+                    id="codigoPrefijo"
+                    type="text"
+                    pInputText
+                    [(ngModel)]="codigoPrefijo"
+                    placeholder="Ej. CLI, PROD (genera CLI001, CLI002...)"
+                    class="w-full mb-2"
+                    maxlength="20"
+                />
+                <p class="text-sm text-color-secondary mb-2">Si deja el código vacío en el CSV, el backend generará códigos con este prefijo.</p>
+                <p-fileupload
+                    mode="basic"
+                    chooseLabel="Elegir archivo"
+                    [showCancelButton]="false"
+                    [showUploadButton]="false"
+                    accept=".csv,text/csv"
+                    (onSelect)="onFileSelect($event)"
+                />
+                @if (selectedFile) {
+                    <p class="mt-2 text-color-secondary">
+                        <i class="pi pi-file"></i> {{ selectedFile.name }}
+                    </p>
+                    <p-button
+                        label="Importar"
+                        icon="pi pi-upload"
+                        [loading]="loadingImport()"
+                        (onClick)="importar()"
+                        styleClass="mt-2"
+                    />
+                }
+            </p-card>
+        </div>
+    </div>
+
+    @if (result(); as r) {
+        <p-card header="Resultado de la importación" class="mt-4">
+            <p class="mb-2">
+                <strong>Importados:</strong> {{ r.importados }}
+                @if (r.errores.length) {
+                    — <strong>Errores:</strong> {{ r.errores.length }} fila(s)
+                }
+            </p>
+            @if (r.errores.length) {
+                <p-table [value]="r.errores" [tableStyle]="{ 'min-width': '30rem' }">
+                    <ng-template #header>
+                        <tr>
+                            <th>Fila</th>
+                            <th>Mensaje</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>{{ row.fila }}</td>
+                            <td>{{ row.mensaje }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            }
+            <p-button label="Cerrar" severity="secondary" (onClick)="clearResult()" styleClass="mt-3" />
+        </p-card>
+    }
+</div>

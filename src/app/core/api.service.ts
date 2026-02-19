@@ -34,4 +34,8 @@ export class ApiService {
     getBlob(path: string): Observable<Blob> {
         return this.http.get(`${this.base}${path}`, { responseType: 'blob' });
     }
+
+    postFormData<T>(path: string, formData: FormData): Observable<T> {
+        return this.http.post<T>(`${this.base}${path}`, formData);
+    }
 }

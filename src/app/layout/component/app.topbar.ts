@@ -7,6 +7,7 @@ import { MenuModule } from 'primeng/menu';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../core/auth.service';
+import { ThemePreferenceService } from '../../core/theme-preference.service';
 
 @Component({
     selector: 'app-topbar',
@@ -87,10 +88,12 @@ export class AppTopbar {
 
     constructor(
         public layoutService: LayoutService,
-        public authService: AuthService
+        public authService: AuthService,
+        private themePreference: ThemePreferenceService
     ) {}
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+        this.themePreference.persist();
     }
 }

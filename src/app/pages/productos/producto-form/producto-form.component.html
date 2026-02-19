@@ -20,12 +20,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-2 text-color">Código</label>
-                        <input pInputText [(ngModel)]="producto.codigo" class="w-full" placeholder="Ej. PROD-001" />
+                        @if (producto.id) {
+                            <input pInputText [ngModel]="producto.codigo" class="w-full" readonly />
+                        } @else {
+                            <span class="text-color-secondary text-sm">Se asigna automáticamente al guardar (ej. PROD001)</span>
+                        }
                     </div>
                     <div>
                         <label class="block font-semibold mb-2 text-color">Nombre <span class="text-red-500">*</span></label>
                         <input pInputText [(ngModel)]="producto.nombre" class="w-full" placeholder="Nombre del producto, servicio o combo" />
                     </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-2 text-color">Código de barras / QR</label>
+                    <input pInputText [(ngModel)]="producto.codigoBarras" class="w-full" placeholder="EAN-13, código escaneable o valor del QR (único por producto)" />
+                    <small class="block text-color-secondary text-sm mt-1">Usado en el visor de precios al escanear. Si está vacío, se puede buscar por código interno.</small>
                 </div>
                 <div>
                     <label class="block font-semibold mb-2 text-color">Descripción</label>
@@ -69,11 +78,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block font-semibold mb-2 text-color">Precio de venta <span class="text-red-500">*</span></label>
-                    <p-inputnumber [(ngModel)]="producto.precioVenta" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" inputId="precioVenta" />
+                    <p-inputnumber [(ngModel)]="producto.precioVenta" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" styleClass="w-full" inputId="precioVenta" />
                 </div>
                 <div>
                     <label class="block font-semibold mb-2 text-color">Costo</label>
-                    <p-inputnumber [(ngModel)]="producto.costo" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" inputId="costo" />
+                    <p-inputnumber [(ngModel)]="producto.costo" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" styleClass="w-full" inputId="costo" />
                 </div>
                 <div>
                     <label class="block font-semibold mb-2 text-color">IVA %</label>
@@ -82,40 +91,40 @@
             </div>
         </p-card>
 
-        <!-- Precios mayoristas -->
+        <!-- Precios mayoristas / por cantidad -->
         <p-card styleClass="producto-form-card">
             <ng-template #header>
                 <div class="flex align-items-center gap-2">
                     <i class="pi pi-briefcase text-primary"></i>
-                    <span>Precios mayoristas</span>
+                    <span>Precios por cantidad (mayorista)</span>
                 </div>
             </ng-template>
-            <p class="text-color-secondary text-sm m-0 mb-4">Rangos por cantidad (5, 10, 20, 50, 100 u.). Opcional; en presupuestos con lista mayorista se usa según la cantidad.</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
-                <div>
-                    <label class="block font-medium mb-1 text-color text-sm">Desde 5 u.</label>
-                    <p-inputnumber [(ngModel)]="producto.precioMayorista5" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
-                </div>
-                <div>
-                    <label class="block font-medium mb-1 text-color text-sm">Desde 10 u.</label>
-                    <p-inputnumber [(ngModel)]="producto.precioMayorista10" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
-                </div>
-                <div>
-                    <label class="block font-medium mb-1 text-color text-sm">Desde 20 u.</label>
-                    <p-inputnumber [(ngModel)]="producto.precioMayorista20" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
-                </div>
-                <div>
-                    <label class="block font-medium mb-1 text-color text-sm">Desde 50 u.</label>
-                    <p-inputnumber [(ngModel)]="producto.precioMayorista50" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
-                </div>
-                <div>
-                    <label class="block font-medium mb-1 text-color text-sm">Desde 100 u.</label>
-                    <p-inputnumber [(ngModel)]="producto.precioMayorista100" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
-                </div>
+            <p class="text-color-secondary text-sm m-0 mb-4">Definí el precio unitario según la cantidad. En presupuestos con lista mayorista se aplica el rango que corresponda. Opcional.</p>
+
+            <div class="mb-4">
+                <span class="block font-semibold text-color mb-2">Rangos por cantidad</span>
+                <p-table [value]="rangosMayorista" [tableStyle]="{ 'min-width': '20rem' }" styleClass="p-datatable-sm p-datatable-gridlines">
+                    <ng-template #header>
+                        <tr>
+                            <th style="width: 10rem">Desde (unidades)</th>
+                            <th>Precio unitario (Gs.)</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-r>
+                        <tr>
+                            <td class="font-medium">{{ r.desde }} u.</td>
+                            <td>
+                                <p-inputnumber [(ngModel)]="r.precio" (ngModelChange)="syncRangoPrecio(r)" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" styleClass="w-full" [placeholder]="'Opcional'" />
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
             </div>
-            <div class="max-w-xs">
-                <label class="block font-medium mb-1 text-color text-sm">Precio mayorista único (si no usás rangos)</label>
-                <p-inputnumber [(ngModel)]="producto.precioMayorista" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+
+            <div class="surface-100 border-round p-3">
+                <label class="block font-semibold text-color mb-2">O bien: precio mayorista único</label>
+                <p class="text-color-secondary text-sm m-0 mb-2">Si no usás rangos, un solo precio para cualquier cantidad.</p>
+                <p-inputnumber [(ngModel)]="producto.precioMayorista" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" styleClass="w-full max-w-xs" placeholder="Opcional" />
             </div>
         </p-card>
 
@@ -130,7 +139,7 @@
             @if (producto.alquilable) {
                 <div class="max-w-xs">
                     <label class="block font-semibold mb-2 text-color">Precio por día</label>
-                    <p-inputnumber [(ngModel)]="producto.precioAlquilerDia" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="2" [useGrouping]="false" styleClass="w-full" />
+                    <p-inputnumber [(ngModel)]="producto.precioAlquilerDia" mode="decimal" prefix="Gs. " [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" styleClass="w-full" />
                 </div>
             } @else {
                 <p class="text-color-secondary m-0">Marcá <strong>Alquilable</strong> en datos generales para definir el precio por día.</p>

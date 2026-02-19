@@ -60,7 +60,7 @@
                         </ng-template>
                         <ng-template #body let-row>
                             <tr>
-                                <td>{{ row.fechaMovimiento | date:'shortDate' }}</td>
+                                <td>{{ row.fechaMovimiento | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                                 <td>{{ getProductoNombre(row.producto) }}</td>
                                 <td>{{ getDepositoNombre(row.deposito) }}</td>
                                 <td>{{ getTipoNombre(row) }}</td>
@@ -117,7 +117,7 @@
                                 <td>{{ getDepositoNombre(row.deposito) }}</td>
                                 <td>{{ getProductoNombre(row.producto) }}</td>
                                 <td class="font-semibold">{{ row.cantidad | number:'1.2-2' }}</td>
-                                <td>{{ row.actualizadoEn | date:'short' }}</td>
+                                <td>{{ row.actualizadoEn | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                             </tr>
                         </ng-template>
                         <ng-template #emptymessage>

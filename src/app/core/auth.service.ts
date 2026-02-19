@@ -1,8 +1,9 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from './api-config';
+import { FeatureFlagsService } from './feature-flags.service';
 
 const STORAGE_TOKEN = 'zentra_token';
 const STORAGE_USER = 'zentra_user';
@@ -25,6 +26,7 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private readonly base = API_BASE_URL;
+    private featureFlags = inject(FeatureFlagsService);
 
     private token = signal<string | null>(this.getStoredToken());
     private user = signal<UsuarioInfo | null>(this.getStoredUser());
@@ -56,6 +58,7 @@ export class AuthService {
         localStorage.removeItem(STORAGE_USER);
         this.token.set(null);
         this.user.set(null);
+        this.featureFlags.reset();
         this.router.navigate(['/auth/login']);
     }
 

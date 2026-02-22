@@ -54,13 +54,14 @@
         <tr>
             <td>{{ row.numero || row.id }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</td>
-            <td>{{ row.fechaValidez ? (row.fechaValidez | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</td>
+            <td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.fechaValidez ? (row.fechaValidez | date:'dd/MM/yyyy') : '-' }}</td>
             <td>{{ row.total | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="getEstadoLabel(row.estado)" [severity]="getEstadoSeverity(row.estado)" /></td>
             <td>{{ row.pedidoId ? '#' + row.pedidoId : '—' }}</td>
             <td>
                 <p-button icon="pi pi-eye" label="Ver" [rounded]="true" [outlined]="true" (click)="ver(row)" class="mr-2" />
+                <p-button *ngIf="row.estado === 'ENVIADO'" icon="pi pi-whatsapp" label="WhatsApp" [rounded]="true" [outlined]="true" severity="success" (click)="enviarAWhatsApp(row)" [loading]="whatsappLoadingId() === row.id" title="Compartir enlace y código por WhatsApp" class="mr-2" />
                 <p-button *ngIf="row.estado === 'BORRADOR'" icon="pi pi-pencil" label="Editar" [rounded]="true" [outlined]="true" (click)="editar(row)" class="mr-2" />
                 <p-button *ngIf="row.estado === 'BORRADOR'" icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="eliminar(row)" class="mr-2" />
             </td>

@@ -23,6 +23,8 @@ export interface MovimientoStock {
     estado?: EstadoMovimientoRef;
     cantidad?: number;
     fechaMovimiento?: string;
+    /** Timestamp de creación (ISO). Para mostrar hora real en listados. */
+    creadoEn?: string;
     numeroReferencia?: string;
     observacion?: string;
 }

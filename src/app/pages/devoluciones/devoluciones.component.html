@@ -40,7 +40,7 @@
         <tr>
             <td>{{ row.id }}</td>
             <td>Doc #{{ row.documentoVenta?.id }}</td>
-            <td>{{ row.fechaDevolucion | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>{{ row.creadoEn ? (row.creadoEn | date:'dd/MM/yyyy HH:mm:ss') : (row.fechaDevolucion | date:'dd/MM/yyyy') }}</td>
             <td><p-tag [value]="row.estado ?? '-'" [severity]="getEstadoSeverity(row.estado)" /></td>
             <td>
                 <p-button

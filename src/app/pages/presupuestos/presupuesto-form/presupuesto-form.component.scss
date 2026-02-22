@@ -2,3 +2,18 @@
     max-width: 1200px;
     margin: 0 auto;
 }
+
+// Tabs Minorista/Mayorista: texto inactivo siempre legible sobre fondo semitransparente
+header.bg-primary .presupuesto-tabs button {
+    color: rgba(255, 255, 255, 0.95);
+}
+header.bg-primary .presupuesto-tabs button.bg-white {
+    color: var(--p-primary-color);
+}
+
+// Stepper: contenedor principal para que ocupe el espacio disponible
+.presupuesto-stepper {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}

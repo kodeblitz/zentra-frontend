@@ -36,6 +36,7 @@ export class AppMenu {
                     { label: 'Punto de venta (PDV)', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/pages/pdv'], data: { feature: 'pdv' }, visible: isEnabled('pdv') },
                     { label: 'Presupuestos', icon: 'pi pi-fw pi-file', routerLink: ['/pages/presupuestos'], data: { feature: 'presupuestos' }, visible: isEnabled('presupuestos') },
                     { label: 'Pedidos (delivery)', icon: 'pi pi-fw pi-truck', routerLink: ['/pages/pedidos'], data: { feature: 'pedidos' }, visible: isEnabled('pedidos') },
+                    { label: 'Alquileres', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/alquileres'], data: { feature: 'alquileres' }, visible: isEnabled('alquileres') },
                     { label: 'Devoluciones', icon: 'pi pi-fw pi-undo', routerLink: ['/pages/devoluciones'], data: { feature: 'devoluciones' }, visible: isEnabled('devoluciones') },
                     { label: 'Créditos', icon: 'pi pi-fw pi-credit-card', routerLink: ['/pages/creditos'], data: { feature: 'creditos' }, visible: isEnabled('creditos') },
                     { label: 'Pagos / Cobranzas', icon: 'pi pi-fw pi-wallet', routerLink: ['/pages/pagos'], data: { feature: 'pagos' }, visible: isEnabled('pagos') },
@@ -45,7 +46,8 @@ export class AppMenu {
                     { label: 'Visor de precios', icon: 'pi pi-fw pi-qrcode', routerLink: ['/pages/productos/visor-precios'], data: { feature: 'productos' }, visible: isEnabled('productos') },
                     { label: 'Inventario', icon: 'pi pi-fw pi-box', routerLink: ['/pages/inventario'], data: { feature: 'inventario' }, visible: isEnabled('inventario') },
                     { label: 'Paramétricos', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/pages/parametricos'], data: { feature: 'parametricos' }, visible: isEnabled('parametricos') },
-                    { label: 'Importación masiva', icon: 'pi pi-fw pi-upload', routerLink: ['/pages/importacion'], data: { feature: 'parametricos' }, visible: isEnabled('parametricos') }
+                    { label: 'Importación masiva', icon: 'pi pi-fw pi-upload', routerLink: ['/pages/importacion'], data: { feature: 'parametricos' }, visible: isEnabled('parametricos') },
+                    { label: 'Respaldo y restauración', icon: 'pi pi-fw pi-cloud-download', routerLink: ['/pages/backup'] }
                 ].filter((it) => it.visible !== false)
             }
         ];

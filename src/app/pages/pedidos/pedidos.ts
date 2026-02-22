@@ -253,15 +253,25 @@ export class PedidosComponent implements OnInit {
                 producto: l.producto?.id ? { id: l.producto.id } : undefined
             }))
         };
-        const req = this.editing && this.pedido.id ? this.pedidoService.update(payload) : this.pedidoService.create(payload);
-        req.subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: this.editing ? 'Pedido actualizado.' : 'Pedido creado.' });
-                this.hideDialog();
-                this.load();
-            },
-            error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'Error al guardar.' })
-        });
+        if (this.editing && this.pedido.id) {
+            this.pedidoService.update(payload).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Pedido actualizado.' });
+                    this.hideDialog();
+                    this.load();
+                },
+                error: (err: unknown) => this.messageService.add({ severity: 'error', summary: 'Error', detail: (err as { error?: { message?: string } })?.error?.message || 'Error al guardar.' })
+            });
+        } else {
+            this.pedidoService.create(payload).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Pedido creado.' });
+                    this.hideDialog();
+                    this.load();
+                },
+                error: (err: unknown) => this.messageService.add({ severity: 'error', summary: 'Error', detail: (err as { error?: { message?: string } })?.error?.message || 'Error al guardar.' })
+            });
+        }
     }
 
     private accion(nombre: string, row: Pedido, fn: (id: number) => Observable<void>): void {
@@ -308,7 +318,7 @@ export class PedidosComponent implements OnInit {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Factura creada',
-                    detail: doc.numero ? `Factura ${doc.numero} (borrador). Podés emitirla en Documentos de venta.` : 'Factura creada y asociada al pedido.'
+                    detail: doc.numeroCompleto || doc.numero ? `Factura ${doc.numeroCompleto || doc.numero} (borrador). Podés emitirla en Documentos de venta.` : 'Factura creada y asociada al pedido.'
                 });
                 this.load();
             },

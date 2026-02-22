@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
+import { StepperModule } from 'primeng/stepper';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MessageService } from 'primeng/api';
@@ -37,6 +38,7 @@ interface CarritoLinea {
         InputTextModule,
         ToastModule,
         CardModule,
+        StepperModule,
         IconFieldModule,
         InputIconModule
     ],
@@ -66,6 +68,9 @@ export class PresupuestoFormComponent implements OnInit {
     direccionEntrega = '';
     telefonoContacto = '';
     observaciones = '';
+
+    /** Paso actual del stepper: 1 = Cliente y datos, 2 = Productos, 3 = Resumen. */
+    activeStep = 1;
 
     categoriasConProductos = computed(() => {
         const list = this.productos();
@@ -322,5 +327,19 @@ export class PresupuestoFormComponent implements OnInit {
 
     cancelar(): void {
         this.router.navigate(['/pages/presupuestos']);
+    }
+
+    puedeSiguientePaso(): boolean {
+        if (this.activeStep === 1) return !!(this.presupuesto.cliente?.id || this.selectedCliente?.id);
+        if (this.activeStep === 2) return this.carrito().length > 0;
+        return false;
+    }
+
+    siguientePaso(): void {
+        if (this.activeStep < 3 && this.puedeSiguientePaso()) this.activeStep++;
+    }
+
+    pasoAnterior(): void {
+        if (this.activeStep > 1) this.activeStep--;
     }
 }

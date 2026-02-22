@@ -85,6 +85,10 @@ export class DocumentosVentaComponent implements OnInit {
         this.router.navigate(['/pages/documentos-venta/nuevo']);
     }
 
+    ver(row: DocumentoVenta): void {
+        if (row.id) this.router.navigate(['/pages/documentos-venta/ver', row.id]);
+    }
+
     edit(row: DocumentoVenta): void {
         if (row.estado !== 'BORRADOR') {
             this.messageService.add({ severity: 'warn', summary: 'Solo borradores', detail: 'Solo se pueden editar documentos en BORRADOR.' });

@@ -41,10 +41,11 @@
         <tr>
             <td>{{ row.establecimiento }}-{{ row.puntoEmision }}-{{ row.numero }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>{{ row.creadoEn ? (row.creadoEn | date:'dd/MM/yyyy HH:mm:ss') : (row.fechaEmision | date:'dd/MM/yyyy') }}</td>
             <td>{{ row.total | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="row.estado ?? '-'" [severity]="row.estado === 'EMITIDO' ? 'success' : 'secondary'" /></td>
             <td>
+                <p-button icon="pi pi-eye" label="Ver" [rounded]="true" [outlined]="true" (click)="ver(row)" class="mr-2" />
                 <p-button *ngIf="row.estado === 'BORRADOR'" icon="pi pi-send" label="Emitir" [rounded]="true" [outlined]="true" (click)="emitir(row)" class="mr-2" />
                 <p-button *ngIf="row.estado === 'EMITIDO'" icon="pi pi-times" label="Anular" severity="danger" [rounded]="true" [outlined]="true" (click)="anular(row)" class="mr-2" />
                 <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" (click)="edit(row)" class="mr-2" />

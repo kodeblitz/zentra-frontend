@@ -62,13 +62,13 @@
                 <div class="flex-1 min-w-40">
                     <div class="surface-100 border-round p-3 h-full">
                         <span class="block text-color-secondary text-sm font-medium mb-1">Fecha inicio</span>
-                        <span class="font-semibold">{{ credito()?.fechaInicio ? (credito()?.fechaInicio | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</span>
+                        <span class="font-semibold">{{ credito()?.fechaInicio ? (credito()?.fechaInicio | date:'dd/MM/yyyy') : '-' }}</span>
                     </div>
                 </div>
                 <div class="flex-1 min-w-40">
                     <div class="surface-100 border-round p-3 h-full">
                         <span class="block text-color-secondary text-sm font-medium mb-1">Fecha siguiente venc.</span>
-                        <span class="font-semibold">{{ credito()?.fechaPrimerVencimiento ? (credito()?.fechaPrimerVencimiento | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</span>
+                        <span class="font-semibold">{{ credito()?.fechaPrimerVencimiento ? (credito()?.fechaPrimerVencimiento | date:'dd/MM/yyyy') : '-' }}</span>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
                 <ng-template #body let-c>
                     <tr>
                         <td>{{ c.nroCuota }}</td>
-                        <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                        <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
                         <td class="text-right">{{ c.montoCapital | number:'1.2-2' }} Gs.</td>
                         <td class="text-right">{{ c.montoInteres | number:'1.2-2' }} Gs.</td>
                         <td class="text-right font-semibold">{{ c.montoCuota | number:'1.2-2' }} Gs.</td>

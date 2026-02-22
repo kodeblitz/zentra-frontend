@@ -6,6 +6,7 @@ import { ClientesComponent } from './clientes/clientes';
 import { ProspectosComponent } from './prospectos/prospectos';
 import { DocumentosVentaComponent } from './documentos-venta/documentos-venta';
 import { DocumentoVentaFormComponent } from './documentos-venta/documento-venta-form/documento-venta-form';
+import { DocumentoVentaVerComponent } from './documentos-venta/documento-venta-ver/documento-venta-ver';
 import { DevolucionesComponent } from './devoluciones/devoluciones';
 import { CreditosComponent } from './creditos/creditos';
 import { CreditoVerComponent } from './creditos/credito-ver/credito-ver';
@@ -13,6 +14,8 @@ import { CreditoNuevoComponent } from './creditos/credito-nuevo/credito-nuevo';
 import { PagosComponent } from './pagos/pagos';
 import { CarteraComponent } from './cartera/cartera';
 import { PedidosComponent } from './pedidos/pedidos';
+import { AlquileresComponent } from './alquileres/alquileres';
+import { AlquilerVerComponent } from './alquileres/alquiler-ver/alquiler-ver';
 import { PresupuestosComponent } from './presupuestos/presupuestos';
 import { PresupuestoFormComponent } from './presupuestos/presupuesto-form/presupuesto-form';
 import { PresupuestoVerComponent } from './presupuestos/presupuesto-ver/presupuesto-ver';
@@ -20,6 +23,7 @@ import { CajaComponent } from './caja/caja';
 import { PdvComponent } from './pdv/pdv';
 import { ParametricosComponent } from './parametricos/parametricos';
 import { ImportacionComponent } from './importacion/importacion';
+import { BackupComponent } from './backup/backup';
 import { InventarioComponent } from './inventario/inventario';
 import { ProductosComponent } from './productos/productos';
 import { ProductoFormComponent } from './productos/producto-form/producto-form';
@@ -35,6 +39,7 @@ export default [
     { path: 'documentos-venta', component: DocumentosVentaComponent, data: { feature: 'documentos_venta' }, canActivate: [featureGuard] },
     { path: 'documentos-venta/nuevo', component: DocumentoVentaFormComponent, data: { feature: 'documentos_venta' }, canActivate: [featureGuard] },
     { path: 'documentos-venta/editar/:id', component: DocumentoVentaFormComponent, data: { feature: 'documentos_venta' }, canActivate: [featureGuard] },
+    { path: 'documentos-venta/ver/:id', component: DocumentoVentaVerComponent, data: { feature: 'documentos_venta' }, canActivate: [featureGuard] },
     { path: 'devoluciones', component: DevolucionesComponent, data: { feature: 'devoluciones' }, canActivate: [featureGuard] },
     { path: 'creditos', component: CreditosComponent, data: { feature: 'creditos' }, canActivate: [featureGuard] },
     { path: 'creditos/nuevo', component: CreditoNuevoComponent, data: { feature: 'creditos' }, canActivate: [featureGuard] },
@@ -42,6 +47,8 @@ export default [
     { path: 'pagos', component: PagosComponent, data: { feature: 'pagos' }, canActivate: [featureGuard] },
     { path: 'cartera', component: CarteraComponent, data: { feature: 'cartera' }, canActivate: [featureGuard] },
     { path: 'pedidos', component: PedidosComponent, data: { feature: 'pedidos' }, canActivate: [featureGuard] },
+    { path: 'alquileres', component: AlquileresComponent, data: { feature: 'alquileres' }, canActivate: [featureGuard] },
+    { path: 'alquileres/ver/:id', component: AlquilerVerComponent, data: { feature: 'alquileres' }, canActivate: [featureGuard] },
     { path: 'presupuestos', component: PresupuestosComponent, data: { feature: 'presupuestos' }, canActivate: [featureGuard] },
     { path: 'presupuestos/nuevo', component: PresupuestoFormComponent, data: { feature: 'presupuestos' }, canActivate: [featureGuard] },
     { path: 'presupuestos/editar/:id', component: PresupuestoFormComponent, data: { feature: 'presupuestos' }, canActivate: [featureGuard] },
@@ -55,5 +62,6 @@ export default [
     { path: 'productos/visor-precios', component: VisorPreciosComponent, data: { feature: 'productos' }, canActivate: [featureGuard] },
     { path: 'parametricos', component: ParametricosComponent, data: { feature: 'parametricos' }, canActivate: [featureGuard] },
     { path: 'importacion', component: ImportacionComponent, data: { feature: 'parametricos' }, canActivate: [featureGuard] },
+    { path: 'backup', component: BackupComponent },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

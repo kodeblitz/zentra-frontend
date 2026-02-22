@@ -12,9 +12,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { PresupuestoService, Presupuesto } from '../service/presupuesto.service';
+import { PresupuestoService, Presupuesto, EnviarPresupuestoDTO } from '../service/presupuesto.service';
 import { ClienteService } from '../service/cliente.service';
+import { celularParaWhatsApp } from '../../core/telefono.util';
 
 const ESTADOS = [
     { label: 'Borrador', value: 'BORRADOR' },
@@ -53,6 +56,7 @@ export class PresupuestosComponent implements OnInit {
     estadosOpt = ESTADOS;
     filterEstado: string | null = null;
     loading = signal(false);
+    whatsappLoadingId = signal<number | null>(null);
 
     constructor(
         private presupuestoService: PresupuestoService,
@@ -115,6 +119,39 @@ export class PresupuestosComponent implements OnInit {
 
     ver(row: Presupuesto): void {
         if (row.id) this.router.navigate(['/pages/presupuestos/ver', row.id]);
+    }
+
+    enviarAWhatsApp(row: Presupuesto): void {
+        if (!row.id || row.estado !== 'ENVIADO') return;
+        const clienteId = (row.cliente as { id?: number })?.id;
+        this.whatsappLoadingId.set(row.id);
+        const openWa = (dato: EnviarPresupuestoDTO, celular?: string) => {
+            this.whatsappLoadingId.set(null);
+            const link = typeof window !== 'undefined' && window.location?.origin ? window.location.origin + (dato.link || '') : dato.link || '';
+            const codigo = dato.codigoSeguridad ?? '';
+            const mensaje = 'Hola, te comparto el presupuesto para que lo revises.\n\nPodés verlo, aprobarlo o rechazarlo en este enlace:\n' + link + '\n\nCódigo de seguridad para acceder: ' + codigo;
+            const num = celularParaWhatsApp(celular);
+            const url = num ? `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}` : 'https://wa.me/?text=' + encodeURIComponent(mensaje);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        };
+        const onError = (err: { error?: { message?: string } }) => {
+            this.whatsappLoadingId.set(null);
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'No se pudo obtener el enlace.' });
+        };
+        if (clienteId) {
+            forkJoin({
+                cliente: this.clienteService.getById(clienteId).pipe(catchError(() => of(null))),
+                dato: this.presupuestoService.getDatosEnvio(row.id!)
+            }).subscribe({
+                next: ({ cliente, dato }) => openWa(dato, cliente?.celular),
+                error: (err) => onError(err?.error ?? err)
+            });
+        } else {
+            this.presupuestoService.getDatosEnvio(row.id!).subscribe({
+                next: (dato) => openWa(dato),
+                error: (e) => onError(e?.error ?? e)
+            });
+        }
     }
 
     editar(row: Presupuesto): void {

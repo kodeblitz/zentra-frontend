@@ -4,7 +4,6 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
-import { AppFooter } from './app.footer';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../core/auth.service';
 import { FeatureFlagsService } from '../../core/feature-flags.service';
@@ -13,7 +12,7 @@ import { ThemePreferenceService } from '../../core/theme-preference.service';
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter],
+    imports: [CommonModule, AppTopbar, AppSidebar, RouterModule],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
@@ -21,7 +20,6 @@ import { ThemePreferenceService } from '../../core/theme-preference.service';
             <div class="layout-main">
                 <router-outlet></router-outlet>
             </div>
-            <app-footer></app-footer>
         </div>
         <div class="layout-mask animate-fadein"></div>
     </div> `

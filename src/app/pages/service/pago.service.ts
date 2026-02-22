@@ -14,6 +14,8 @@ export interface Pago {
     id?: number;
     cliente?: { id: number };
     fechaPago: string;
+    /** Timestamp de registro (ISO). Se usa para mostrar hora real en listados. */
+    creadoEn?: string;
     moneda?: { id: number };
     montoTotal: number;
     medioPago?: { id: number };

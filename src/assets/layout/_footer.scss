@@ -2,7 +2,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 0 1rem 0;
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
     gap: 0.5rem;
     border-top: 1px solid var(--surface-border);
+    font-size: 0.8125rem;
+    color: var(--text-color-secondary);
+}
+
+/* Footer dentro del sidebar: fijo al pie del menú, sin interferir con el contenido principal */
+.layout-footer-sidebar {
+    margin: 0 -1rem 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--surface-border);
+    background: var(--surface-overlay);
 }

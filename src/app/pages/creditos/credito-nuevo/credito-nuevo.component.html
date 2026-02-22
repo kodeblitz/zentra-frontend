@@ -168,7 +168,7 @@
                         <ng-template #body let-c>
                             <tr>
                                 <td>{{ c.nroCuota }}</td>
-                                <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                                <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
                                 <td class="text-right">{{ c.montoCapital | number:'1.2-2' }} Gs.</td>
                                 <td class="text-right">{{ c.montoInteres | number:'1.2-2' }} Gs.</td>
                                 <td class="text-right font-semibold">{{ c.montoCuota | number:'1.2-2' }} Gs.</td>

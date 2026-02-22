@@ -38,6 +38,7 @@ export class ThemePreferenceService {
         const fromLocal = this.loadFromLocalStorage();
         if (fromLocal) {
             this.layout.layoutConfig.set(fromLocal);
+            this.layout.toggleDarkMode(fromLocal);
             return;
         }
 
@@ -47,11 +48,18 @@ export class ThemePreferenceService {
                     if (dto?.theme) {
                         const config = this.themeToLayoutConfig(dto.theme);
                         this.layout.layoutConfig.set(config);
+                        this.layout.toggleDarkMode(config);
                         this.saveToLocalStorage(config);
+                    } else {
+                        this.layout.toggleDarkMode(this.layout.layoutConfig());
                     }
                 },
-                error: () => {}
+                error: () => {
+                    this.layout.toggleDarkMode(this.layout.layoutConfig());
+                }
             });
+        } else {
+            this.layout.toggleDarkMode(this.layout.layoutConfig());
         }
     }
 

@@ -1,0 +1,168 @@
+<p-toast />
+<div class="documento-venta-ver-page">
+    @if (vistaTicket()) {
+        <!-- Vista ticket: solo barra mínima + ticket compacto para impresión -->
+        <div class="no-print flex gap-2 mb-3">
+            <p-button icon="pi pi-print" label="Imprimir" [rounded]="true" severity="success" (onClick)="imprimir()" />
+            <p-button icon="pi pi-times" label="Cerrar" [rounded]="true" [outlined]="true" (onClick)="cerrarVentana()" />
+        </div>
+    } @else {
+        <div class="no-print flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
+            <div class="flex align-items-center gap-2 flex-wrap">
+                <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" (onClick)="volver()" />
+                <div>
+                    <h2 class="m-0">Documento {{ getNumeroCompleto(documento()) }}</h2>
+                    @if (documento()?.timbrado) {
+                        <p class="text-sm text-muted-color mt-1 mb-0">Timbrado N° {{ documento()?.timbrado?.numeroTimbrado }} · Vigencia {{ documento()?.timbrado?.fechaInicioVigencia | date:'d/M/yyyy' }} – {{ documento()?.timbrado?.fechaFinVigencia | date:'d/M/yyyy' }}</p>
+                    }
+                </div>
+                @if (documento()?.estado) {
+                    <p-tag [value]="documento()?.estado" [severity]="getEstadoSeverity(documento()?.estado)" />
+                }
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                @if (documento()?.estado === 'BORRADOR') {
+                    <p-button icon="pi pi-pencil" label="Editar" [rounded]="true" [outlined]="true" (onClick)="editar()" />
+                }
+            </div>
+        </div>
+    }
+
+    @if (loading()) {
+        <p class="text-color-secondary">Cargando...</p>
+    } @else if (documento()) {
+        @if (vistaTicket()) {
+            <!-- Ticket compacto para comida rápida / supers -->
+            <div class="ticket-compact" id="factura-print">
+                <div class="ticket-header">
+                    <div class="ticket-empresa">{{ empresaNombre(documento()) }}</div>
+                    <div class="ticket-meta">{{ fechaHoraTicket(documento()) }} · N° {{ getNumeroCompleto(documento()) }}</div>
+                </div>
+                <div class="ticket-cliente">
+                    <div class="ticket-cliente-label">Cliente</div>
+                    <div class="ticket-cliente-nombre">{{ clienteNombre() }}</div>
+                    <div class="ticket-cliente-dato">RUC/C.I.: {{ getClienteRuc(documento()) }}</div>
+                </div>
+                <div class="ticket-lineas">
+                    @for (line of documento()?.detalle ?? []; track line.id ?? $index) {
+                        <div class="ticket-linea">
+                            <span class="ticket-desc">{{ getDescripcionLinea(line) }}</span>
+                            <span class="ticket-cant">{{ line.cantidad | number:'1.0-0' }} × {{ line.precioUnitario | number:'1.0-0' }}</span>
+                            <span class="ticket-total">{{ line.totalLinea | number:'1.0-0' }}</span>
+                        </div>
+                    }
+                </div>
+                <div class="ticket-footer">
+                    <div class="ticket-total-label">TOTAL</div>
+                    <div class="ticket-total-monto">{{ documento()?.total | number:'1.0-0' }} Gs.</div>
+                </div>
+            </div>
+        } @else {
+        <div class="doc-venta-ver-actions no-print flex gap-2 mb-3">
+            <p-button icon="pi pi-print" label="Imprimir" [rounded]="true" [outlined]="true" (onClick)="imprimir()" />
+        </div>
+        <div class="factura-papel" id="factura-print">
+            <!-- Cabecera: empresa (izq) + bloque timbrado + RUC/factura/número (der) -->
+            <div class="factura-cabecera">
+                <div class="factura-empresa">
+                    <h1 class="factura-empresa-nombre">{{ empresaNombre(documento()) }}</h1>
+                    <p class="factura-empresa-dir">{{ getEmpresaDireccion(documento()) }}</p>
+                    <p class="factura-empresa-tel">{{ getEmpresaTelefono(documento()) }}</p>
+                </div>
+                <div class="factura-doc-box">
+                    <p class="factura-doc-line">Timbrado N°: {{ documento()?.timbrado?.numeroTimbrado ?? '—' }}</p>
+                    <p class="factura-doc-line">Fecha Inicio Vigencia: {{ documento()?.timbrado?.fechaInicioVigencia ? (documento()?.timbrado?.fechaInicioVigencia | date:'dd/MM/yyyy') : '—' }}</p>
+                    <p class="factura-doc-line">Fecha Fin Vigencia: {{ documento()?.timbrado?.fechaFinVigencia ? (documento()?.timbrado?.fechaFinVigencia | date:'dd/MM/yyyy') : '—' }}</p>
+                    <p class="factura-doc-line">RUC.: {{ empresaRuc(documento()) }}</p>
+                    <p class="factura-tipo-doc">FACTURA</p>
+                    <p class="factura-numero">N°: {{ getNumeroCompleto(documento()) }}</p>
+                </div>
+            </div>
+
+            <!-- Datos cliente: 2 columnas (izq: Fecha, Nombre, RUC, Dirección | der: Condición, Tel., Nota Remisión) -->
+            <div class="factura-datos-cliente">
+                <div class="factura-cliente-col factura-cliente-col-izq">
+                    <div class="factura-cliente-form">
+                        <span class="factura-label">Fecha de Emisión:</span>
+                        <span class="factura-value">{{ fechaEmisionFactura(documento()) }}</span>
+                        <span class="factura-label">Razón Social:</span>
+                        <span class="factura-value">{{ clienteNombre() }}</span>
+                        <span class="factura-label">RUC/C.I.:</span>
+                        <span class="factura-value">{{ getClienteRuc(documento()) }}</span>
+                        <span class="factura-label">Dirección:</span>
+                        <span class="factura-value">{{ getClienteDireccion(documento()) }}</span>
+                    </div>
+                </div>
+                <div class="factura-cliente-col factura-cliente-col-der">
+                    <div class="factura-cliente-form">
+                        <span class="factura-label">Condición de Venta:</span>
+                        <span class="factura-condicion-opciones">
+                            <span class="factura-condicion-opcion">
+                                <span class="factura-checkbox" [class.checked]="condicionVentaLabel(documento()).contado">{{ condicionVentaLabel(documento()).contado ? '✓' : '' }}</span>
+                                Contado
+                            </span>
+                            <span class="factura-condicion-opcion">
+                                <span class="factura-checkbox" [class.checked]="condicionVentaLabel(documento()).credito">{{ condicionVentaLabel(documento()).credito ? '✓' : '' }}</span>
+                                Crédito
+                            </span>
+                        </span>
+                        <span class="factura-label">Tel.:</span>
+                        <span class="factura-value">{{ getClienteTelefono(documento()) }}</span>
+                        <span class="factura-label">Nota de Remisión N°:</span>
+                        <span class="factura-value"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de ítems -->
+            <table class="factura-tabla">
+                <thead>
+                    <tr>
+                        <th class="factura-th factura-th-cant">Cant.</th>
+                        <th class="factura-th factura-th-desc">Descripción</th>
+                        <th class="factura-th factura-th-precio">Precio Unitario</th>
+                        <th class="factura-th factura-th-valor">Valor de Ventas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (line of documento()?.detalle ?? []; track line.id ?? $index) {
+                        <tr>
+                            <td class="factura-td factura-td-cant">{{ line.cantidad | number:'1.2-2' }}</td>
+                            <td class="factura-td factura-td-desc">{{ getDescripcionLinea(line) }}</td>
+                            <td class="factura-td factura-td-precio text-right">{{ line.precioUnitario | number:'1.0-0' }}</td>
+                            <td class="factura-td factura-td-valor text-right">{{ line.totalLinea | number:'1.0-0' }}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Totales: estilo formulario (Sub-totales, Total en letras Gs./US, Liquidación IVA) -->
+            <div class="factura-totales">
+                <p class="factura-subtotales">
+                    <span class="factura-label">Sub-Totales (IVA incl.):</span>
+                    <span class="factura-value">{{ documento()?.total | number:'1.0-0' }}</span>
+                </p>
+                <p class="factura-total-letras">
+                    <span class="factura-label">Total a Pagar (en letras)</span> Gs. ☑ US ☐ {{ totalEnLetras(documento()?.total) }}
+                </p>
+                <p class="factura-liquidacion">
+                    <span class="factura-label">Liquidación del IVA:</span>
+                    <span>(5%) {{ liquidacionIva(documento()).iva5 | number:'1.0-0' }}</span>
+                    <span>(10%) {{ liquidacionIva(documento()).iva10 | number:'1.0-0' }}</span>
+                    <span class="factura-label">Total IVA:</span> <span>{{ documento()?.totalIva | number:'1.0-0' }}</span>
+                </p>
+                <p class="factura-total-final">
+                    <span class="factura-label">TOTAL:</span> {{ documento()?.total | number:'1.0-0' }} Gs.
+                </p>
+            </div>
+
+            <!-- Pie: texto como plantilla oficial -->
+            <div class="factura-pie">
+                <p>- Original: Cliente</p>
+                <p>- Duplicado: Arch. Trib.</p>
+                <p>- Triplicado: Contabilidad (no válido para crédito fiscal)</p>
+            </div>
+        </div>
+        }
+    }
+</div>

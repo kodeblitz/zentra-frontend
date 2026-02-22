@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -29,6 +29,11 @@ const MODULOS_ACCESO_RAPIDO: { label: string; icon: string; routerLink: string[]
     selector: 'app-dashboard',
     standalone: true,
     imports: [CommonModule, RouterModule, CardModule, SkeletonModule],
+    styles: [
+        `.dashboard-pedidos-lista { max-height: 14rem; }`,
+        `.dashboard-card-pedidos .p-card-body { display: flex; flex-direction: column; min-height: 0; }`,
+        `.dashboard-card-pedidos .p-card-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }`
+    ],
     template: `
         <div class="flex flex-col gap-6">
             <header class="flex flex-wrap items-center gap-2">
@@ -83,23 +88,25 @@ const MODULOS_ACCESO_RAPIDO: { label: string; icon: string; routerLink: string[]
                         </div>
                     }
                 </p-card>
-                <p-card header="Últimos pedidos" styleClass="h-full flex flex-col">
+                <p-card header="Últimos pedidos" styleClass="h-full flex flex-col dashboard-card-pedidos">
                     @if (loadingPedidos()) {
                         <p-skeleton width="100%" height="4rem" />
                         <p-skeleton width="100%" height="2rem" class="mt-2" />
                     } @else {
-                        <div class="flex flex-col gap-2 flex-1 min-h-0">
-                            @if (ultimosPedidos().length === 0) {
+                        <div class="flex flex-col flex-1 min-h-0">
+                            @if (ultimosPedidosFiltrados().length === 0) {
                                 <p class="text-muted-color text-sm m-0">No hay pedidos recientes</p>
                             } @else {
-                                @for (p of ultimosPedidos(); track p.id) {
-                                    <a [routerLink]="['/pages/pedidos']" class="flex justify-between items-center py-2 px-2 rounded-border hover:bg-surface-100 no-underline text-color">
-                                        <span class="font-medium truncate">{{ p.numero ?? '#' + p.id }}</span>
-                                        <span class="text-muted-color text-sm shrink-0">{{ p.fechaPedido | date:'shortDate' }}</span>
-                                    </a>
-                                }
+                                <div class="dashboard-pedidos-lista overflow-y-auto flex flex-col gap-1 pr-1">
+                                    @for (p of ultimosPedidosFiltrados(); track p.id) {
+                                        <a [routerLink]="['/pages/pedidos']" class="dashboard-pedido-item flex justify-between items-center py-2.5 px-3 rounded-lg no-underline border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800/80 text-color hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+                                            <span class="font-medium truncate text-color">{{ p.numero ?? ('#' + (p.id ?? '')) }}</span>
+                                            <span class="text-muted-color text-sm shrink-0 ml-2">{{ p.fechaPedido | date:'d/M/yy' }}</span>
+                                        </a>
+                                    }
+                                </div>
                             }
-                            <a [routerLink]="['/pages/pedidos']" class="text-primary text-sm font-medium mt-2">Ver todos los pedidos</a>
+                            <a [routerLink]="['/pages/pedidos']" class="text-primary font-medium text-sm mt-3 inline-flex items-center gap-1 shrink-0">Ver todos los pedidos <i class="pi pi-arrow-right text-xs"></i></a>
                         </div>
                     }
                 </p-card>
@@ -137,6 +144,8 @@ export class Dashboard implements OnInit {
     montosCobradosMes = signal<number>(0);
     carteraTotal = signal<number>(0);
     ultimosPedidos = signal<Pedido[]>([]);
+    /** Solo pedidos con id definido para evitar filas en blanco y track estable */
+    ultimosPedidosFiltrados = computed(() => (this.ultimosPedidos().filter((p) => p != null && p.id != null) as Pedido[]));
     loadingResumen = signal(true);
     loadingPedidos = signal(true);
 

@@ -6,9 +6,13 @@ import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { PresupuestoService, Presupuesto, PresupuestoDetalle } from '../../service/presupuesto.service';
+import { PresupuestoService, Presupuesto, PresupuestoDetalle, EnviarPresupuestoDTO } from '../../service/presupuesto.service';
 import { ClienteService } from '../../service/cliente.service';
+import { celularParaWhatsApp } from '../../../core/telefono.util';
 
 const ESTADOS: { label: string; value: string }[] = [
     { label: 'Borrador', value: 'BORRADOR' },
@@ -28,7 +32,10 @@ const ESTADOS: { label: string; value: string }[] = [
         TagModule,
         TableModule,
         ToastModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        DialogModule,
+        CardModule,
+        InputTextModule
     ],
     templateUrl: './presupuesto-ver.component.html',
     styleUrls: ['./presupuesto-ver.component.scss'],
@@ -37,9 +44,13 @@ const ESTADOS: { label: string; value: string }[] = [
 export class PresupuestoVerComponent implements OnInit {
     presupuesto = signal<Presupuesto | null>(null);
     clienteNombre = signal<string>('');
+    /** Celular del cliente (para WhatsApp). */
+    clienteCelular = signal<string | null>(null);
     loading = signal(true);
     exportandoPdf = signal(false);
     id: number | null = null;
+    /** Tras enviar: enlace y código para mostrar en diálogo. */
+    enviarResultado = signal<EnviarPresupuestoDTO | null>(null);
 
     readonly estadosOpt = ESTADOS;
 
@@ -71,11 +82,18 @@ export class PresupuestoVerComponent implements OnInit {
                 const clienteId = p.cliente?.id;
                 if (clienteId) {
                     this.clienteService.getById(clienteId).subscribe({
-                        next: (c) => this.clienteNombre.set(c.razonSocial ?? ''),
-                        error: () => this.clienteNombre.set(String(clienteId))
+                        next: (c) => {
+                            this.clienteNombre.set(c.razonSocial ?? '');
+                            this.clienteCelular.set(c.celular ?? null);
+                        },
+                        error: () => {
+                            this.clienteNombre.set(String(clienteId));
+                            this.clienteCelular.set(null);
+                        }
                     });
                 } else {
                     this.clienteNombre.set('-');
+                    this.clienteCelular.set(null);
                 }
                 this.loading.set(false);
             },
@@ -132,18 +150,70 @@ export class PresupuestoVerComponent implements OnInit {
     enviar(): void {
         if (!this.id) return;
         this.confirmationService.confirm({
-            message: '¿Enviar este presupuesto al cliente? (cambiará a estado Enviado).',
+            message: '¿Enviar este presupuesto al cliente? Se generará un enlace y un código de seguridad para que el cliente pueda consultar y aprobar o rechazar.',
             header: 'Enviar presupuesto',
             icon: 'pi pi-send',
             accept: () => {
                 this.presupuestoService.enviar(this.id!).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'Enviado', detail: 'Presupuesto marcado como enviado.' });
+                    next: (res) => {
                         this.load();
+                        const fullLink = typeof window !== 'undefined' && window.location?.origin
+                            ? window.location.origin + (res.link || '')
+                            : res.link || '';
+                        this.enviarResultado.set({ link: fullLink, codigoSeguridad: res.codigoSeguridad ?? '' });
+                        this.messageService.add({ severity: 'success', summary: 'Enviado', detail: 'Compartí el enlace y el código con el cliente.' });
                     },
                     error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo enviar.' })
                 });
             }
+        });
+    }
+
+    get linkEnviado(): string {
+        return this.enviarResultado()?.link ?? '';
+    }
+
+    get codigoEnviado(): string {
+        return this.enviarResultado()?.codigoSeguridad ?? '';
+    }
+
+    copiarEnlace(): void {
+        const link = this.linkEnviado;
+        if (!link) return;
+        navigator.clipboard.writeText(link).then(
+            () => this.messageService.add({ severity: 'success', summary: 'Copiado', detail: 'Enlace copiado al portapapeles.' }),
+            () => this.messageService.add({ severity: 'warn', summary: 'Copiar', detail: 'No se pudo copiar; copiá el enlace manualmente.' })
+        );
+    }
+
+    cerrarDialogoEnlace(): void {
+        this.enviarResultado.set(null);
+    }
+
+    /** Abre WhatsApp con el enlace y código ya mostrados en el diálogo (tras Enviar). */
+    enviarAWhatsApp(): void {
+        const link = this.linkEnviado;
+        const codigo = this.codigoEnviado;
+        if (!link || !codigo) return;
+        const mensaje = 'Hola, te comparto el presupuesto para que lo revises.\n\nPodés verlo, aprobarlo o rechazarlo en este enlace:\n' + link + '\n\nCódigo de seguridad para acceder: ' + codigo;
+        const num = celularParaWhatsApp(this.clienteCelular());
+        const url = num ? `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}` : 'https://wa.me/?text=' + encodeURIComponent(mensaje);
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    /** Abre WhatsApp con enlace y código (desde vista ver, presupuesto ya enviado). */
+    enviarAWhatsAppDesdeVer(): void {
+        if (!this.id) return;
+        this.presupuestoService.getDatosEnvio(this.id).subscribe({
+            next: (dato: EnviarPresupuestoDTO) => {
+                const link = typeof window !== 'undefined' && window.location?.origin ? window.location.origin + (dato.link || '') : dato.link || '';
+                const codigo = dato.codigoSeguridad ?? '';
+                const mensaje = 'Hola, te comparto el presupuesto para que lo revises.\n\nPodés verlo, aprobarlo o rechazarlo en este enlace:\n' + link + '\n\nCódigo de seguridad para acceder: ' + codigo;
+                const num = celularParaWhatsApp(this.clienteCelular());
+                const url = num ? `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}` : 'https://wa.me/?text=' + encodeURIComponent(mensaje);
+                window.open(url, '_blank', 'noopener,noreferrer');
+            },
+            error: (err: { error?: { message?: string } }) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'No se pudo obtener el enlace.' })
         });
     }
 

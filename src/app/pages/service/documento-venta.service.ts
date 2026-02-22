@@ -16,24 +16,57 @@ export interface DocumentoVentaDetalle {
     totalLinea?: number;
 }
 
+/** Timbrado (facturación física Paraguay) con vigencia. */
+export interface TimbradoRef {
+    id?: number;
+    numeroTimbrado?: string;
+    fechaInicioVigencia?: string;
+    fechaFinVigencia?: string;
+    activo?: boolean;
+}
+
+/** Empresa (datos para cabecera de factura). */
+export interface EmpresaRef {
+    id?: number;
+    razonSocial?: string;
+    nombreFantasia?: string;
+    ruc?: string;
+    dv?: string;
+    direccion?: string;
+    telefono?: string;
+    correo?: string;
+}
+
+/** Cliente (datos para factura). */
+export interface ClienteRef {
+    id?: number;
+    razonSocial?: string;
+    ruc?: string;
+    direccion?: string;
+    telefono?: string;
+}
+
 export interface DocumentoVenta {
     id?: number;
-    empresa?: { id: number };
-    cliente?: { id: number };
-    tipoDocumento?: { id: number };
+    empresa?: EmpresaRef | { id: number };
+    cliente?: ClienteRef | { id: number };
+    tipoDocumento?: { id: number; nombre?: string; codigoSet?: string };
     establecimiento?: string;
     puntoEmision?: string;
     numero?: string;
+    timbrado?: TimbradoRef;
     fechaEmision?: string;
     fechaVencimiento?: string;
-    moneda?: { id: number };
+    moneda?: { id: number; codigo?: string };
     subtotal?: number;
     descuentoTotal?: number;
     totalIva?: number;
     total?: number;
     estado?: string;
-    condicionPago?: { id: number };
+    condicionPago?: { id: number; nombre?: string; codigo?: string };
     observaciones?: string;
+    /** Fecha y hora de creación (ISO-8601). Se usa para mostrar hh:mm:ss en listados. */
+    creadoEn?: string;
     detalle?: DocumentoVentaDetalle[];
 }
 
@@ -69,6 +102,23 @@ export class DocumentoVentaService {
 
     delete(id: number): Observable<boolean> {
         return this.api.delete(`${this.path}/${id}`);
+    }
+
+    /** Crea una factura desde el PDV (venta in situ) sin crear pedido. Devuelve id, numero y estado. */
+    facturaInSitu(request: {
+        clienteId: number;
+        observaciones?: string;
+        detalle: Array<{
+            productoId: number;
+            descripcion?: string;
+            cantidad: number;
+            precioUnitario: number;
+            descuento?: number;
+            descuentoMonto?: number;
+            totalLinea?: number;
+        }>;
+    }): Observable<{ id: number; numero?: string; numeroCompleto?: string; estado?: string }> {
+        return this.api.post<{ id: number; numero?: string; numeroCompleto?: string; estado?: string }>(`${this.path}/factura-in-situ`, request);
     }
 
     emitir(id: number): Observable<void> {

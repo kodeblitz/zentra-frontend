@@ -13,6 +13,8 @@ export interface DevolucionVenta {
     id?: number;
     documentoVenta?: { id: number };
     fechaDevolucion?: string;
+    /** Timestamp de creación (ISO). Para mostrar hora real en listados. */
+    creadoEn?: string;
     estado?: string;
     documentoVentaNc?: { id: number };
     documentoVentaCambio?: { id: number };

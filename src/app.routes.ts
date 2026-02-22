@@ -21,6 +21,7 @@ export const appRoutes: Routes = [
     },
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
+    { path: 'p/:token', loadComponent: () => import('./app/pages/presupuestos/presupuesto-publico/presupuesto-publico').then((m) => m.PresupuestoPublicoComponent) },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
     { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
     { path: '**', redirectTo: '/notfound' }

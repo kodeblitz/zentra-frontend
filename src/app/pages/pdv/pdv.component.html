@@ -1,86 +1,33 @@
 <p-toast />
 <div class="flex flex-col flex-1 min-h-0 bg-surface-ground">
-    <!-- Barra superior: jerarquía clara -->
+    <!-- Barra superior: título, modo y stepper -->
     <header class="pdv-header flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary">
-        <h1 class="m-0 text-xl font-semibold text-white">{{ modoOperacion === 'alquiler' ? 'Punto de alquiler' : 'Punto de venta' }}</h1>
-        <div class="flex gap-1 rounded-full bg-white/20 p-1">
-            <button type="button" (click)="setModoOperacion('venta')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'venta'" [class.text-primary]="modoOperacion === 'venta'" [class.text-white]="modoOperacion !== 'venta'">Venta</button>
-            <button type="button" (click)="setModoOperacion('alquiler')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'alquiler'" [class.text-primary]="modoOperacion === 'alquiler'" [class.text-white]="modoOperacion !== 'alquiler'">Alquiler</button>
+        <h1 class="m-0 text-xl font-semibold text-white">{{ modoOperacion === 'ticket' ? 'Ticket rápido' : (modoOperacion === 'alquiler' ? 'Punto de alquiler' : 'Punto de venta') }}</h1>
+        <div class="flex gap-1 rounded-full bg-white/20 p-1 pdv-tabs">
+            <button type="button" (click)="setModoOperacion('venta')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'venta'" [class.text-primary]="modoOperacion === 'venta'">Venta</button>
+            <button type="button" (click)="setModoOperacion('ticket')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'ticket'" [class.text-primary]="modoOperacion === 'ticket'" title="Cobro rápido con Consumidor Final (comida rápida / supers)">Ticket</button>
+            <button type="button" (click)="setModoOperacion('alquiler')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'alquiler'" [class.text-primary]="modoOperacion === 'alquiler'">Alquiler</button>
         </div>
+        @if (modoOperacion !== 'ticket') {
+            <!-- Stepper: primero productos, luego cliente -->
+            <nav class="flex items-center gap-2 text-sm font-medium" aria-label="Pasos">
+                <span class="rounded-full px-3 py-1 transition-colors" [ngClass]="pasoActual === 1 ? 'bg-white text-primary' : 'bg-white/20 text-white'">1. Productos</span>
+                <i class="pi pi-chevron-right text-white/70 text-xs"></i>
+                <span class="rounded-full px-3 py-1 transition-colors" [ngClass]="pasoActual === 2 ? 'bg-white text-primary' : 'bg-white/20 text-white'">2. Cliente</span>
+            </nav>
+        } @else {
+            <span class="rounded-full px-3 py-1 text-sm bg-white/20 text-white">Productos → Cobrar</span>
+        }
         @if (carrito().length > 0) {
             <span class="px-3 py-1 text-sm rounded-full bg-white/20 text-white">{{ carrito().length }} ítem(s)</span>
         }
     </header>
 
-    <!-- 3 columnas: responsive (1 col móvil, 2 cols tablet, 3 cols desktop) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 min-h-0 px-1">
-        <!-- Columna 1: Cliente, tipo pedido, delivery, observaciones, crear pedido -->
-        <p-card [header]="modoOperacion === 'alquiler' ? 'Datos del alquiler' : 'Datos del pedido'" styleClass="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden h-full" class="order-1">
-                <div class="flex flex-col gap-4">
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Cliente</label>
-                        <div class="flex gap-2 items-center">
-                            <p-autocomplete
-                                [(ngModel)]="selectedCliente"
-                                [suggestions]="clientesSugeridos"
-                                (completeMethod)="buscarClientes($event)"
-                                optionLabel="razonSocial"
-                                placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
-                                styleClass="flex-1 w-full"
-                                [dropdown]="false"
-                                [showClear]="true"
-                                [minLength]="2"
-                            />
-                            <p-button icon="pi pi-user-plus" [rounded]="true" severity="secondary" title="Nuevo cliente" (onClick)="abrirNuevoCliente()" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Tipo de pedido</label>
-                        <div class="flex gap-2">
-                            <p-button
-                                label="Delivery"
-                                icon="pi pi-truck"
-                                [outlined]="tipoPedido !== 'DELIVERY'"
-                                [severity]="tipoPedido === 'DELIVERY' ? 'primary' : 'secondary'"
-                                (onClick)="tipoPedido = 'DELIVERY'"
-                                styleClass="flex-1 min-h-[44px]"
-                            />
-                            <p-button
-                                label="Retiro"
-                                icon="pi pi-store"
-                                [outlined]="tipoPedido !== 'RETIRO'"
-                                [severity]="tipoPedido === 'RETIRO' ? 'primary' : 'secondary'"
-                                (onClick)="tipoPedido = 'RETIRO'"
-                                styleClass="flex-1 min-h-[44px]"
-                            />
-                        </div>
-                    </div>
-                    @if (tipoPedido === 'DELIVERY') {
-                        <div class="flex flex-col gap-2">
-                            <label class="font-semibold text-color">Dirección de entrega</label>
-                            <input pInputText [(ngModel)]="direccionEntrega" class="w-full" placeholder="Dirección" />
-                            <label class="font-semibold text-color mt-2">Teléfono</label>
-                            <input pInputText [(ngModel)]="telefonoContacto" class="w-full" placeholder="Teléfono de contacto" />
-                        </div>
-                    }
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Observaciones</label>
-                        <input pInputText [(ngModel)]="observaciones" class="w-full" placeholder="Opcional" />
-                    </div>
-                    <p-button
-                        [label]="modoOperacion === 'alquiler' ? 'Crear alquiler' : 'Crear pedido'"
-                        icon="pi pi-check"
-                        iconPos="right"
-                        [disabled]="carrito().length === 0 || !clienteId"
-                        [pTooltip]="modoOperacion === 'alquiler' ? 'Próximamente: se implementará en el backend' : ''"
-                        (onClick)="crearPedido()"
-                        styleClass="w-full mt-auto min-h-[48px] text-lg font-semibold"
-                    />
-                </div>
-        </p-card>
-
-        <!-- Columna 2: Pedido actual (productos, cantidades, descuentos) -->
-        <p-card [header]="modoOperacion === 'alquiler' ? 'Alquiler actual' : 'Pedido actual'" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full" class="order-2">
+    <!-- Paso 1: Productos y montos (catálogo + carrito); Paso 2: Cliente y confirmar -->
+    @if (pasoActual === 1) {
+        <div class="pdv-paso1-grid grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 px-1">
+            <!-- Carrito + botón Continuar -->
+            <p-card [header]="modoOperacion === 'ticket' ? 'Ticket' : (modoOperacion === 'alquiler' ? 'Alquiler actual' : 'Pedido actual')" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full">
                 @if (carrito().length === 0) {
                     <div class="flex flex-col flex-1 items-center justify-center gap-3 py-8 text-muted-color">
                         <i class="pi pi-shopping-cart text-5xl opacity-50"></i>
@@ -88,41 +35,52 @@
                         <span class="text-sm">Agregá productos desde el catálogo</span>
                     </div>
                 } @else {
-                    <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
-                        <!-- Líneas: primero nombre del producto, debajo los detalles -->
-                        <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col gap-3 py-2 max-h-[22rem]">
+                    <div class="pdv-carrito-contenido flex flex-col flex-1 min-h-0 overflow-hidden">
+                        <!-- Líneas: zona con scroll para que el botón quede siempre visible -->
+                        <div class="pdv-carrito-lista flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col gap-3 py-2">
                             @for (linea of carrito(); track linea.producto.id) {
                                 <div
-                                    class="rounded-border bg-surface-100 p-3 cursor-pointer transition-shadow hover:bg-surface-200"
+                                    class="pdv-line-item rounded-border bg-surface-100 p-3 cursor-pointer transition-shadow hover:bg-surface-200"
                                     [class.ring-2]="lineaSeleccionada === linea"
                                     [class.ring-primary]="lineaSeleccionada === linea"
                                     (click)="seleccionarLinea(linea)"
                                 >
-                                    <!-- 1) Nombre del producto (prioridad, visible completo) -->
-                                    <div class="font-medium text-color text-sm mb-2 break-words line-clamp-2" [title]="linea.producto.nombre">
-                                        {{ linea.producto.nombre }}
+                                    <!-- 1) Nombre del producto e indicador de descuento (identificación para reportes) -->
+                                    <div class="font-medium text-color text-sm mb-2 break-words line-clamp-2 flex flex-wrap items-center gap-2" [title]="linea.producto.nombre">
+                                        <span>{{ linea.producto.nombre }}</span>
+                                        @if (modoOperacion === 'venta' && lineaTieneDescuento(linea)) {
+                                            <span class="pdv-badge-descuento inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/40 shrink-0" title="Línea con descuento aplicado (afecta reportes por producto)">
+                                                <i class="pi pi-tag text-[10px]"></i>
+                                                Con descuento {{ getDescuentoLineaLabel(linea) }}
+                                            </span>
+                                        }
                                     </div>
                                     <!-- 2) Detalles: cant/días, p.unit, total, acciones -->
                                     <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
                                         @if (modoOperacion === 'alquiler') {
                                             <div class="pdv-linea-alquiler flex flex-col gap-2 w-full min-w-0">
                                                 <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-muted-color shrink-0">Cant.</span>
+                                                    <span class="font-semibold text-color shrink-0">{{ linea.cantidad }}</span>
+                                                    <span class="flex gap-1 shrink-0">
+                                                        <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea); $event.stopPropagation()" title="Menos unidades" />
+                                                        <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea); $event.stopPropagation()" title="Más unidades" />
+                                                    </span>
                                                     <span class="text-muted-color shrink-0">Días</span>
                                                     <p-inputnumber [ngModel]="linea.dias ?? 1" [min]="1" [max]="365" [showButtons]="true" (ngModelChange)="cambiarDiasLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-dias-input" />
                                                     <span class="text-muted-color shrink-0">× {{ linea.precioUnitario | number:'1.0-0' }} Gs. /día</span>
                                                 </div>
                                                 <div class="flex flex-wrap items-center gap-3 gap-y-2">
                                                     <span class="text-muted-color shrink-0">Base (monto config. alquiler): <strong class="text-color">{{ getMontoBaseLinea(linea) | number:'1.0-0' }} Gs.</strong></span>
-                                                    <label class="flex items-center gap-2 min-w-0 flex-1 text-muted-color" style="min-width: 10rem;">
+                                                    <label class="flex items-center gap-2 min-w-0 text-muted-color pdv-monto-final-wrap">
                                                         <span class="shrink-0">Monto final:</span>
-                                                        <p-inputnumber [(ngModel)]="linea.montoFinal" [min]="0" [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" (ngModelChange)="cambiarMontoFinalLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-monto-final-input" />
+                                                        <span class="flex items-center gap-1 min-w-0">
+                                                            <p-inputnumber [(ngModel)]="linea.montoFinal" [min]="0" [minFractionDigits]="0" [maxFractionDigits]="0" [useGrouping]="true" (ngModelChange)="cambiarMontoFinalLinea(linea, $event)" (click)="$event.stopPropagation()" styleClass="pdv-monto-final-input" />
+                                                            <span class="shrink-0 text-color font-medium">Gs.</span>
+                                                        </span>
                                                     </label>
                                                     <span class="shrink-0 font-bold text-primary">{{ getTotalEfectivoLinea(linea) | number:'1.0-0' }} Gs.</span>
-                                                    <span class="flex gap-1 shrink-0">
-                                                        <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea); $event.stopPropagation()" title="Menos días" />
-                                                        <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea); $event.stopPropagation()" title="Más días" />
-                                                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" (click)="quitarDelCarrito(linea); $event.stopPropagation()" title="Quitar" />
-                                                    </span>
+                                                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" (click)="quitarDelCarrito(linea); $event.stopPropagation()" title="Quitar" />
                                                 </div>
                                             </div>
                                         } @else {
@@ -135,33 +93,130 @@
                                             </span>
                                         }
                                     </div>
+                                    @if (modoOperacion === 'venta' && lineaSeleccionada === linea) {
+                                        <div class="pdv-line-item-promo mt-3 pt-3 border-t border-surface-200 text-sm">
+                                            <button type="button" (click)="togglePromoLinea(linea); $event.stopPropagation()" class="flex items-center gap-1 text-primary font-medium hover:underline p-0 border-none bg-transparent cursor-pointer mb-3">
+                                                <i class="pi" [ngClass]="linea.promoHabilitada ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+                                                <span>Promo en esta línea</span>
+                                                @if (linea.promoHabilitada && ((linea.descuentoPct ?? 0) > 0 || (linea.descuentoMonto ?? 0) > 0)) {
+                                                    <span class="text-muted-color text-xs">(activa)</span>
+                                                }
+                                            </button>
+                                            @if (linea.promoHabilitada) {
+                                                <div class="flex flex-wrap items-center gap-4">
+                                                    <label class="pdv-promo-field flex flex-col gap-1 shrink-0">
+                                                        <span class="text-muted-color text-xs font-medium">Descuento %</span>
+                                                        <p-inputnumber
+                                                            [(ngModel)]="linea.descuentoPct"
+                                                            [min]="0"
+                                                            [max]="100"
+                                                            [minFractionDigits]="0"
+                                                            [maxFractionDigits]="1"
+                                                            placeholder="0"
+                                                            (ngModelChange)="aplicarDescuentoLinea(linea, $event, null)"
+                                                            (click)="$event.stopPropagation()"
+                                                            styleClass="pdv-promo-pct"
+                                                            inputId="promo-pct-{{ linea.producto.id }}"
+                                                        />
+                                                    </label>
+                                                    <label class="pdv-promo-field flex flex-col gap-1 shrink-0">
+                                                        <span class="text-muted-color text-xs font-medium">Descuento (Gs.)</span>
+                                                        <p-inputnumber
+                                                            [(ngModel)]="linea.descuentoMonto"
+                                                            [min]="0"
+                                                            [minFractionDigits]="0"
+                                                            [maxFractionDigits]="0"
+                                                            [useGrouping]="true"
+                                                            placeholder="0"
+                                                            (ngModelChange)="aplicarDescuentoLinea(linea, null, $event)"
+                                                            (click)="$event.stopPropagation()"
+                                                            styleClass="pdv-promo-monto"
+                                                            inputId="promo-monto-{{ linea.producto.id }}"
+                                                        />
+                                                    </label>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
-                        <!-- Resumen -->
-                        <div class="flex flex-col gap-2 pt-4 mt-4 border-t border-surface-200">
+                        @if (modoOperacion === 'ticket') {
+                            <div class="pt-3 mt-2 border-t border-surface-200 shrink-0">
+                                <label class="block font-medium mb-2 text-color text-sm">Cliente (opcional)</label>
+                                <p-autocomplete
+                                    [(ngModel)]="selectedCliente"
+                                    [suggestions]="clientesSugeridos"
+                                    (completeMethod)="buscarClientes($event)"
+                                    optionLabel="razonSocial"
+                                    placeholder="Consumidor Final por defecto; buscá si quiere factura a su nombre"
+                                    styleClass="w-full"
+                                    [dropdown]="false"
+                                    [showClear]="true"
+                                    [minLength]="2"
+                                />
+                                <small class="text-muted-color text-xs block mt-1">Dejá vacío para Consumidor Final.</small>
+                            </div>
+                        }
+                        <!-- Resumen y botón: siempre visibles al pie del card -->
+                        <div class="pdv-pedido-resumen flex flex-col gap-2 pt-4 mt-4 border-t border-surface-200 shrink-0">
                             <div class="flex justify-between text-sm text-muted-color">
                                 <span>Subtotal</span>
                                 <span>{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
                             </div>
-                            <div class="pdv-descuento-general flex flex-wrap items-center gap-3">
-                                <label class="text-sm font-medium text-color shrink-0">Descuento % (general)</label>
-                                <p-inputnumber [(ngModel)]="descuentoPorcentaje" [min]="0" [max]="100" [minFractionDigits]="0" [maxFractionDigits]="1" mode="decimal" [showButtons]="true" styleClass="pdv-descuento-input" />
-                                @if (descuentoPorcentaje > 0) {
-                                    <span class="text-sm text-orange-500 shrink-0">-{{ descuentoTotal() | number:'1.0-0' }} Gs.</span>
+                            <div class="pdv-descuento-general flex flex-col gap-2">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-sm font-medium text-color shrink-0">Descuento % (general)</label>
+                                    <p-inputnumber
+                                        [ngModel]="descuentoPorcentaje()"
+                                        (ngModelChange)="actualizarDescuentoGeneral($event)"
+                                        [min]="0"
+                                        [max]="100"
+                                        [minFractionDigits]="0"
+                                        [maxFractionDigits]="1"
+                                        mode="decimal"
+                                        [showButtons]="true"
+                                        styleClass="pdv-descuento-input"
+                                        inputId="pdv-descuento-general-pct"
+                                    />
+                                </div>
+                                @if (descuentoPorcentaje() > 0) {
+                                    <div class="flex justify-between text-sm text-orange-600">
+                                        <span>Monto descontado ({{ descuentoPorcentaje() }}%)</span>
+                                        <span>-{{ descuentoTotal() | number:'1.0-0' }} Gs.</span>
+                                    </div>
                                 }
                             </div>
                             <div class="flex justify-between items-center pt-2 border-t border-surface-200 text-base font-bold text-color">
                                 <span>Total</span>
                                 <span class="text-primary">{{ totalConDescuento() | number:'1.0-0' }} Gs.</span>
                             </div>
+                            @if (modoOperacion === 'ticket') {
+                                <p-button
+                                    label="Cobrar"
+                                    icon="pi pi-check"
+                                    iconPos="right"
+                                    [disabled]="crearPedidoDisabled()"
+                                    [pTooltip]="getTooltipCrearPedido()"
+                                    (onClick)="crearPedido()"
+                                    styleClass="w-full mt-4 min-h-[52px] text-lg font-bold bg-green-600 hover:bg-green-700"
+                                />
+                            } @else {
+                                <p-button
+                                    label="Continuar con datos del cliente"
+                                    icon="pi pi-arrow-right"
+                                    iconPos="right"
+                                    (onClick)="irAPasoCliente()"
+                                    styleClass="w-full mt-4 min-h-[48px] text-base font-semibold"
+                                />
+                            }
                         </div>
                     </div>
                 }
-        </p-card>
+            </p-card>
 
-        <!-- Columna 3: Catálogo (ancho completo en tablet) -->
-        <p-card header="Productos" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full md:col-span-2 xl:col-span-1" class="order-3">
+            <!-- Catálogo de productos -->
+            <p-card header="Productos" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full">
                 <div class="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
                     <p-iconfield iconPosition="left" styleClass="w-full">
                         <p-inputicon styleClass="pi pi-search" />
@@ -197,9 +252,12 @@
                             <button
                                 type="button"
                                 (click)="onProductoClick(p)"
-                                class="flex flex-col items-center justify-start p-4 min-h-[140px] rounded-border border border-surface-200 bg-surface-50 text-center transition-all hover:border-primary hover:bg-primary-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                class="flex flex-col items-center justify-start p-4 min-h-[140px] rounded-border border-2 bg-surface-50 dark:bg-surface-800 text-center transition-all hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                [ngClass]="getClaseStockProducto(p)"
+                                [pTooltip]="getTooltipStockProducto(p)"
+                                tooltipPosition="top"
                             >
-                                <div class="w-16 h-16 rounded-border bg-surface-200 flex items-center justify-center mb-2">
+                                <div class="w-16 h-16 rounded-border bg-surface-200 dark:bg-surface-700 flex items-center justify-center mb-2">
                                     <i class="pi pi-box text-2xl text-muted-color"></i>
                                 </div>
                                 <span class="font-medium text-color text-sm line-clamp-2 mb-1">{{ p.nombre }}</span>
@@ -214,8 +272,207 @@
                         <p class="py-8 text-center text-muted-color">No hay productos o no coinciden con la búsqueda.</p>
                     }
                 </div>
-        </p-card>
-    </div>
+            </p-card>
+        </div>
+    } @else {
+        <!-- Paso 2: Cliente y confirmar pedido/alquiler -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 px-1">
+            <p-card [header]="modoOperacion === 'alquiler' ? 'Datos del alquiler' : 'Datos del pedido'" styleClass="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden h-full">
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Cliente <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2 items-center">
+                            <p-autocomplete
+                                [(ngModel)]="selectedCliente"
+                                [suggestions]="clientesSugeridos"
+                                (completeMethod)="buscarClientes($event)"
+                                optionLabel="razonSocial"
+                                placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
+                                styleClass="flex-1 w-full"
+                                [dropdown]="false"
+                                [showClear]="true"
+                                [minLength]="2"
+                            />
+                            <p-button icon="pi pi-user-plus" [rounded]="true" severity="secondary" title="Nuevo cliente" (onClick)="abrirNuevoCliente()" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Tipo de pedido</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <p-button
+                                label="In situ"
+                                icon="pi pi-bolt"
+                                [outlined]="tipoPedido !== 'IN_SITU'"
+                                [severity]="tipoPedido === 'IN_SITU' ? 'primary' : 'secondary'"
+                                (onClick)="tipoPedido = 'IN_SITU'; facturarAhora = true"
+                                styleClass="min-h-[44px]"
+                                pTooltip="Venta y facturación en el momento; no requiere dirección"
+                            />
+                            <p-button
+                                label="Delivery"
+                                icon="pi pi-truck"
+                                [outlined]="tipoPedido !== 'DELIVERY'"
+                                [severity]="tipoPedido === 'DELIVERY' ? 'primary' : 'secondary'"
+                                (onClick)="tipoPedido = 'DELIVERY'"
+                                styleClass="min-h-[44px]"
+                            />
+                            <p-button
+                                label="Retiro"
+                                icon="pi pi-store"
+                                [outlined]="tipoPedido !== 'RETIRO'"
+                                [severity]="tipoPedido === 'RETIRO' ? 'primary' : 'secondary'"
+                                (onClick)="tipoPedido = 'RETIRO'"
+                                styleClass="min-h-[44px]"
+                            />
+                        </div>
+                    </div>
+                    @if (tipoPedido === 'DELIVERY') {
+                        <div class="flex flex-col gap-2">
+                            <label class="font-semibold text-color">Dirección de entrega</label>
+                            <input pInputText [(ngModel)]="direccionEntrega" class="w-full" placeholder="Dirección" />
+                            <label class="font-semibold text-color mt-2">Teléfono</label>
+                            <input pInputText [(ngModel)]="telefonoContacto" class="w-full" placeholder="Teléfono de contacto" />
+                        </div>
+                    }
+                    @if (modoOperacion === 'alquiler') {
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-semibold mb-2 text-color">Fecha inicio <span class="text-red-500">*</span></label>
+                                <input type="date" pInputText [(ngModel)]="fechaInicioAlquiler" class="w-full" />
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-2 text-color">Fecha fin prevista <span class="text-red-500">*</span></label>
+                                <input type="date" pInputText [(ngModel)]="fechaFinAlquiler" class="w-full" />
+                            </div>
+                        </div>
+                    }
+                    <div>
+                        <label class="block font-semibold mb-2 text-color">Observaciones</label>
+                        <input pInputText [(ngModel)]="observaciones" class="w-full" placeholder="Opcional" />
+                    </div>
+                    @if (modoOperacion === 'venta') {
+                        <div>
+                            <label class="block font-semibold mb-2 text-color">Forma de pago</label>
+                            <div class="flex gap-2 flex-wrap">
+                                <p-button
+                                    label="Efectivo"
+                                    icon="pi pi-money-bill"
+                                    [outlined]="formaPago !== 'EFECTIVO'"
+                                    [severity]="formaPago === 'EFECTIVO' ? 'primary' : 'secondary'"
+                                    (onClick)="formaPago = 'EFECTIVO'; referenciaVoucher = ''"
+                                    styleClass="min-h-[44px]"
+                                />
+                                <p-button
+                                    label="Transferencia"
+                                    icon="pi pi-wallet"
+                                    [outlined]="formaPago !== 'TRANSFERENCIA'"
+                                    [severity]="formaPago === 'TRANSFERENCIA' ? 'primary' : 'secondary'"
+                                    (onClick)="formaPago = 'TRANSFERENCIA'; referenciaVoucher = ''"
+                                    styleClass="min-h-[44px]"
+                                />
+                                <p-button
+                                    label="QR (TD 0 TC)"
+                                    icon="pi pi-qrcode"
+                                    [outlined]="formaPago !== 'QR'"
+                                    [severity]="formaPago === 'QR' ? 'primary' : 'secondary'"
+                                    (onClick)="formaPago = 'QR'"
+                                    styleClass="min-h-[44px]"
+                                />
+                            </div>
+                            @if (formaPago === 'QR') {
+                                <div class="mt-3">
+                                    <label class="block font-semibold mb-1 text-color">Nº referencia voucher (procesadora) <span class="text-red-500">*</span></label>
+                                    <input
+                                        pInputText
+                                        [(ngModel)]="referenciaVoucher"
+                                        class="w-full"
+                                        placeholder="Ej. número del comprobante de la procesadora"
+                                        maxlength="100"
+                                    />
+                                    <small class="text-muted-color block mt-1">Se usará en caja para validar el pago.</small>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </p-card>
+            <p-card header="Resumen y confirmar" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full">
+                <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <ul class="list-none p-0 m-0 flex flex-col gap-2 overflow-y-auto max-h-[16rem]">
+                        @for (linea of carrito(); track linea.producto.id) {
+                            <li class="flex justify-between items-start gap-3 py-2 border-b border-surface-200 text-sm">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-color font-medium block">{{ linea.producto.nombre }}</span>
+                                    <span class="text-muted-color text-xs block mt-0.5">
+                                        @if (modoOperacion === 'alquiler') {
+                                            {{ linea.cantidad }} un. × {{ linea.dias ?? 1 }} día(s) × {{ linea.precioUnitario | number:'1.0-0' }} Gs./día
+                                        } @else {
+                                            {{ linea.cantidad }} × {{ linea.precioUnitario | number:'1.0-0' }} Gs.
+                                        }
+                                        @if (lineaTieneDescuento(linea)) {
+                                            <span class="text-orange-600"> · {{ getDescuentoLineaLabel(linea) }}</span>
+                                        }
+                                    </span>
+                                </div>
+                                <span class="font-semibold text-primary shrink-0">{{ getTotalEfectivoLinea(linea) | number:'1.0-0' }} Gs.</span>
+                            </li>
+                        }
+                    </ul>
+                    <div class="flex flex-col gap-2 pt-4 mt-4 border-t border-surface-200">
+                        <div class="flex justify-between text-sm text-muted-color">
+                            <span>Subtotal</span>
+                            <span>{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
+                        </div>
+                        @if (modoOperacion === 'venta' && totalDescuentoEnLineas() > 0) {
+                            <div class="flex justify-between text-sm text-orange-600">
+                                <span>Descuento en líneas</span>
+                                <span>-{{ totalDescuentoEnLineas() | number:'1.0-0' }} Gs.</span>
+                            </div>
+                        }
+                        @if (modoOperacion === 'alquiler' && totalDescuentoEnLineas() > 0) {
+                            <div class="flex justify-between text-sm text-orange-600">
+                                <span>Descuento (monto final &lt; base)</span>
+                                <span>-{{ totalDescuentoEnLineas() | number:'1.0-0' }} Gs.</span>
+                            </div>
+                        }
+                        @if (descuentoPorcentaje() > 0) {
+                            <div class="flex justify-between text-sm text-orange-600">
+                                <span>Descuento general ({{ descuentoPorcentaje() }}%)</span>
+                                <span>-{{ descuentoTotal() | number:'1.0-0' }} Gs.</span>
+                            </div>
+                        }
+                        <div class="flex justify-between items-center pt-2 text-base font-bold text-color">
+                            <span>Total</span>
+                            <span class="text-primary">{{ totalConDescuento() | number:'1.0-0' }} Gs.</span>
+                        </div>
+                    </div>
+                    <p-button
+                        label="Volver a editar ítems"
+                        icon="pi pi-arrow-left"
+                        [outlined]="true"
+                        severity="secondary"
+                        (onClick)="volverAPasoProductos()"
+                        styleClass="w-full mt-3"
+                    />
+                    @if (modoOperacion === 'venta') {
+                        <div class="flex items-center gap-2 mt-2">
+                            <p-checkbox [(ngModel)]="facturarAhora" [binary]="true" inputId="pdv-facturar-ahora" />
+                            <label for="pdv-facturar-ahora" class="text-sm text-color cursor-pointer">Facturar y entregar factura en el momento</label>
+                        </div>
+                    }
+                    <p-button
+                        [label]="modoOperacion === 'alquiler' ? 'Crear alquiler' : (tipoPedido === 'IN_SITU' && facturarAhora ? 'Emitir factura' : 'Crear pedido')"
+                        icon="pi pi-check"
+                        iconPos="right"
+                        [disabled]="crearPedidoDisabled()"
+                        [pTooltip]="getTooltipCrearPedido()"
+                        (onClick)="crearPedido()"
+                        styleClass="w-full mt-2 min-h-[48px] text-lg font-semibold"
+                    />
+                </div>
+            </p-card>
+        </div>
+    }
 </div>
 
 <!-- Diálogo nuevo cliente -->

@@ -1,146 +1,225 @@
 <p-toast />
 <div class="flex flex-col flex-1 min-h-0 bg-surface-ground">
     <header class="flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary text-primary-contrast">
-        <button type="button" (click)="cancelar()" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+        <button type="button" (click)="cancelar()" class="p-2 rounded-full hover:bg-white/20 transition-colors" title="Volver">
             <i class="pi pi-arrow-left"></i>
         </button>
         <h1 class="m-0 text-xl font-semibold">{{ isEdit ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</h1>
-        <div class="flex gap-1 rounded-full bg-white/20 p-1">
-            <button type="button" (click)="listaPrecios = 'minorista'" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="listaPrecios === 'minorista'" [class.text-primary]="listaPrecios === 'minorista'" [class.text-primary-contrast]="listaPrecios !== 'minorista'">Minorista</button>
-            <button type="button" (click)="listaPrecios = 'mayorista'" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="listaPrecios === 'mayorista'" [class.text-primary]="listaPrecios === 'mayorista'" [class.text-primary-contrast]="listaPrecios !== 'mayorista'">Mayorista</button>
+        <div class="flex gap-1 rounded-full bg-white/20 p-1 presupuesto-tabs">
+            <button type="button" (click)="listaPrecios = 'minorista'" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="listaPrecios === 'minorista'" [class.text-primary]="listaPrecios === 'minorista'">Minorista</button>
+            <button type="button" (click)="listaPrecios = 'mayorista'" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="listaPrecios === 'mayorista'" [class.text-primary]="listaPrecios === 'mayorista'">Mayorista</button>
         </div>
         @if (carrito().length > 0) {
             <span class="px-3 py-1 text-sm rounded-full bg-white/20">{{ carrito().length }} ítem(s)</span>
         }
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 flex-1 min-h-0 px-1">
-        <!-- Columna 1: Datos del presupuesto -->
-        <p-card header="Datos del presupuesto" styleClass="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden h-full" class="order-1">
-            <div class="flex flex-col gap-4">
-                <div>
-                    <label class="block font-semibold mb-2 text-color">Cliente *</label>
-                    <p-autocomplete
-                        [(ngModel)]="selectedCliente"
-                        [suggestions]="clientesSugeridos"
-                        (completeMethod)="buscarClientes($event)"
-                        (onSelect)="onClienteSelect()"
-                        (onClear)="presupuesto.cliente = undefined"
-                        optionLabel="razonSocial"
-                        placeholder="Buscar por nombre, código o RUC"
-                        styleClass="w-full"
-                        [dropdown]="false"
-                        [showClear]="true"
-                        [minLength]="2"
-                    />
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Número</label>
-                        <input pInputText [(ngModel)]="presupuesto.numero" class="w-full" placeholder="Auto" />
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Fecha emisión</label>
-                        <input pInputText type="date" [(ngModel)]="fechaEmision" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Validez hasta</label>
-                        <input pInputText type="date" [(ngModel)]="fechaValidez" class="w-full" placeholder="Opcional" />
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-2 text-color">Moneda</label>
-                        <p-select [(ngModel)]="presupuesto.moneda" [options]="monedas" optionLabel="codigo" placeholder="Opcional" styleClass="w-full"
-                            (onChange)="presupuesto.moneda = $event.value ? { id: $event.value.id } : undefined" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold mb-2 text-color">Tipo de pedido (al convertir)</label>
-                    <div class="flex gap-2">
-                        <p-button label="Delivery" icon="pi pi-truck" [outlined]="tipoPedido !== 'DELIVERY'" [severity]="tipoPedido === 'DELIVERY' ? 'primary' : 'secondary'" (onClick)="tipoPedido = 'DELIVERY'" styleClass="flex-1 min-h-[44px]" />
-                        <p-button label="Retiro" icon="pi pi-store" [outlined]="tipoPedido !== 'RETIRO'" [severity]="tipoPedido === 'RETIRO' ? 'primary' : 'secondary'" (onClick)="tipoPedido = 'RETIRO'" styleClass="flex-1 min-h-[44px]" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold mb-2 text-color">Dirección de entrega</label>
-                    <input pInputText [(ngModel)]="direccionEntrega" class="w-full" placeholder="Para cuando se convierta en pedido" />
-                </div>
-                <div>
-                    <label class="block font-semibold mb-2 text-color">Teléfono</label>
-                    <input pInputText [(ngModel)]="telefonoContacto" class="w-full" />
-                </div>
-                <div>
-                    <label class="block font-semibold mb-2 text-color">Observaciones</label>
-                    <input pInputText [(ngModel)]="observaciones" class="w-full" placeholder="Opcional" />
-                </div>
-                <div class="flex gap-2 mt-auto pt-4">
-                    <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="cancelar()" [loading]="saving()" styleClass="flex-1" />
-                    <p-button label="Guardar" icon="pi pi-check" (onClick)="guardar()" [loading]="saving()" styleClass="flex-1" [disabled]="carrito().length === 0 || !selectedCliente?.id" />
-                </div>
-            </div>
-        </p-card>
-
-        <!-- Columna 2: Presupuesto actual (carrito) -->
-        <p-card header="Presupuesto actual" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full" class="order-2">
-            @if (carrito().length === 0) {
-                <div class="flex flex-col flex-1 items-center justify-center gap-3 py-8 text-muted-color">
-                    <i class="pi pi-shopping-cart text-5xl opacity-50"></i>
-                    <p class="m-0 font-medium text-color">Este presupuesto está vacío</p>
-                    <span class="text-sm">Agregá productos desde el catálogo (lista {{ listaPrecios }})</span>
-                </div>
-            } @else {
-                <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col gap-3 py-2 max-h-[22rem]">
-                        @for (linea of carrito(); track linea.producto.id) {
-                            <div class="rounded-border bg-surface-100 p-3 transition-shadow hover:bg-surface-200">
-                                <div class="font-medium text-color text-sm mb-2 break-words line-clamp-2">{{ linea.producto.nombre }}</div>
-                                <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-                                    <span class="text-muted-color"><span class="font-semibold text-color">{{ linea.cantidad }}</span> × {{ linea.precioUnitario | number:'1.0-0' }} Gs.</span>
-                                    <span class="font-bold text-primary">{{ linea.totalLinea | number:'1.0-0' }} Gs.</span>
-                                    <span class="flex gap-1 shrink-0">
-                                        <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea)" />
-                                        <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea)" />
-                                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" (click)="quitarDelCarrito(linea)" title="Quitar" />
-                                    </span>
+    <p-stepper [(value)]="activeStep" [linear]="true" class="presupuesto-stepper flex-1 min-h-0 flex flex-col">
+        <p-step-list>
+            <p-step [value]="1">Cliente y datos</p-step>
+            <p-step [value]="2">Productos</p-step>
+            <p-step [value]="3">Resumen</p-step>
+        </p-step-list>
+        <p-step-panels class="flex-1 min-h-0 flex flex-col">
+            <!-- Paso 1: Cliente y datos del presupuesto -->
+            <p-step-panel [value]="1">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-4">
+                        <p-card header="Datos del presupuesto" styleClass="flex flex-col gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Cliente <span class="text-red-500">*</span></label>
+                                    <p-autocomplete
+                                        [(ngModel)]="selectedCliente"
+                                        [suggestions]="clientesSugeridos"
+                                        (completeMethod)="buscarClientes($event)"
+                                        (onSelect)="onClienteSelect()"
+                                        (onClear)="presupuesto.cliente = undefined"
+                                        optionLabel="razonSocial"
+                                        placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
+                                        styleClass="w-full"
+                                        [dropdown]="false"
+                                        [showClear]="true"
+                                        [minLength]="2"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Número</label>
+                                    <input pInputText [(ngModel)]="presupuesto.numero" class="w-full" placeholder="Auto" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Fecha emisión</label>
+                                    <input pInputText type="date" [(ngModel)]="fechaEmision" class="w-full" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Validez hasta</label>
+                                    <input pInputText type="date" [(ngModel)]="fechaValidez" class="w-full" placeholder="Opcional" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Moneda</label>
+                                    <p-select [(ngModel)]="presupuesto.moneda" [options]="monedas" optionLabel="codigo" placeholder="Opcional" styleClass="w-full"
+                                        (onChange)="presupuesto.moneda = $event.value ? { id: $event.value.id } : undefined" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Tipo de pedido (al convertir)</label>
+                                    <div class="flex gap-2">
+                                        <p-button label="Delivery" icon="pi pi-truck" [outlined]="tipoPedido !== 'DELIVERY'" [severity]="tipoPedido === 'DELIVERY' ? 'primary' : 'secondary'" (onClick)="tipoPedido = 'DELIVERY'" styleClass="flex-1 min-h-[44px]" />
+                                        <p-button label="Retiro" icon="pi pi-store" [outlined]="tipoPedido !== 'RETIRO'" [severity]="tipoPedido === 'RETIRO' ? 'primary' : 'secondary'" (onClick)="tipoPedido = 'RETIRO'" styleClass="flex-1 min-h-[44px]" />
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Dirección de entrega</label>
+                                    <input pInputText [(ngModel)]="direccionEntrega" class="w-full" placeholder="Para cuando se convierta en pedido" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Teléfono</label>
+                                    <input pInputText [(ngModel)]="telefonoContacto" class="w-full" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Observaciones</label>
+                                    <input pInputText [(ngModel)]="observaciones" class="w-full" placeholder="Opcional" />
                                 </div>
                             </div>
-                        }
+                        </p-card>
+                        <div class="flex justify-end gap-2">
+                            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="cancelar()" />
+                            <p-button label="Siguiente: Productos" icon="pi pi-arrow-right" iconPos="right" (onClick)="activateCallback(2)" [disabled]="!puedeSiguientePaso()" />
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center pt-4 mt-4 border-t border-surface-200 text-base font-bold text-color">
-                        <span>Total</span>
-                        <span class="text-primary">{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
-                    </div>
-                </div>
-            }
-        </p-card>
+                </ng-template>
+            </p-step-panel>
 
-        <!-- Columna 3: Catálogo de productos -->
-        <p-card header="Productos" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full md:col-span-2 xl:col-span-1" class="order-3">
-            <div class="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
-                <p-iconfield iconPosition="left" styleClass="w-full">
-                    <p-inputicon styleClass="pi pi-search" />
-                    <input pInputText type="search" [ngModel]="filtroProducto()" (ngModelChange)="filtroProducto.set($event)" placeholder="Buscar productos..." class="w-full" />
-                </p-iconfield>
-                <div class="flex flex-wrap gap-2">
-                    <p-button label="Todos" [outlined]="categoriaIdSeleccionada() !== null" [severity]="categoriaIdSeleccionada() === null ? 'primary' : 'secondary'" size="small" (onClick)="categoriaIdSeleccionada.set(null)" />
-                    @for (cat of categoriasConProductos(); track cat.id) {
-                        <p-button [label]="cat.nombre ?? cat.codigo ?? ''" [outlined]="categoriaIdSeleccionada() !== cat.id" [severity]="categoriaIdSeleccionada() === cat.id ? 'primary' : 'secondary'" size="small" (onClick)="categoriaIdSeleccionada.set(cat.id)" />
-                    }
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-3 gap-3 flex-1 min-h-0 overflow-y-auto content-start">
-                    @for (p of productosVisibles(); track p.id) {
-                        <button type="button" (click)="onProductoClick(p)" class="flex flex-col items-center justify-start p-4 min-h-[120px] rounded-border border border-surface-200 bg-surface-50 text-center transition-all hover:border-primary hover:bg-primary-50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                            <div class="w-12 h-12 rounded-border bg-surface-200 flex items-center justify-center mb-2">
-                                <i class="pi pi-box text-xl text-muted-color"></i>
+            <!-- Paso 2: Catálogo + carrito -->
+            <p-step-panel [value]="2">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+                        <!-- Carrito -->
+                        <p-card header="Presupuesto actual" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full">
+                            @if (carrito().length === 0) {
+                                <div class="flex flex-col flex-1 items-center justify-center gap-3 py-8 text-muted-color">
+                                    <i class="pi pi-shopping-cart text-5xl opacity-50"></i>
+                                    <p class="m-0 font-medium text-color">Este presupuesto está vacío</p>
+                                    <span class="text-sm">Agregá productos desde el catálogo (lista {{ listaPrecios }})</span>
+                                </div>
+                            } @else {
+                                <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                                    <div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col gap-3 py-2 max-h-[22rem]">
+                                        @for (linea of carrito(); track linea.producto.id) {
+                                            <div class="rounded-border bg-surface-100 dark:bg-surface-800 p-3 transition-shadow hover:bg-surface-200 dark:hover:bg-surface-700">
+                                                <div class="font-medium text-color text-sm mb-2 break-words line-clamp-2">{{ linea.producto.nombre }}</div>
+                                                <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                                                    <span class="text-muted-color"><span class="font-semibold text-color">{{ linea.cantidad }}</span> × {{ linea.precioUnitario | number:'1.0-0' }} Gs.</span>
+                                                    <span class="font-bold text-primary">{{ linea.totalLinea | number:'1.0-0' }} Gs.</span>
+                                                    <span class="flex gap-1 shrink-0">
+                                                        <p-button icon="pi pi-minus" [rounded]="true" [text]="true" size="small" (click)="restarCantidad(linea)" />
+                                                        <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (click)="agregarCantidad(linea)" />
+                                                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" (click)="quitarDelCarrito(linea)" title="Quitar" />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex justify-between items-center pt-4 mt-4 border-t border-surface-200 dark:border-surface-600 text-base font-bold text-color">
+                                        <span>Total</span>
+                                        <span class="text-primary">{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
+                                    </div>
+                                </div>
+                            }
+                        </p-card>
+                        <!-- Catálogo -->
+                        <p-card header="Productos" styleClass="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden h-full">
+                            <div class="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
+                                <p-iconfield iconPosition="left" styleClass="w-full">
+                                    <p-inputicon styleClass="pi pi-search" />
+                                    <input pInputText type="search" [ngModel]="filtroProducto()" (ngModelChange)="filtroProducto.set($event)" placeholder="Buscar productos..." class="w-full" />
+                                </p-iconfield>
+                                <div class="flex flex-wrap gap-2">
+                                    <p-button label="Todos" [outlined]="categoriaIdSeleccionada() !== null" [severity]="categoriaIdSeleccionada() === null ? 'primary' : 'secondary'" size="small" (onClick)="categoriaIdSeleccionada.set(null)" />
+                                    @for (cat of categoriasConProductos(); track cat.id) {
+                                        <p-button [label]="cat.nombre ?? cat.codigo ?? ''" [outlined]="categoriaIdSeleccionada() !== cat.id" [severity]="categoriaIdSeleccionada() === cat.id ? 'primary' : 'secondary'" size="small" (onClick)="categoriaIdSeleccionada.set(cat.id)" />
+                                    }
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 flex-1 min-h-0 overflow-y-auto content-start">
+                                    @for (p of productosVisibles(); track p.id) {
+                                        <button type="button" (click)="onProductoClick(p)" class="flex flex-col items-center justify-start p-4 min-h-[120px] rounded-border border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 text-center transition-all hover:border-primary hover:bg-primary-50 dark:hover:bg-surface-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            <div class="w-12 h-12 rounded-border bg-surface-200 dark:bg-surface-700 flex items-center justify-center mb-2">
+                                                <i class="pi pi-box text-xl text-muted-color"></i>
+                                            </div>
+                                            <span class="font-medium text-color text-sm line-clamp-2 mb-1">{{ p.nombre }}</span>
+                                            <span class="font-bold text-primary">{{ precioParaLista(p) | number:'1.0-0' }} Gs.</span>
+                                        </button>
+                                    }
+                                </div>
+                                @if (productosVisibles().length === 0) {
+                                    <p class="py-8 text-center text-muted-color">No hay productos o no coinciden con la búsqueda.</p>
+                                }
                             </div>
-                            <span class="font-medium text-color text-sm line-clamp-2 mb-1">{{ p.nombre }}</span>
-                            <span class="font-bold text-primary">{{ precioParaLista(p) | number:'1.0-0' }} Gs.</span>
-                        </button>
-                    }
-                </div>
-                @if (productosVisibles().length === 0) {
-                    <p class="py-8 text-center text-muted-color">No hay productos o no coinciden con la búsqueda.</p>
-                }
-            </div>
-        </p-card>
-    </div>
+                        </p-card>
+                    </div>
+                    <div class="flex justify-between gap-2 mt-4">
+                        <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary" (onClick)="activateCallback(1)" />
+                        <p-button label="Siguiente: Resumen" icon="pi pi-arrow-right" iconPos="right" (onClick)="activateCallback(3)" [disabled]="!puedeSiguientePaso()" />
+                    </div>
+                </ng-template>
+            </p-step-panel>
+
+            <!-- Paso 3: Resumen y guardar -->
+            <p-step-panel [value]="3">
+                <ng-template #content let-activateCallback="activateCallback">
+                    <div class="flex flex-col gap-4">
+                        <p-card header="Resumen del presupuesto" styleClass="flex flex-col gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-color">
+                                <div>
+                                    <span class="text-muted-color block text-sm font-medium">Cliente</span>
+                                    <span class="font-semibold">{{ selectedCliente?.razonSocial ?? presupuesto.cliente?.id ?? '—' }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-muted-color block text-sm font-medium">Emisión / Validez</span>
+                                    <span>{{ fechaEmision | date:'d/M/yyyy' }} — {{ fechaValidez | date:'d/M/yyyy' }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-muted-color block text-sm font-medium">Tipo de pedido</span>
+                                    <span>{{ tipoPedido === 'DELIVERY' ? 'Delivery' : 'Retiro' }}</span>
+                                </div>
+                                @if (direccionEntrega) {
+                                    <div class="md:col-span-2">
+                                        <span class="text-muted-color block text-sm font-medium">Dirección</span>
+                                        <span>{{ direccionEntrega }}</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="border-t border-surface-200 dark:border-surface-600 pt-4">
+                                <span class="text-muted-color block text-sm font-medium mb-2">Detalle ({{ carrito().length }} ítem(s))</span>
+                                <ul class="list-none p-0 m-0 flex flex-col gap-2 max-h-48 overflow-y-auto">
+                                    @for (linea of carrito(); track linea.producto.id) {
+                                        <li class="flex justify-between items-center text-sm py-1 border-b border-surface-100 dark:border-surface-700 last:border-0">
+                                            <span class="text-color truncate flex-1">{{ linea.producto.nombre }}</span>
+                                            <span class="shrink-0 ml-2">{{ linea.cantidad }} × {{ linea.precioUnitario | number:'1.0-0' }} = <strong class="text-primary">{{ linea.totalLinea | number:'1.0-0' }} Gs.</strong></span>
+                                        </li>
+                                    }
+                                </ul>
+                                <div class="flex justify-between items-center mt-4 text-base font-bold text-color">
+                                    <span>Total</span>
+                                    <span class="text-primary">{{ totalCarrito() | number:'1.0-0' }} Gs.</span>
+                                </div>
+                            </div>
+                            @if (observaciones) {
+                                <div>
+                                    <span class="text-muted-color block text-sm font-medium">Observaciones</span>
+                                    <p class="m-0 text-color">{{ observaciones }}</p>
+                                </div>
+                            }
+                        </p-card>
+                        <div class="flex justify-between gap-2">
+                            <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary" (onClick)="activateCallback(2)" [disabled]="saving()" />
+                            <div class="flex gap-2">
+                                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="cancelar()" [disabled]="saving()" />
+                                <p-button label="Guardar presupuesto" icon="pi pi-check" (onClick)="guardar()" [loading]="saving()" [disabled]="saving()" />
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-step-panel>
+        </p-step-panels>
+    </p-stepper>
 </div>

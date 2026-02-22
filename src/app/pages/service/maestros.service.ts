@@ -26,6 +26,34 @@ export interface Empresa {
     id: number;
     razonSocial?: string;
     ruc?: string;
+    /** Establecimiento por defecto para facturación (Paraguay: ej. 001). */
+    establecimientoDefault?: string;
+    /** Punto de expedición por defecto (Paraguay: ej. 001). */
+    puntoEmisionDefault?: string;
+    /** Sucursal por defecto al facturar (usa su establecimiento y punto de expedición). null para limpiar. */
+    sucursalDefault?: { id: number } | null;
+}
+
+/** Sucursal de la empresa (establecimiento y punto de expedición para facturación). */
+export interface Sucursal {
+    id?: number;
+    empresa?: { id: number };
+    codigo?: string;
+    nombre?: string;
+    establecimiento?: string;
+    puntoEmision?: string;
+    direccion?: string;
+    activo?: boolean;
+}
+
+/** Timbrado para facturación física Paraguay (vigencia). */
+export interface Timbrado {
+    id?: number;
+    empresa?: { id: number };
+    numeroTimbrado?: string;
+    fechaInicioVigencia?: string;
+    fechaFinVigencia?: string;
+    activo?: boolean;
 }
 
 export interface MedioPago {
@@ -112,6 +140,44 @@ export class MaestrosService {
         return this.api.get<Empresa[]>('/empresas');
     }
 
+    updateEmpresa(id: number, body: Partial<Empresa>): Observable<void> {
+        return this.api.put<void>(`/empresas/${id}`, body);
+    }
+
+    sucursales(empresaId?: number): Observable<Sucursal[]> {
+        const params = empresaId != null ? { empresaId } : undefined;
+        return this.api.get<Sucursal[]>('/sucursales', params);
+    }
+
+    createSucursal(s: Sucursal): Observable<Sucursal> {
+        return this.api.post<Sucursal>('/sucursales', s);
+    }
+
+    updateSucursal(id: number, s: Partial<Sucursal>): Observable<void> {
+        return this.api.put<void>(`/sucursales/${id}`, s);
+    }
+
+    deleteSucursal(id: number): Observable<boolean> {
+        return this.api.delete(`/sucursales/${id}`);
+    }
+
+    timbrados(empresaId?: number): Observable<Timbrado[]> {
+        const params = empresaId != null ? { empresaId } : undefined;
+        return this.api.get<Timbrado[]>('/timbrados', params);
+    }
+
+    createTimbrado(t: Timbrado): Observable<Timbrado> {
+        return this.api.post<Timbrado>('/timbrados', t);
+    }
+
+    updateTimbrado(id: number, t: Partial<Timbrado>): Observable<void> {
+        return this.api.put<void>(`/timbrados/${id}`, t);
+    }
+
+    deleteTimbrado(id: number): Observable<boolean> {
+        return this.api.delete(`/timbrados/${id}`);
+    }
+
     mediosPago(): Observable<MedioPago[]> {
         return this.api.get<MedioPago[]>('/medios-pago/activos');
     }
@@ -142,5 +208,14 @@ export class MaestrosService {
     /** Todos los medios de pago (para pantalla paramétricos). */
     mediosPagoTodos(): Observable<MedioPago[]> {
         return this.api.get<MedioPago[]>('/medios-pago');
+    }
+
+    /**
+     * Precio unitario (y total sugerido) para una cantidad.
+     * Si el producto tiene precios por cantidad (ej. 1→2000, 3 por 5000) devuelve el que corresponda; si no, precio_venta.
+     */
+    getPrecioParaCantidad(productoId: number, cantidad: number): Observable<{ precioUnitario: number; totalSugerido: number }> {
+        const q = Math.max(1, cantidad);
+        return this.api.get<{ precioUnitario: number; totalSugerido: number }>(`/productos/${productoId}/precio-para-cantidad`, { cantidad: q });
     }
 }

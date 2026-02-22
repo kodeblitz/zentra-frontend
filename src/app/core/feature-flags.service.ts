@@ -10,6 +10,7 @@ export const FEATURE_KEYS = {
     pdv: 'pdv',
     presupuestos: 'presupuestos',
     pedidos: 'pedidos',
+    alquileres: 'alquileres',
     devoluciones: 'devoluciones',
     creditos: 'creditos',
     pagos: 'pagos',

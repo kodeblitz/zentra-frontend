@@ -114,7 +114,26 @@
             <div class="grid grid-cols-12 gap-4">
                 <div class="col-span-6">
                     <label for="celular" class="block font-bold mb-2">Celular</label>
-                    <input pInputText id="celular" [(ngModel)]="cliente.celular" class="w-full" />
+                    <div class="flex gap-2">
+                        <p-select
+                            id="codigoPaisCelular"
+                            [(ngModel)]="codigoPaisCelular"
+                            [options]="codigosPaisCelular"
+                            optionLabel="label"
+                            optionValue="code"
+                            styleClass="flex-shrink-0"
+                            [style]="{ 'min-width': '6rem' }"
+                        />
+                        <input
+                            pInputText
+                            id="celular"
+                            [(ngModel)]="celularNumero"
+                            class="flex-1"
+                            placeholder="Ej. 981 123 456"
+                            maxlength="15"
+                        />
+                    </div>
+                    <small class="text-color-secondary">Se guarda con código de país (ej. +595 para Paraguay).</small>
                 </div>
                 <div class="col-span-6">
                     <label for="correo" class="block font-bold mb-2">Correo</label>

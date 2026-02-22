@@ -32,6 +32,11 @@ export interface Presupuesto {
     pedidoId?: number;
 }
 
+export interface EnviarPresupuestoDTO {
+    link: string;
+    codigoSeguridad: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PresupuestoService {
     private path = '/presupuestos';
@@ -66,8 +71,14 @@ export class PresupuestoService {
         return this.api.delete(`${this.path}/${id}`);
     }
 
-    enviar(id: number): Observable<void> {
-        return this.api.post<void>(`${this.path}/${id}/enviar`, {});
+    /** Envía el presupuesto y devuelve enlace público y código de seguridad. */
+    enviar(id: number): Observable<EnviarPresupuestoDTO> {
+        return this.api.post<EnviarPresupuestoDTO>(`${this.path}/${id}/enviar`, {});
+    }
+
+    /** Obtiene enlace y código para compartir (presupuestos ENVIADOS). */
+    getDatosEnvio(id: number): Observable<EnviarPresupuestoDTO> {
+        return this.api.get<EnviarPresupuestoDTO>(`${this.path}/${id}/datos-envio`);
     }
 
     aprobar(id: number): Observable<void> {
@@ -86,5 +97,24 @@ export class PresupuestoService {
     /** Descarga el presupuesto como PDF (devuelve Blob). */
     exportarPdf(id: number): Observable<Blob> {
         return this.api.getBlob(`${this.path}/${id}/pdf`);
+    }
+
+    private get publicoPath(): string {
+        return `${this.path}/publico`;
+    }
+
+    /** Obtiene el presupuesto por enlace público (token + código). No requiere auth. */
+    getByTokenPublico(token: string, codigo: string): Observable<Presupuesto> {
+        return this.api.get<Presupuesto>(`${this.publicoPath}/${encodeURIComponent(token)}`, { codigo });
+    }
+
+    /** Aprobación desde enlace público. */
+    aprobarPublico(token: string, codigo: string): Observable<void> {
+        return this.api.post<void>(`${this.publicoPath}/${encodeURIComponent(token)}/aprobar`, { codigo });
+    }
+
+    /** Rechazo desde enlace público. */
+    rechazarPublico(token: string, codigo: string): Observable<void> {
+        return this.api.post<void>(`${this.publicoPath}/${encodeURIComponent(token)}/rechazar`, { codigo });
     }
 }

@@ -17,6 +17,12 @@ import { TagModule } from 'primeng/tag';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ClienteService, Cliente } from '../service/cliente.service';
 import { MaestrosService, CondicionPago } from '../service/maestros.service';
+import {
+    CODIGOS_PAIS_CELULAR,
+    CODIGO_PAIS_DEFAULT,
+    parsearCelularGuardado,
+    normalizarCelularParaGuardar
+} from '../../core/telefono.util';
 
 @Component({
     selector: 'app-clientes',
@@ -51,6 +57,11 @@ export class ClientesComponent implements OnInit {
     submitted = false;
     cliente: Cliente = {};
     selectedCondicionPago: CondicionPago | null = null;
+    /** Selector de celular: código de país (ej. +595) y número local (solo dígitos). */
+    codigoPaisCelular = CODIGO_PAIS_DEFAULT;
+    celularNumero = '';
+    /** Copia mutable para p-select [options]. */
+    codigosPaisCelular: { code: string; label: string }[] = [...CODIGOS_PAIS_CELULAR];
     loading = signal(false);
 
     constructor(
@@ -92,6 +103,8 @@ export class ClientesComponent implements OnInit {
     openNew(): void {
         this.cliente = { activo: true };
         this.selectedCondicionPago = null;
+        this.codigoPaisCelular = CODIGO_PAIS_DEFAULT;
+        this.celularNumero = '';
         this.editing = false;
         this.submitted = false;
         this.dialog = true;
@@ -102,6 +115,9 @@ export class ClientesComponent implements OnInit {
         this.selectedCondicionPago = row.condicionPago?.id != null
             ? this.condicionesPago.find((c) => c.id === row.condicionPago!.id) ?? null
             : null;
+        const { codigoPais, numero } = parsearCelularGuardado(row.celular);
+        this.codigoPaisCelular = codigoPais;
+        this.celularNumero = numero;
         this.editing = true;
         this.submitted = false;
         this.dialog = true;
@@ -122,13 +138,17 @@ export class ClientesComponent implements OnInit {
 
     onDialogHide(): void {
         this.cliente = {};
+        this.codigoPaisCelular = CODIGO_PAIS_DEFAULT;
+        this.celularNumero = '';
     }
 
     save(): void {
         this.submitted = true;
         if (!this.cliente.razonSocial?.trim()) return;
+        const celularNormalizado = normalizarCelularParaGuardar(this.codigoPaisCelular, this.celularNumero);
         const payload: Cliente = {
             ...this.cliente,
+            celular: celularNormalizado || undefined,
             condicionPago: this.selectedCondicionPago ? { id: this.selectedCondicionPago.id } : undefined
         };
         const req = this.editing && this.cliente.id

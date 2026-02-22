@@ -54,8 +54,8 @@
         <tr>
             <td>{{ row.numero || row.id }}</td>
             <td>{{ getClienteNombre(row.cliente?.id) }}</td>
-            <td>{{ row.fechaPedido | date:'dd/MM/yyyy HH:mm:ss' }}</td>
-            <td>{{ row.fechaEntregaEstimada ? (row.fechaEntregaEstimada | date:'dd/MM/yyyy HH:mm:ss') : '-' }}</td>
+            <td>{{ row.creadoEn ? (row.creadoEn | date:'dd/MM/yyyy HH:mm:ss') : (row.fechaPedido | date:'dd/MM/yyyy') }}</td>
+            <td>{{ row.fechaEntregaEstimada ? (row.fechaEntregaEstimada | date:'dd/MM/yyyy') : '-' }}</td>
             <td>{{ row.total | number:'1.0-0' }} Gs.</td>
             <td><p-tag [value]="getEstadoLabel(row.estado)" [severity]="getEstadoSeverity(row.estado)" /></td>
             <td>{{ row.documentoVenta?.numero ?? '—' }}</td>

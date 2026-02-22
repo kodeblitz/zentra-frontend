@@ -88,12 +88,12 @@ export class LayoutService {
 
         effect(() => {
             const config = this.layoutConfig();
-
-            if (!this.initialized || !config) {
+            if (!config) return;
+            if (!this.initialized) {
                 this.initialized = true;
+                this.toggleDarkMode(config);
                 return;
             }
-
             this.handleDarkModeTransition(config);
         });
     }

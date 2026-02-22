@@ -15,6 +15,7 @@
                 dataKey="clienteId"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
                 [showCurrentPageReport]="true"
+                [rowsPerPageOptions]="[10, 25, 50]"
             >
                 <ng-template #header>
                     <tr>
@@ -62,8 +63,8 @@
                     <tr>
                         <td>{{ row.razonSocial }}</td>
                         <td>{{ row.numero }}</td>
-                        <td>{{ row.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</td>
-                        <td>{{ row.fechaVencimiento | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+<td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
+                                        <td>{{ row.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
                         <td>{{ row.total | number:'1.0-0' }} Gs.</td>
                         <td>{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
                         <td><p-tag [value]="row.diasVencido?.toString() ?? '0'" [severity]="row.diasVencido && row.diasVencido > 0 ? 'warn' : 'success'" /></td>
@@ -102,6 +103,9 @@
                 [paginator]="true"
                 [tableStyle]="{ 'min-width': '50rem' }"
                 class="mt-4"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                [showCurrentPageReport]="true"
+                [rowsPerPageOptions]="[10, 25, 50]"
             >
                 <ng-template #header>
                     <tr>

@@ -9,6 +9,10 @@ export interface PedidoDetalle {
     descripcion?: string;
     cantidad?: number;
     precioUnitario?: number;
+    /** Descuento % sobre (cantidad × precio unitario). */
+    descuento?: number;
+    /** Descuento en monto fijo (Gs). Promos espontáneas en PDV. */
+    descuentoMonto?: number;
     totalLinea?: number;
 }
 
@@ -23,12 +27,18 @@ export interface Pedido {
     direccionEntrega?: string;
     telefonoContacto?: string;
     observaciones?: string;
+    /** Forma de pago indicada en PDV: TRANSFERENCIA o QR (TD 0 TC). */
+    formaPago?: string;
+    /** Nº referencia del voucher de la procesadora (obligatorio cuando formaPago = QR). Para validación en caja. */
+    referenciaVoucher?: string;
     subtotal?: number;
     total?: number;
     moneda?: { id: number };
     detalle?: PedidoDetalle[];
     /** Factura (documento de venta) asociada cuando se factura el pedido. */
     documentoVenta?: { id: number; numero?: string; estado?: string };
+    /** Timestamp de creación (ISO). Para mostrar hora real en listados. */
+    creadoEn?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -62,8 +72,8 @@ export class PedidoService {
         return this.api.get<Pedido>(`${this.path}/${id}`);
     }
 
-    create(item: Pedido): Observable<void> {
-        return this.api.post<void>(this.path, item);
+    create(item: Pedido): Observable<Pedido> {
+        return this.api.post<Pedido>(this.path, item);
     }
 
     update(item: Pedido): Observable<void> {
@@ -95,7 +105,7 @@ export class PedidoService {
     }
 
     /** Genera una factura a partir del pedido y la asocia. Devuelve el documento de venta creado. */
-    facturar(id: number): Observable<{ id: number; numero?: string; estado?: string }> {
-        return this.api.post<{ id: number; numero?: string; estado?: string }>(`${this.path}/${id}/facturar`, {});
+    facturar(id: number): Observable<{ id: number; numero?: string; numeroCompleto?: string; estado?: string }> {
+        return this.api.post<{ id: number; numero?: string; numeroCompleto?: string; estado?: string }>(`${this.path}/${id}/facturar`, {});
     }
 }

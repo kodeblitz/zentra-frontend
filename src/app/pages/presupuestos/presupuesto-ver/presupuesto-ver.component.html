@@ -1,7 +1,7 @@
 <p-toast />
 <p-confirmdialog />
 <p-dialog
-    [visible]="enviarResultado() !== null"
+    [(visible)]="dialogEnlaceVisible"
     [modal]="true"
     [closable]="true"
     [style]="{ width: 'min(480px, 100vw - 2rem)' }"
@@ -60,6 +60,9 @@
             }
             @if (presupuesto()?.pedidoId) {
                 <p-button icon="pi pi-external-link" label="Ir a pedido" [outlined]="true" (onClick)="irAPedido()" />
+            }
+            @if (presupuesto()?.documentoVenta?.id) {
+                <p-button icon="pi pi-file-edit" label="Ver factura asociada" [outlined]="true" (onClick)="verFacturaAsociada()" />
             }
         </div>
     </header>

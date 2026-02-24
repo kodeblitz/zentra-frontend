@@ -32,6 +32,9 @@ const MENU_ITEMS_WITH_FEATURES: Array<{
     { label: 'Productos / Servicios', routerLink: ['/pages/productos'], icon: 'pi pi-fw pi-box', feature: 'productos' },
     { label: 'Visor de precios', routerLink: ['/pages/productos/visor-precios'], icon: 'pi pi-fw pi-qrcode', feature: 'productos' },
     { label: 'Inventario', routerLink: ['/pages/inventario'], icon: 'pi pi-fw pi-box', feature: 'inventario' },
+    { label: 'Proveedores', routerLink: ['/pages/proveedores'], icon: 'pi pi-fw pi-truck', feature: 'compras' },
+    { label: 'Compras', routerLink: ['/pages/compras'], icon: 'pi pi-fw pi-shopping-cart', feature: 'compras' },
+    { label: 'Gastos', routerLink: ['/pages/gastos'], icon: 'pi pi-fw pi-wallet', feature: 'gastos' },
     { label: 'Paramétricos', routerLink: ['/pages/parametricos'], icon: 'pi pi-fw pi-sliders-h', feature: 'parametricos' },
     { label: 'Importación masiva', routerLink: ['/pages/importacion'], icon: 'pi pi-fw pi-upload', feature: 'parametricos' },
     { label: 'Respaldo y restauración', routerLink: ['/pages/backup'], icon: 'pi pi-fw pi-cloud-download' }

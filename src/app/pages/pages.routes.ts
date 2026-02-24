@@ -28,6 +28,11 @@ import { InventarioComponent } from './inventario/inventario';
 import { ProductosComponent } from './productos/productos';
 import { ProductoFormComponent } from './productos/producto-form/producto-form';
 import { VisorPreciosComponent } from './productos/visor-precios/visor-precios';
+import { ProveedoresComponent } from './proveedores/proveedores';
+import { ComprasComponent } from './compras/compras';
+import { CompraFormComponent } from './compras/compra-form/compra-form';
+import { CompraVerComponent } from './compras/compra-ver/compra-ver';
+import { GastosComponent } from './gastos/gastos';
 import { featureGuard } from '../core/feature.guard';
 
 export default [
@@ -62,6 +67,12 @@ export default [
     { path: 'productos/visor-precios', component: VisorPreciosComponent, data: { feature: 'productos' }, canActivate: [featureGuard] },
     { path: 'parametricos', component: ParametricosComponent, data: { feature: 'parametricos' }, canActivate: [featureGuard] },
     { path: 'importacion', component: ImportacionComponent, data: { feature: 'parametricos' }, canActivate: [featureGuard] },
+    { path: 'proveedores', component: ProveedoresComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
+    { path: 'compras', component: ComprasComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
+    { path: 'compras/nuevo', component: CompraFormComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
+    { path: 'compras/editar/:id', component: CompraFormComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
+    { path: 'compras/ver/:id', component: CompraVerComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
+    { path: 'gastos', component: GastosComponent, data: { feature: 'gastos' }, canActivate: [featureGuard] },
     { path: 'backup', component: BackupComponent },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

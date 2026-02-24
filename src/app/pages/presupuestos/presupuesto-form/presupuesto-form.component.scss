@@ -17,3 +17,20 @@ header.bg-primary .presupuesto-tabs button.bg-white {
     flex-direction: column;
     min-height: 0;
 }
+
+// Input cliente: ancho acotado para no dominar toda la fila
+.presupuesto-cliente-input input {
+    max-width: 100%;
+}
+
+// Barra de acciones (Atrás / Siguiente o Guardar) fija al pie al hacer scroll
+.presupuesto-step-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}

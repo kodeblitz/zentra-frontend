@@ -1,69 +1,192 @@
 <p-toast />
 <p-confirmdialog />
-<p-toolbar styleClass="mb-6">
-    <ng-template #start>
-        <p-button label="Nuevo producto" icon="pi pi-plus" severity="secondary" routerLink="/pages/productos/nuevo" />
-    </ng-template>
-    <ng-template #end>
-        <p-select
-            [(ngModel)]="filterTipo"
-            [options]="tipoOpts"
-            optionLabel="label"
-            optionValue="value"
-            (ngModelChange)="dt?.filterGlobal('', 'contains')"
-            styleClass="w-48"
-        />
-    </ng-template>
-</p-toolbar>
 
-<p-table
-    #dt
-    [value]="filteredProductos"
-    [rows]="10"
-    [paginator]="true"
-    [globalFilterFields]="['codigo', 'nombre']"
-    [tableStyle]="{ 'min-width': '50rem' }"
-    [rowHover]="true"
-    dataKey="id"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-    [showCurrentPageReport]="true"
-    [rowsPerPageOptions]="[10, 25, 50]"
->
-    <ng-template #caption>
-        <div class="flex items-center justify-between">
-            <h5 class="m-0">Productos, servicios y combos</h5>
-            <p-iconfield>
-                <p-inputicon styleClass="pi pi-search" />
-                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar por código o nombre..." />
-            </p-iconfield>
-        </div>
-    </ng-template>
-    <ng-template #header>
-        <tr>
-            <th pSortableColumn="codigo" style="min-width:8rem">Código <p-sortIcon field="codigo" /></th>
-            <th pSortableColumn="nombre" style="min-width:16rem">Nombre <p-sortIcon field="nombre" /></th>
-            <th style="min-width:8rem">Categoría</th>
-            <th style="min-width:6rem">Tipo</th>
-            <th style="min-width:8rem">Precio venta</th>
-            <th style="min-width:6rem">Activo</th>
-            <th style="min-width:10rem"></th>
-        </tr>
-    </ng-template>
-    <ng-template #body let-row>
-        <tr>
-            <td>{{ row.codigo || '-' }}</td>
-            <td>{{ row.nombre }}</td>
-            <td>{{ row.categoria?.nombre || row.categoria?.codigo || '-' }}</td>
-            <td><p-tag [value]="getTipoLabel(row)" [severity]="getTipoSeverity(row)" /></td>
-            <td>{{ row.precioVenta | number:'1.0-0' }} Gs.</td>
-            <td><p-tag [value]="row.activo !== false ? 'Sí' : 'No'" [severity]="row.activo !== false ? 'success' : 'secondary'" /></td>
-            <td>
-                <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" [routerLink]="['/pages/productos/editar', row.id]" class="mr-2" />
-                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="confirmDelete(row)" />
-            </td>
-        </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-        <tr><td colspan="7">No hay productos.</td></tr>
-    </ng-template>
-</p-table>
+<p-tabs [(value)]="activeTab">
+    <p-tablist>
+        <p-tab [value]="0">Listado</p-tab>
+        <p-tab [value]="1">Carga rápida</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+        <!-- Listado -->
+        <p-tabpanel [value]="0">
+            <p-toolbar styleClass="mb-6">
+                <ng-template #start>
+                    <p-button label="Nuevo producto" icon="pi pi-plus" severity="secondary" routerLink="/pages/productos/nuevo" />
+                </ng-template>
+                <ng-template #end>
+                    <p-select
+                        [(ngModel)]="filterTipo"
+                        [options]="tipoOpts"
+                        optionLabel="label"
+                        optionValue="value"
+                        (ngModelChange)="dt?.filterGlobal('', 'contains')"
+                        styleClass="w-48"
+                    />
+                </ng-template>
+            </p-toolbar>
+
+            <p-table
+                #dt
+                [value]="filteredProductos"
+                [rows]="10"
+                [paginator]="true"
+                [globalFilterFields]="['codigo', 'nombre']"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                [rowHover]="true"
+                dataKey="id"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                [showCurrentPageReport]="true"
+                [rowsPerPageOptions]="[10, 25, 50]"
+            >
+                <ng-template #caption>
+                    <div class="flex items-center justify-between">
+                        <h5 class="m-0">Productos, servicios y combos</h5>
+                        <p-iconfield>
+                            <p-inputicon styleClass="pi pi-search" />
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar por código o nombre..." />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th pSortableColumn="codigo" style="min-width:8rem">Código <p-sortIcon field="codigo" /></th>
+                        <th pSortableColumn="nombre" style="min-width:16rem">Nombre <p-sortIcon field="nombre" /></th>
+                        <th style="min-width:8rem">Categoría</th>
+                        <th style="min-width:6rem">Tipo</th>
+                        <th style="min-width:8rem">Precio venta</th>
+                        <th style="min-width:6rem">Activo</th>
+                        <th style="min-width:10rem"></th>
+                    </tr>
+                </ng-template>
+                <ng-template #body let-row>
+                    <tr>
+                        <td>{{ row.codigo || '-' }}</td>
+                        <td>{{ row.nombre }}</td>
+                        <td>{{ row.categoria?.nombre || row.categoria?.codigo || '-' }}</td>
+                        <td><p-tag [value]="getTipoLabel(row)" [severity]="getTipoSeverity(row)" /></td>
+                        <td>{{ row.precioVenta | number:'1.0-0' }} Gs.</td>
+                        <td><p-tag [value]="row.activo !== false ? 'Sí' : 'No'" [severity]="row.activo !== false ? 'success' : 'secondary'" /></td>
+                        <td>
+                            <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" [routerLink]="['/pages/productos/editar', row.id]" class="mr-2" />
+                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="confirmDelete(row)" />
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template #emptymessage>
+                    <tr><td colspan="7">No hay productos.</td></tr>
+                </ng-template>
+            </p-table>
+        </p-tabpanel>
+
+        <!-- Carga rápida -->
+        <p-tabpanel [value]="1">
+            <div class="flex flex-col gap-4">
+                <p class="text-muted-color mb-0">Cargá varios productos a la vez. Completá nombre y unidad de medida en cada fila; el resto es opcional. También podés pegar un CSV con cabecera (codigo, codigo_barras, nombre, precio_venta, categoria_id, unidad_medida_id, iva_porcentaje, es_combo, alquilable, activo).</p>
+
+                <div class="p-4 rounded-border bg-surface-50 dark:bg-surface-800 flex flex-col gap-2">
+                    <label class="block text-sm font-medium text-color">Importar desde CSV</label>
+                    <textarea
+                        [(ngModel)]="csvPegado"
+                        class="w-full font-mono text-sm p-2 border border-surface-300 dark:border-surface-600 rounded"
+                        rows="5"
+                        placeholder="Pegá aquí el contenido del CSV (primera línea = cabecera)..."
+                   ></textarea>
+                    <p-button label="Cargar desde CSV" icon="pi pi-file-import" [outlined]="true" (onClick)="cargarDesdeCsv()" />
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <p-button label="Agregar fila" icon="pi pi-plus" [outlined]="true" (onClick)="agregarFilaCargaRapida()" />
+                    <p-button
+                        label="Guardar todos"
+                        icon="pi pi-check"
+                        severity="success"
+                        (onClick)="guardarCargaRapida()"
+                        [loading]="savingCargaRapida()"
+                        [disabled]="lineasCargaRapidaValidas.length === 0"
+                    />
+                    @if (lineasCargaRapidaValidas.length > 0) {
+                        <span class="text-sm text-muted-color">{{ lineasCargaRapidaValidas.length }} fila(s) para guardar</span>
+                    }
+                </div>
+
+                <p-table
+                    [value]="lineasCargaRapida"
+                    [tableStyle]="{ 'min-width': '56rem' }"
+                    styleClass="p-datatable-sm p-datatable-striped"
+                >
+                    <ng-template #header>
+                        <tr>
+                            <th style="min-width:8rem">Código</th>
+                            <th style="min-width:16rem">Nombre *</th>
+                            <th style="min-width:10rem">Código de barras</th>
+                            <th style="min-width:10rem">Precio venta (Gs.)</th>
+                            <th style="min-width:12rem">Unidad de medida *</th>
+                            <th style="min-width:12rem">Categoría</th>
+                            <th style="width:4rem"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row let-i="rowIndex">
+                        <tr>
+                            <td>
+                                <input pInputText [(ngModel)]="row.codigo" class="w-full" placeholder="Opcional (ej. PROD001)" />
+                            </td>
+                            <td>
+                                <input pInputText [(ngModel)]="row.nombre" class="w-full" placeholder="Nombre del producto" />
+                            </td>
+                            <td>
+                                <input pInputText [(ngModel)]="row.codigoBarras" class="w-full" placeholder="Opcional" />
+                            </td>
+                            <td>
+                                <p-inputnumber
+                                    [(ngModel)]="row.precioVenta"
+                                    mode="decimal"
+                                    [min]="0"
+                                    [minFractionDigits]="0"
+                                    [maxFractionDigits]="0"
+                                    [useGrouping]="true"
+                                    styleClass="w-full"
+                                    inputStyleClass="text-right"
+                                />
+                            </td>
+                            <td>
+                                <p-select
+                                    [(ngModel)]="row.unidadMedida"
+                                    [options]="unidadesMedida"
+                                    optionLabel="nombre"
+                                    placeholder="Seleccionar"
+                                    styleClass="w-full"
+                                    appendTo="body"
+                                />
+                            </td>
+                            <td>
+                                <p-select
+                                    [(ngModel)]="row.categoria"
+                                    [options]="categorias"
+                                    optionLabel="nombre"
+                                    placeholder="Opcional"
+                                    styleClass="w-full"
+                                    appendTo="body"
+                                    [showClear]="true"
+                                />
+                            </td>
+                            <td>
+                                <p-button
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    (onClick)="quitarFilaCargaRapida(i)"
+                                    [disabled]="lineasCargaRapida.length <= 1"
+                                    ariaLabel="Quitar fila"
+                                />
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr><td colspan="7" class="text-center py-4 text-muted-color">No hay filas. Pulsá «Agregar fila» o cargá un CSV para comenzar.</td></tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-tabpanel>
+    </p-tabpanels>
+</p-tabs>

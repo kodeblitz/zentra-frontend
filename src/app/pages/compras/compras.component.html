@@ -1,0 +1,71 @@
+<p-toast />
+<p-confirmdialog />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nueva compra" icon="pi pi-plus" severity="secondary" routerLink="/pages/compras/nuevo" />
+    </ng-template>
+    <ng-template #end>
+        <p-select
+            [(ngModel)]="filterEstado"
+            [options]="estadosOpt"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Estado"
+            (onChange)="load()"
+            styleClass="w-48"
+        />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="compras()"
+    [rows]="10"
+    [paginator]="true"
+    [loading]="loading()"
+    [globalFilterFields]="['numero']"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Compras de mercaderías</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar por número..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width:8rem">Nº</th>
+            <th style="min-width:14rem">Proveedor</th>
+            <th style="min-width:8rem">Fecha</th>
+            <th style="min-width:8rem">Total</th>
+            <th style="min-width:8rem">Estado</th>
+            <th style="min-width:12rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-row>
+        <tr>
+            <td>{{ row.numero || row.id }}</td>
+            <td>{{ getProveedorNombre(row) }}</td>
+            <td>{{ row.fechaCompra | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.total | number:'1.0-0' }} Gs.</td>
+            <td><p-tag [value]="getEstadoLabel(row.estado)" [severity]="getEstadoSeverity(row.estado)" /></td>
+            <td>
+                <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" [routerLink]="['/pages/compras/ver', row.id]" class="mr-2" />
+                @if (row.estado === 'BORRADOR') {
+                    <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" [routerLink]="['/pages/compras/editar', row.id]" class="mr-2" />
+                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="confirmDelete(row)" />
+                }
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr><td colspan="6">No hay compras.</td></tr>
+    </ng-template>
+</p-table>

@@ -30,6 +30,8 @@ export interface Presupuesto {
     detalle?: PresupuestoDetalle[];
     /** ID del pedido generado al convertir (cuando estado=CONVERTIDO). */
     pedidoId?: number;
+    /** Factura asociada vía pedido (cuando el presupuesto está finalizado y facturado). */
+    documentoVenta?: { id: number; numero?: string; estado?: string };
 }
 
 export interface EnviarPresupuestoDTO {

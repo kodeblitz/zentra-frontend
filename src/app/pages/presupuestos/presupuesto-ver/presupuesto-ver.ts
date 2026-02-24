@@ -51,6 +51,8 @@ export class PresupuestoVerComponent implements OnInit {
     id: number | null = null;
     /** Tras enviar: enlace y código para mostrar en diálogo. */
     enviarResultado = signal<EnviarPresupuestoDTO | null>(null);
+    /** Visibilidad del diálogo "Enlace para el cliente" (two-way con p-dialog para que la X cierre). */
+    dialogEnlaceVisible = false;
 
     readonly estadosOpt = ESTADOS;
 
@@ -161,6 +163,7 @@ export class PresupuestoVerComponent implements OnInit {
                             ? window.location.origin + (res.link || '')
                             : res.link || '';
                         this.enviarResultado.set({ link: fullLink, codigoSeguridad: res.codigoSeguridad ?? '' });
+                        this.dialogEnlaceVisible = true;
                         this.messageService.add({ severity: 'success', summary: 'Enviado', detail: 'Compartí el enlace y el código con el cliente.' });
                     },
                     error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo enviar.' })
@@ -188,6 +191,7 @@ export class PresupuestoVerComponent implements OnInit {
 
     cerrarDialogoEnlace(): void {
         this.enviarResultado.set(null);
+        this.dialogEnlaceVisible = false;
     }
 
     /** Abre WhatsApp con el enlace y código ya mostrados en el diálogo (tras Enviar). */
@@ -256,7 +260,7 @@ export class PresupuestoVerComponent implements OnInit {
     convertirAPedido(): void {
         if (!this.id) return;
         this.confirmationService.confirm({
-            message: '¿Convertir este presupuesto en pedido? Se creará un pedido en estado PENDIENTE que luego podés confirmar y facturar.',
+            message: '¿Convertir este presupuesto en pedido? Se creará un pedido confirmado y una factura en borrador asociada. Luego podés emitir la factura desde esta misma pantalla o desde Documentos de venta.',
             header: 'Convertir a pedido',
             icon: 'pi pi-truck',
             accept: () => {
@@ -264,8 +268,8 @@ export class PresupuestoVerComponent implements OnInit {
                     next: (pedido) => {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Pedido creado',
-                            detail: pedido.numero ? `Pedido ${pedido.numero} creado.` : 'Pedido creado.'
+                            summary: 'Pedido y factura creados',
+                            detail: (pedido.numero ? `Pedido ${pedido.numero} creado con factura en borrador. ` : 'Pedido creado con factura en borrador. ') + 'Emití la factura cuando corresponda.'
                         });
                         this.load();
                         if (pedido.id) this.router.navigate(['/pages/pedidos']);
@@ -278,6 +282,12 @@ export class PresupuestoVerComponent implements OnInit {
 
     irAPedido(): void {
         this.router.navigate(['/pages/pedidos']);
+    }
+
+    /** Navega a la vista del documento de venta (factura) asociado al presupuesto finalizado. */
+    verFacturaAsociada(): void {
+        const doc = this.presupuesto()?.documentoVenta;
+        if (doc?.id) this.router.navigate(['/pages/documentos-venta/ver', doc.id]);
     }
 
     editar(): void {

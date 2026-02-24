@@ -43,6 +43,20 @@ export class MovimientoStockService {
         return this.api.get<MovimientoStock[]>(`${this.path}/por-fecha`, { desde, hasta });
     }
 
+    create(mov: MovimientoStock): Observable<MovimientoStock> {
+        return this.api.post<MovimientoStock>(this.path, mov);
+    }
+
+    /** Tipos de movimiento activos (para ajustes: AJUSTE_ENTRADA, AJUSTE_SALIDA). */
+    getTiposActivos(): Observable<TipoMovimientoRef[]> {
+        return this.api.get<TipoMovimientoRef[]>('/tipos-movimiento/activos');
+    }
+
+    /** Estados de movimiento activos (para crear en BORRADOR). */
+    getEstadosActivos(): Observable<EstadoMovimientoRef[]> {
+        return this.api.get<EstadoMovimientoRef[]>('/estados-movimiento/activos');
+    }
+
     listPorDeposito(depositoId: number): Observable<MovimientoStock[]> {
         return this.api.get<MovimientoStock[]>(`${this.path}/por-deposito/${depositoId}`);
     }

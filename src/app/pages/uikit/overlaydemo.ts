@@ -1,22 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
-import { DrawerModule } from 'primeng/drawer';
-import { Popover, PopoverModule } from 'primeng/popover';
-import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { InputTextModule } from 'primeng/inputtext';
-import { FormsModule } from '@angular/forms';
-import { TooltipModule } from 'primeng/tooltip';
-import { TableModule } from 'primeng/table';
-import { Product, ProductService } from '../service/product.service';
+import {Component, OnInit} from '@angular/core';
+import {ConfirmationService, MessageService} from 'primeng/api';
+import {ButtonModule} from 'primeng/button';
+import {DialogModule} from 'primeng/dialog';
+import {ToastModule} from 'primeng/toast';
+import {DrawerModule} from 'primeng/drawer';
+import {Popover, PopoverModule} from 'primeng/popover';
+import {ConfirmPopupModule} from 'primeng/confirmpopup';
+import {InputTextModule} from 'primeng/inputtext';
+import {FormsModule} from '@angular/forms';
+import {TooltipModule} from 'primeng/tooltip';
+import {TableModule} from 'primeng/table';
+import {Product, ProductService} from '@/app/pages/service/product.service';
 
 @Component({
     selector: 'app-overlay-demo',
     standalone: true,
     imports: [ToastModule, DialogModule, ButtonModule, DrawerModule, PopoverModule, ConfirmPopupModule, InputTextModule, FormsModule, TooltipModule, TableModule, ToastModule],
-    template: ` <div class="flex flex-col md:flex-row gap-8">
+    template: `<div class="flex flex-col md:flex-row gap-8">
         <div class="md:w-1/2">
             <div class="card">
                 <div class="font-semibold text-xl mb-4">Dialog</div>
@@ -40,15 +40,23 @@ import { Product, ProductService } from '../service/product.service';
                         <p-table [value]="products" selectionMode="single" [(selection)]="selectedProduct" dataKey="id" [rows]="5" [paginator]="true" (onRowSelect)="onProductSelect(op2, $event)">
                             <ng-template #header>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Image</th>
-                                    <th>Price</th>
+                                    <th pSortableColumn="name" style="width: 33%;">
+                                        Name
+                                        <p-sortIcon field="name" />
+                                    </th>
+                                    <th style="width: 33%;">Image</th>
+                                    <th pSortableColumn="price" style="width: 33%;">
+                                        Price
+                                        <p-sortIcon field="price" />
+                                    </th>
                                 </tr>
                             </ng-template>
                             <ng-template #body let-product>
                                 <tr [pSelectableRow]="product">
                                     <td>{{ product.name }}</td>
-                                    <td><img [src]="'https://primefaces.org/cdn/primeng/images/demo/product/' + product.image" [alt]="product.name" class="w-16 shadow-sm" /></td>
+                                    <td>
+                                        <img [src]="'/demo/images/product/' + product.image" [alt]="product.name" class="w-16 shadow-sm" />
+                                    </td>
                                     <td>{{ product.price }}</td>
                                 </tr>
                             </ng-template>
@@ -113,7 +121,7 @@ import { Product, ProductService } from '../service/product.service';
 
             <div class="card">
                 <div class="font-semibold text-xl mb-4">ConfirmPopup</div>
-                <p-confirmpopup></p-confirmpopup>
+                <p-confirmpopup key="confirm2"></p-confirmpopup>
                 <p-button #popup (click)="confirm($event)" icon="pi pi-check" label="Confirm" class="mr-2"></p-button>
             </div>
 
@@ -122,7 +130,7 @@ import { Product, ProductService } from '../service/product.service';
                 <p-button label="Delete" icon="pi pi-trash" severity="danger" [style]="{ width: 'auto' }" (click)="openConfirmation()" />
                 <p-dialog header="Confirmation" [(visible)]="displayConfirmation" [style]="{ width: '350px' }" [modal]="true">
                     <div class="flex items-center justify-center">
-                        <i class="pi pi-exclamation-triangle mr-4" style="font-size: 2rem"> </i>
+                        <i class="pi pi-exclamation-triangle mr-6" style="font-size: 2rem"> </i>
                         <span>Are you sure you want to proceed?</span>
                     </div>
                     <ng-template #footer>
@@ -136,8 +144,6 @@ import { Product, ProductService } from '../service/product.service';
     providers: [ConfirmationService, MessageService, ProductService]
 })
 export class OverlayDemo implements OnInit {
-    images: any[] = [];
-
     display: boolean = false;
 
     products: Product[] = [];
@@ -164,28 +170,6 @@ export class OverlayDemo implements OnInit {
 
     ngOnInit() {
         this.productService.getProductsSmall().then((products) => (this.products = products));
-
-        this.images = [];
-        this.images.push({
-            source: 'assets/demo/images/sopranos/sopranos1.jpg',
-            thumbnail: 'assets/demo/images/sopranos/sopranos1_small.jpg',
-            title: 'Sopranos 1'
-        });
-        this.images.push({
-            source: 'assets/demo/images/sopranos/sopranos2.jpg',
-            thumbnail: 'assets/demo/images/sopranos/sopranos2_small.jpg',
-            title: 'Sopranos 2'
-        });
-        this.images.push({
-            source: 'assets/demo/images/sopranos/sopranos3.jpg',
-            thumbnail: 'assets/demo/images/sopranos/sopranos3_small.jpg',
-            title: 'Sopranos 3'
-        });
-        this.images.push({
-            source: 'assets/demo/images/sopranos/sopranos4.jpg',
-            thumbnail: 'assets/demo/images/sopranos/sopranos4_small.jpg',
-            title: 'Sopranos 4'
-        });
     }
 
     confirm(event: Event) {
@@ -194,11 +178,27 @@ export class OverlayDemo implements OnInit {
             target: event.target || new EventTarget(),
             message: 'Are you sure that you want to proceed?',
             icon: 'pi pi-exclamation-triangle',
+            rejectButtonProps: {
+                label: 'Cancel',
+                severity: 'secondary',
+                outlined: true
+            },
+            acceptButtonProps: {
+                label: 'Save'
+            },
             accept: () => {
-                this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted' });
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Confirmed',
+                    detail: 'You have accepted'
+                });
             },
             reject: () => {
-                this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Rejected',
+                    detail: 'You have rejected'
+                });
             }
         });
     }
@@ -217,7 +217,12 @@ export class OverlayDemo implements OnInit {
 
     onProductSelect(op: Popover, event: any) {
         op.hide();
-        this.messageService.add({ severity: 'info', summary: 'Product Selected', detail: event?.data.name, life: 3000 });
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Product Selected',
+            detail: event?.data.name,
+            life: 3000
+        });
     }
 
     openConfirmation() {

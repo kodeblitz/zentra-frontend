@@ -1,86 +1,80 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { ChartModule } from 'primeng/chart';
-import { FluidModule } from 'primeng/fluid';
-import { debounceTime, Subscription } from 'rxjs';
-import { LayoutService } from '../../layout/service/layout.service';
+import {Component, effect, inject, signal} from '@angular/core';
+import {ChartModule} from 'primeng/chart';
+import {FluidModule} from 'primeng/fluid';
+import {LayoutService} from '@/app/layout/service/layout.service';
 
 @Component({
     selector: 'app-chart-demo',
     standalone: true,
-    imports: [CommonModule, ChartModule, FluidModule],
+    imports: [ChartModule, FluidModule],
     template: `
         <p-fluid class="grid grid-cols-12 gap-8">
             <div class="col-span-12 xl:col-span-6">
                 <div class="card">
-                    <div class="font-semibold text-xl mb-4">Linear</div>
-                    <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Linear</div>
+                    <p-chart type="line" [data]="lineData()" [options]="lineOptions()"></p-chart>
                 </div>
             </div>
             <div class="col-span-12 xl:col-span-6">
                 <div class="card">
-                    <div class="font-semibold text-xl mb-4">Bar</div>
-                    <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Bar</div>
+                    <p-chart type="bar" [data]="barData()" [options]="barOptions()"></p-chart>
                 </div>
             </div>
             <div class="col-span-12 xl:col-span-6">
                 <div class="card flex flex-col items-center">
-                    <div class="font-semibold text-xl mb-4">Pie</div>
-                    <p-chart type="pie" [data]="pieData" [options]="pieOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Pie</div>
+                    <p-chart type="pie" [data]="pieData()" [options]="pieOptions()"></p-chart>
                 </div>
             </div>
             <div class="col-span-12 xl:col-span-6">
                 <div class="card flex flex-col items-center">
-                    <div class="font-semibold text-xl mb-4">Doughnut</div>
-                    <p-chart type="doughnut" [data]="pieData" [options]="pieOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Doughnut</div>
+                    <p-chart type="doughnut" [data]="pieData()" [options]="pieOptions()"></p-chart>
                 </div>
             </div>
             <div class="col-span-12 xl:col-span-6">
                 <div class="card flex flex-col items-center">
-                    <div class="font-semibold text-xl mb-4">Polar Area</div>
-                    <p-chart type="polarArea" [data]="polarData" [options]="polarOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Polar Area</div>
+                    <p-chart type="polarArea" [data]="polarData()" [options]="polarOptions()"></p-chart>
                 </div>
             </div>
             <div class="col-span-12 xl:col-span-6">
                 <div class="card flex flex-col items-center">
-                    <div class="font-semibold text-xl mb-4">Radar</div>
-                    <p-chart type="radar" [data]="radarData" [options]="radarOptions"></p-chart>
+                    <div class="font-semibold text-xl mb-6">Radar</div>
+                    <p-chart type="radar" [data]="radarData()" [options]="radarOptions()"></p-chart>
                 </div>
             </div>
         </p-fluid>
     `
 })
 export class ChartDemo {
-    lineData: any;
+    layoutService = inject(LayoutService);
 
-    barData: any;
+    lineData = signal<any>(null);
+    
+    barData = signal<any>(null);
+    
+    pieData = signal<any>(null);
+    
+    polarData = signal<any>(null);
+    
+    radarData = signal<any>(null);
 
-    pieData: any;
+    lineOptions = signal<any>(null);
+    
+    barOptions = signal<any>(null);
+    
+    pieOptions = signal<any>(null);
+    
+    polarOptions = signal<any>(null);
+    
+    radarOptions = signal<any>(null);
 
-    polarData: any;
-
-    radarData: any;
-
-    lineOptions: any;
-
-    barOptions: any;
-
-    pieOptions: any;
-
-    polarOptions: any;
-
-    radarOptions: any;
-
-    subscription: Subscription;
-    constructor(private layoutService: LayoutService) {
-        this.subscription = this.layoutService.configUpdate$.pipe(debounceTime(25)).subscribe(() => {
-            this.initCharts();
-        });
-    }
-
-    ngOnInit() {
-        this.initCharts();
-    }
+    chartEffect = effect(() => {
+        this.layoutService.layoutConfig().darkTheme;
+        setTimeout(() => this.initCharts(), 150);
+    })
 
     initCharts() {
         const documentStyle = getComputedStyle(document.documentElement);
@@ -88,7 +82,7 @@ export class ChartDemo {
         const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
         const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
-        this.barData = {
+        this.barData.set({
             labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
             datasets: [
                 {
@@ -104,9 +98,9 @@ export class ChartDemo {
                     data: [28, 48, 40, 19, 86, 27, 90]
                 }
             ]
-        };
+        });
 
-        this.barOptions = {
+        this.barOptions.set({
             maintainAspectRatio: false,
             aspectRatio: 0.8,
             plugins: {
@@ -139,9 +133,9 @@ export class ChartDemo {
                     }
                 }
             }
-        };
+        });
 
-        this.pieData = {
+        this.pieData.set({
             labels: ['A', 'B', 'C'],
             datasets: [
                 {
@@ -150,9 +144,9 @@ export class ChartDemo {
                     hoverBackgroundColor: [documentStyle.getPropertyValue('--p-indigo-400'), documentStyle.getPropertyValue('--p-purple-400'), documentStyle.getPropertyValue('--p-teal-400')]
                 }
             ]
-        };
+        });
 
-        this.pieOptions = {
+        this.pieOptions.set({
             plugins: {
                 legend: {
                     labels: {
@@ -161,9 +155,9 @@ export class ChartDemo {
                     }
                 }
             }
-        };
+        });
 
-        this.lineData = {
+        this.lineData.set({
             labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
             datasets: [
                 {
@@ -183,9 +177,9 @@ export class ChartDemo {
                     tension: 0.4
                 }
             ]
-        };
+        });
 
-        this.lineOptions = {
+        this.lineOptions.set({
             maintainAspectRatio: false,
             aspectRatio: 0.8,
             plugins: {
@@ -215,9 +209,9 @@ export class ChartDemo {
                     }
                 }
             }
-        };
+        });
 
-        this.polarData = {
+        this.polarData.set({
             datasets: [
                 {
                     data: [11, 16, 7, 3],
@@ -226,9 +220,9 @@ export class ChartDemo {
                 }
             ],
             labels: ['Indigo', 'Purple', 'Teal', 'Orange']
-        };
+        });
 
-        this.polarOptions = {
+        this.polarOptions.set({
             plugins: {
                 legend: {
                     labels: {
@@ -239,17 +233,17 @@ export class ChartDemo {
             scales: {
                 r: {
                     grid: {
-                        color: surfaceBorder,
+                        color: surfaceBorder
                     },
                     ticks: {
                         display: false,
                         color: textColorSecondary
-                    },
-                },
-            },
-        };
+                    }
+                }
+            }
+        });
 
-        this.radarData = {
+        this.radarData.set({
             labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
             datasets: [
                 {
@@ -271,9 +265,9 @@ export class ChartDemo {
                     data: [28, 48, 40, 19, 96, 27, 100]
                 }
             ]
-        };
+        });
 
-        this.radarOptions = {
+        this.radarOptions.set({
             plugins: {
                 legend: {
                     labels: {
@@ -291,12 +285,6 @@ export class ChartDemo {
                     }
                 }
             }
-        };
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
+        });
     }
 }

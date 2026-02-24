@@ -1,22 +1,15 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { StyleClassModule } from 'primeng/styleclass';
-import { MenuModule } from 'primeng/menu';
-import { AutoCompleteModule, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from 'primeng/autocomplete';
-import { DialogModule } from 'primeng/dialog';
 import { AppConfigurator } from './app.configurator';
-import { LayoutService } from '../service/layout.service';
-import { AuthService } from '../../core/auth.service';
-import { ThemePreferenceService } from '../../core/theme-preference.service';
-import { MenuSearchService, MenuSearchItem } from '../../core/menu-search.service';
+import { LayoutService } from '@/app/layout/service/layout.service';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, MenuModule, AutoCompleteModule, DialogModule, AppConfigurator],
+    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -40,37 +33,8 @@ import { MenuSearchService, MenuSearchItem } from '../../core/menu-search.servic
                         />
                     </g>
                 </svg>
-                <span>ZENTRA</span>
+                <span>SAKAI</span>
             </a>
-        </div>
-
-        <div class="layout-topbar-search hidden md:flex align-items-center gap-2 flex-1 max-w-md mx-4" #searchBox>
-            <p-autoComplete
-                #menuSearch
-                [(ngModel)]="searchQuery"
-                [suggestions]="searchResults"
-                (completeMethod)="onSearch($event)"
-                (onSelect)="onSelectSearch($event)"
-                placeholder="Buscar menú (Ctrl+K / ⌘K)"
-                [dropdown]="false"
-                [minLength]="0"
-                (focus)="onSearchFocus()"
-                styleClass="w-full"
-                inputStyleClass="w-full py-2 pl-3 pr-10"
-            >
-                <ng-template let-item pTemplate="item">
-                    <div class="flex align-items-center gap-2">
-                        <i [class]="item.icon" class="text-color-secondary"></i>
-                        <span>{{ item.label }}</span>
-                        @if (item.shortcut) {
-                            <span class="ml-auto text-color-secondary text-sm">{{ item.shortcut }}</span>
-                        }
-                    </div>
-                </ng-template>
-            </p-autoComplete>
-            <button type="button" class="layout-topbar-action" (click)="showHelpDialog = true" title="Atajos de teclado (Alt+H / ⌥H)">
-                <i class="pi pi-keyboard"></i>
-            </button>
         </div>
 
         <div class="layout-topbar-actions">
@@ -100,120 +64,32 @@ import { MenuSearchService, MenuSearchItem } from '../../core/menu-search.servic
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    @if (authService.currentUser(); as user) {
-                        <button type="button" class="layout-topbar-action" (click)="userMenu.toggle($event)">
-                            <i class="pi pi-user"></i>
-                            <span>{{ user.nombre || user.username }}</span>
-                            <i class="pi pi-chevron-down ml-1"></i>
-                        </button>
-                        <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
-                    }
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-calendar"></i>
+                        <span>Calendar</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-inbox"></i>
+                        <span>Messages</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action">
+                        <i class="pi pi-user"></i>
+                        <span>Profile</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <p-dialog
-        header="Atajos de teclado"
-        [(visible)]="showHelpDialog"
-        [modal]="true"
-        [style]="{ width: '28rem' }"
-        [draggable]="false"
-        [resizable]="false"
-    >
-        <div class="space-y-3">
-            <p class="font-semibold text-sm text-color-secondary">Navegación rápida</p>
-            <ul class="list-none p-0 m-0">
-                @for (s of menuSearchService.globalShortcuts; track s.keys) {
-                    <li class="flex justify-between align-items-center py-2 border-bottom-1 surface-border">
-                        <kbd class="px-2 py-1 bg-surface-200 rounded text-sm">{{ s.keys }}</kbd>
-                        <span class="text-sm">{{ s.action }}</span>
-                    </li>
-                }
-            </ul>
-            <p class="font-semibold text-sm text-color-secondary mt-3">Atajos por pantalla</p>
-            <ul class="list-none p-0 m-0 max-h-20rem overflow-auto">
-                @for (it of menuSearchService.items(); track it.label) {
-                    @if (it.shortcut) {
-                        <li class="flex justify-between align-items-center py-2 border-bottom-1 surface-border">
-                            <span class="text-sm">{{ it.label }}</span>
-                            <kbd class="px-2 py-1 bg-surface-200 rounded text-sm">{{ it.shortcut }}</kbd>
-                        </li>
-                    }
-                }
-            </ul>
-            <p class="text-sm text-color-secondary mt-2">Usa el buscador (Ctrl+K o ⌘K en Mac) para ir a cualquier pantalla del menú.</p>
-            <p class="text-xs text-color-secondary mt-2">En Mac: Ctrl = ⌘ (Cmd), Alt = ⌥ (Option).</p>
-        </div>
-    </p-dialog>`
+    </div>`
 })
 export class AppTopbar {
-    @ViewChild('searchBox') searchBoxRef!: ElementRef<HTMLElement>;
-
     items!: MenuItem[];
-    userMenuItems: MenuItem[] = [
-        { label: 'Cerrar sesión', icon: 'pi pi-sign-out', command: () => this.authService.logout() }
-    ];
 
-    searchQuery = '';
-    searchResults: MenuSearchItem[] = [];
-    showHelpDialog = false;
-
-    constructor(
-        public layoutService: LayoutService,
-        public authService: AuthService,
-        private themePreference: ThemePreferenceService,
-        public menuSearchService: MenuSearchService,
-        private router: Router
-    ) {}
-
-    @HostListener('document:keydown', ['$event'])
-    onKeyDown(event: KeyboardEvent) {
-        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-            event.preventDefault();
-            this.searchBoxRef?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus();
-            return;
-        }
-        if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
-            event.preventDefault();
-            this.layoutService.onMenuToggle();
-            return;
-        }
-        if (event.altKey && event.key.toLowerCase() === 'h') {
-            event.preventDefault();
-            this.showHelpDialog = true;
-            return;
-        }
-        if (event.altKey && event.key.toLowerCase() === 'd') {
-            event.preventDefault();
-            this.router.navigate(['/']);
-            return;
-        }
-        if (event.altKey && event.key.toLowerCase() === 'p') {
-            event.preventDefault();
-            this.router.navigate(['/pages/pdv']);
-            return;
-        }
-    }
-
-    onSearch(event: AutoCompleteCompleteEvent) {
-        this.searchResults = this.menuSearchService.filter(event.query ?? '');
-    }
-
-    onSearchFocus() {
-        this.searchResults = this.menuSearchService.filter(this.searchQuery);
-    }
-
-    onSelectSearch(event: AutoCompleteSelectEvent) {
-        const item = event.value as MenuSearchItem;
-        if (!item?.routerLink) return;
-        this.searchQuery = '';
-        this.searchResults = [];
-        this.router.navigate(item.routerLink);
-    }
+    layoutService = inject(LayoutService);
 
     toggleDarkMode() {
-        this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
-        this.themePreference.persist();
+        this.layoutService.layoutConfig.update((state) => ({
+            ...state,
+            darkTheme: !state.darkTheme
+        }));
     }
 }

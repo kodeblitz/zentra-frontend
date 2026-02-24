@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
 import { GalleriaModule } from 'primeng/galleria';
 import { ImageModule } from 'primeng/image';
 import { TagModule } from 'primeng/tag';
-import { PhotoService } from '../service/photo.service';
-import { Product, ProductService } from '../service/product.service';
+import { PhotoService } from '@/app/pages/service/photo.service';
+import { Product, ProductService } from '@/app/pages/service/product.service';
 
 @Component({
     selector: 'app-media-demo',
@@ -14,7 +14,7 @@ import { Product, ProductService } from '../service/product.service';
     imports: [CommonModule, CarouselModule, ButtonModule, GalleriaModule, ImageModule, TagModule],
     template: `<div class="card">
             <div class="font-semibold text-xl mb-4">Carousel</div>
-            <p-carousel [value]="products" [numVisible]="3" [numScroll]="3" [circular]="false" [responsiveOptions]="carouselResponsiveOptions">
+            <p-carousel [value]="products()" [numVisible]="3" [numScroll]="3" [circular]="false" [responsiveOptions]="carouselResponsiveOptions">
                 <ng-template let-product #item>
                     <div class="border border-surface rounded-border m-2 p-4">
                         <div class="mb-4">
@@ -45,7 +45,7 @@ import { Product, ProductService } from '../service/product.service';
 
         <div class="card">
             <div class="font-semibold text-xl mb-4">Galleria</div>
-            <p-galleria [value]="images" [responsiveOptions]="galleriaResponsiveOptions" [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
+            <p-galleria [value]="images()" [responsiveOptions]="galleriaResponsiveOptions" [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
                 <ng-template #item let-item>
                     <img [src]="item.itemImageSrc" style="width:100%" />
                 </ng-template>
@@ -57,9 +57,13 @@ import { Product, ProductService } from '../service/product.service';
     providers: [ProductService, PhotoService]
 })
 export class MediaDemo implements OnInit {
-    products!: Product[];
+    productService = inject(ProductService);
 
-    images!: any[];
+    photoService = inject(PhotoService);
+
+    products = signal<Product[]>([]);
+
+    images = signal<any[]>([]);
 
     galleriaResponsiveOptions: any[] = [
         {
@@ -98,19 +102,9 @@ export class MediaDemo implements OnInit {
         }
     ];
 
-    constructor(
-        private productService: ProductService,
-        private photoService: PhotoService
-    ) {}
-
     ngOnInit() {
-        this.productService.getProductsSmall().then((products) => {
-            this.products = products;
-        });
-
-        this.photoService.getImages().then((images) => {
-            this.images = images;
-        });
+        this.productService.getProductsSmall().then((products) => this.products.set(products));
+        this.photoService.getImages().then((images) => this.images.set(images));
     }
 
     getSeverity(status: string) {

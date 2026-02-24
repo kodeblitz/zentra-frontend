@@ -4,14 +4,11 @@ import { Dashboard } from './app/pages/dashboard/dashboard';
 import { Documentation } from './app/pages/documentation/documentation';
 import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
-import { authGuard, authMatchGuard } from './app/core/auth.guard';
 
 export const appRoutes: Routes = [
     {
         path: '',
         component: AppLayout,
-        canMatch: [authMatchGuard],
-        canActivate: [authGuard],
         children: [
             { path: '', component: Dashboard },
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
@@ -21,8 +18,6 @@ export const appRoutes: Routes = [
     },
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
-    { path: 'p/:token', loadComponent: () => import('./app/pages/presupuestos/presupuesto-publico/presupuesto-publico').then((m) => m.PresupuestoPublicoComponent) },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
-    { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
     { path: '**', redirectTo: '/notfound' }
 ];

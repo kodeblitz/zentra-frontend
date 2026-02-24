@@ -1,70 +1,46 @@
 import { Injectable, effect, signal, computed } from '@angular/core';
-import { Subject } from 'rxjs';
 
-export interface layoutConfig {
-    preset?: string;
-    primary?: string;
-    surface?: string | undefined | null;
-    darkTheme?: boolean;
-    menuMode?: string;
+export interface LayoutConfig {
+    preset: string;
+    primary: string;
+    surface: string | undefined | null;
+    darkTheme: boolean;
+    menuMode: string;
 }
 
 interface LayoutState {
-    staticMenuDesktopInactive?: boolean;
-    overlayMenuActive?: boolean;
-    configSidebarVisible?: boolean;
-    staticMenuMobileActive?: boolean;
-    menuHoverActive?: boolean;
-}
-
-interface MenuChangeEvent {
-    key: string;
-    routeEvent?: boolean;
+    staticMenuDesktopInactive: boolean;
+    overlayMenuActive: boolean;
+    configSidebarVisible: boolean;
+    mobileMenuActive: boolean;
+    menuHoverActive: boolean;
+    activePath: string | null;
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class LayoutService {
-    _config: layoutConfig = {
+    layoutConfig = signal<LayoutConfig>({
         preset: 'Aura',
         primary: 'emerald',
         surface: null,
         darkTheme: false,
         menuMode: 'static'
-    };
+    });
 
-    _state: LayoutState = {
+    layoutState = signal<LayoutState>({
         staticMenuDesktopInactive: false,
         overlayMenuActive: false,
         configSidebarVisible: false,
-        staticMenuMobileActive: false,
-        menuHoverActive: false
-    };
+        mobileMenuActive: false,
+        menuHoverActive: false,
+        activePath: null
+    });
 
-    layoutConfig = signal<layoutConfig>(this._config);
+    theme = computed(() => (this.layoutConfig().darkTheme ? 'light' : 'dark'));
 
-    layoutState = signal<LayoutState>(this._state);
-
-    private configUpdate = new Subject<layoutConfig>();
-
-    private overlayOpen = new Subject<any>();
-
-    private menuSource = new Subject<MenuChangeEvent>();
-
-    private resetSource = new Subject();
-
-    menuSource$ = this.menuSource.asObservable();
-
-    resetSource$ = this.resetSource.asObservable();
-
-    configUpdate$ = this.configUpdate.asObservable();
-
-    overlayOpen$ = this.overlayOpen.asObservable();
-
-    theme = computed(() => (this.layoutConfig()?.darkTheme ? 'light' : 'dark'));
-
-    isSidebarActive = computed(() => this.layoutState().overlayMenuActive || this.layoutState().staticMenuMobileActive);
+    isSidebarActive = computed(() => this.layoutState().overlayMenuActive || this.layoutState().mobileMenuActive);
 
     isDarkTheme = computed(() => this.layoutConfig().darkTheme);
 
@@ -81,45 +57,33 @@ export class LayoutService {
     constructor() {
         effect(() => {
             const config = this.layoutConfig();
-            if (config) {
-                this.onConfigUpdate();
-            }
-        });
 
-        effect(() => {
-            const config = this.layoutConfig();
-            if (!config) return;
-            if (!this.initialized) {
+            if (!this.initialized || !config) {
                 this.initialized = true;
-                this.toggleDarkMode(config);
                 return;
             }
+
             this.handleDarkModeTransition(config);
         });
     }
 
-    private handleDarkModeTransition(config: layoutConfig): void {
-        if ((document as any).startViewTransition) {
+    private handleDarkModeTransition(config: LayoutConfig): void {
+        const supportsViewTransition = 'startViewTransition' in document;
+
+        if (supportsViewTransition) {
             this.startViewTransition(config);
         } else {
             this.toggleDarkMode(config);
-            this.onTransitionEnd();
         }
     }
 
-    private startViewTransition(config: layoutConfig): void {
-        const transition = (document as any).startViewTransition(() => {
+    private startViewTransition(config: LayoutConfig): void {
+        document.startViewTransition(() => {
             this.toggleDarkMode(config);
         });
-
-        transition.ready
-            .then(() => {
-                this.onTransitionEnd();
-            })
-            .catch(() => {});
     }
 
-    toggleDarkMode(config?: layoutConfig): void {
+    toggleDarkMode(config?: LayoutConfig): void {
         const _config = config || this.layoutConfig();
         if (_config.darkTheme) {
             document.documentElement.classList.add('app-dark');
@@ -128,31 +92,24 @@ export class LayoutService {
         }
     }
 
-    private onTransitionEnd() {
-        this.transitionComplete.set(true);
-        setTimeout(() => {
-            this.transitionComplete.set(false);
-        });
-    }
-
     onMenuToggle() {
         if (this.isOverlay()) {
             this.layoutState.update((prev) => ({ ...prev, overlayMenuActive: !this.layoutState().overlayMenuActive }));
-
-            if (this.layoutState().overlayMenuActive) {
-                this.overlayOpen.next(null);
-            }
         }
 
         if (this.isDesktop()) {
             this.layoutState.update((prev) => ({ ...prev, staticMenuDesktopInactive: !this.layoutState().staticMenuDesktopInactive }));
         } else {
-            this.layoutState.update((prev) => ({ ...prev, staticMenuMobileActive: !this.layoutState().staticMenuMobileActive }));
-
-            if (this.layoutState().staticMenuMobileActive) {
-                this.overlayOpen.next(null);
-            }
+            this.layoutState.update((prev) => ({ ...prev, mobileMenuActive: !this.layoutState().mobileMenuActive }));
         }
+    }
+
+    showConfigSidebar() {
+        this.layoutState.update((prev) => ({ ...prev, configSidebarVisible: true }));
+    }
+
+    hideConfigSidebar() {
+        this.layoutState.update((prev) => ({ ...prev, configSidebarVisible: false }));
     }
 
     isDesktop() {
@@ -161,18 +118,5 @@ export class LayoutService {
 
     isMobile() {
         return !this.isDesktop();
-    }
-
-    onConfigUpdate() {
-        this._config = { ...this.layoutConfig() };
-        this.configUpdate.next(this.layoutConfig());
-    }
-
-    onMenuStateChange(event: MenuChangeEvent) {
-        this.menuSource.next(event);
-    }
-
-    reset() {
-        this.resetSource.next(true);
     }
 }

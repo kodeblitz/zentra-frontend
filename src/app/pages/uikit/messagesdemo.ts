@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MessageService, ToastMessageOptions } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
-import { ToastModule } from 'primeng/toast';
+import {CommonModule} from '@angular/common';
+import {Component} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MessageService, ToastMessageOptions} from 'primeng/api';
+import {ButtonModule} from 'primeng/button';
+import {InputTextModule} from 'primeng/inputtext';
+import {MessageModule} from 'primeng/message';
+import {ToastModule} from 'primeng/toast';
 
 @Component({
     selector: 'app-messages-demo',
@@ -25,13 +25,15 @@ import { ToastModule } from 'primeng/toast';
                     </div>
 
                     <div class="font-semibold text-xl mt-4 mb-4">Inline</div>
-                    <div class="flex flex-col mb-4 gap-1">
+                    <div class="flex mb-4 gap-1">
                         <input pInputText [(ngModel)]="username" placeholder="Username" aria-label="username" class="ng-dirty ng-invalid" />
-                        <p-message severity="error" variant="simple" size="small">Username is required</p-message>
+                        <p-message severity="error" size="small" styleClass="h-auto w-full " [pt]="pt">Username is required</p-message>
                     </div>
-                    <div class="flex flex-col flex-wrap gap-1">
+                    <div class="flex flex-wrap gap-1">
                         <input pInputText [(ngModel)]="email" placeholder="Email" aria-label="email" class="ng-dirty ng-invalid" />
-                        <p-message severity="error" variant="simple" size="small">Email is required</p-message>
+                        <p-message severity="error" size="small" styleClass="flex items-center text-center justify-center h-auto w-11" [pt]="pt">
+                            <i class="pi pi-times-circle"></i>
+                        </p-message>
                     </div>
                 </div>
             </div>
@@ -61,19 +63,39 @@ export class MessagesDemo {
 
     constructor(private service: MessageService) {}
 
+    pt: any = {
+        contentWrapper: 'flex items-center'
+    };
+
     showInfoViaToast() {
-        this.service.add({ severity: 'info', summary: 'Info Message', detail: 'PrimeNG rocks' });
+        this.service.add({
+            severity: 'info',
+            summary: 'Info Message',
+            detail: 'PrimeNG rocks'
+        });
     }
 
     showWarnViaToast() {
-        this.service.add({ severity: 'warn', summary: 'Warn Message', detail: 'There are unsaved changes' });
+        this.service.add({
+            severity: 'warn',
+            summary: 'Warn Message',
+            detail: 'There are unsaved changes'
+        });
     }
 
     showErrorViaToast() {
-        this.service.add({ severity: 'error', summary: 'Error Message', detail: 'Validation failed' });
+        this.service.add({
+            severity: 'error',
+            summary: 'Error Message',
+            detail: 'Validation failed'
+        });
     }
 
     showSuccessViaToast() {
-        this.service.add({ severity: 'success', summary: 'Success Message', detail: 'Message sent' });
+        this.service.add({
+            severity: 'success',
+            summary: 'Success Message',
+            detail: 'Message sent'
+        });
     }
 }

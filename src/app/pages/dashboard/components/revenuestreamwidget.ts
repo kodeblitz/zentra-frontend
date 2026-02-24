@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import { afterNextRender, Component, effect, inject, signal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
-import { debounceTime, Subscription } from 'rxjs';
-import { LayoutService } from '../../../layout/service/layout.service';
+import { LayoutService } from '@/app/layout/service/layout.service';
 
 @Component({
     standalone: true,
@@ -9,24 +8,29 @@ import { LayoutService } from '../../../layout/service/layout.service';
     imports: [ChartModule],
     template: `<div class="card mb-8!">
         <div class="font-semibold text-xl mb-4">Revenue Stream</div>
-        <p-chart type="bar" [data]="chartData" [options]="chartOptions" class="h-100" />
+        <p-chart type="bar" [data]="chartData()" [options]="chartOptions()" class="h-100" />
     </div>`
 })
 export class RevenueStreamWidget {
-    chartData: any;
+    layoutService = inject(LayoutService);
 
-    chartOptions: any;
+    chartData = signal<any>(null);
 
-    subscription!: Subscription;
+    chartOptions = signal<any>(null);
 
-    constructor(public layoutService: LayoutService) {
-        this.subscription = this.layoutService.configUpdate$.pipe(debounceTime(25)).subscribe(() => {
-            this.initChart();
+    constructor() {
+        afterNextRender(() => {
+            setTimeout(() => {
+                this.initChart();
+            }, 150);
         });
-    }
 
-    ngOnInit() {
-        this.initChart();
+        effect(() => {
+            this.layoutService.layoutConfig().darkTheme;
+            setTimeout(() => {
+                this.initChart();
+            }, 150);
+        });
     }
 
     initChart() {
@@ -35,7 +39,7 @@ export class RevenueStreamWidget {
         const borderColor = documentStyle.getPropertyValue('--surface-border');
         const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
 
-        this.chartData = {
+        this.chartData.set({
             labels: ['Q1', 'Q2', 'Q3', 'Q4'],
             datasets: [
                 {
@@ -67,9 +71,9 @@ export class RevenueStreamWidget {
                     barThickness: 32
                 }
             ]
-        };
+        });
 
-        this.chartOptions = {
+        this.chartOptions.set({
             maintainAspectRatio: false,
             aspectRatio: 0.8,
             plugins: {
@@ -102,12 +106,6 @@ export class RevenueStreamWidget {
                     }
                 }
             }
-        };
-    }
-
-    ngOnDestroy() {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-        }
+        });
     }
 }

@@ -1,0 +1,17 @@
+// Estilos del módulo Caja (efectivo)
+
+// Input de cantidad en tabla de denominaciones: sin recorte y ancho fijo
+.caja-denom-table .caja-denom-cant {
+    overflow: visible;
+}
+.caja-denom-table ::ng-deep .caja-inputnumber.p-inputnumber {
+    display: block;
+    width: 100%;
+    max-width: 6rem;
+    margin-left: auto;
+}
+.caja-denom-table ::ng-deep .caja-inputnumber .p-inputnumber-input {
+    width: 100%;
+    min-width: 3rem;
+    text-align: right;
+}

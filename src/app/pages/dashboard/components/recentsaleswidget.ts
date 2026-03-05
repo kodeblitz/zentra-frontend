@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RippleModule } from 'primeng/ripple';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
-import { Product, ProductService } from '@/app/pages/service/product.service';
+import { Product, ProductService } from '../../service/product.service';
 
 @Component({
     standalone: true,
@@ -11,7 +11,7 @@ import { Product, ProductService } from '@/app/pages/service/product.service';
     imports: [CommonModule, TableModule, ButtonModule, RippleModule],
     template: `<div class="card mb-8!">
         <div class="font-semibold text-xl mb-4">Recent Sales</div>
-        <p-table [value]="products()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+        <p-table [value]="products" [paginator]="true" [rows]="5" responsiveLayout="scroll">
             <ng-template #header>
                 <tr>
                     <th>Image</th>
@@ -37,11 +37,11 @@ import { Product, ProductService } from '@/app/pages/service/product.service';
     providers: [ProductService]
 })
 export class RecentSalesWidget {
-    products = signal<Product[]>([]);
+    products!: Product[];
 
-    productService = inject(ProductService);
+    constructor(private productService: ProductService) {}
 
     ngOnInit() {
-        this.productService.getProductsSmall().then((data) => (this.products.set(data)));
+        this.productService.getProductsSmall().then((data) => (this.products = data));
     }
 }

@@ -1,0 +1,68 @@
+<div class="backup-container">
+    <h2 class="backup-title">
+        <i class="pi pi-cloud-download"></i>
+        Respaldo y restauración
+    </h2>
+    <p class="backup-desc text-color-secondary mb-4">
+        Cree un respaldo de la base de datos, descárguelo o súbalo a la nube, y restaure desde un archivo cuando lo necesite.
+    </p>
+
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <p-card header="Crear y descargar backup">
+                <p class="mb-3">Genera un archivo ZIP con el respaldo completo de la base de datos. Solo administradores.</p>
+                <p-button
+                    label="Crear y descargar"
+                    icon="pi pi-download"
+                    [loading]="loadingCreate()"
+                    (onClick)="crearYDescargar()"
+                />
+            </p-card>
+        </div>
+        @if (status()?.canUseCloudBackup) {
+            <div class="col-12 md:col-6">
+                <p-card header="Subir a la nube">
+                    <p class="mb-3">Crea un backup y lo sube al servicio configurado. Requiere ZENTRA_BACKUP_SERVICE_URL y licencia con función cloudBackup si aplica.</p>
+                    <p-button
+                        label="Respaldar en la nube"
+                        icon="pi pi-cloud-upload"
+                        [loading]="loadingUpload()"
+                        (onClick)="subirANube()"
+                    />
+                </p-card>
+            </div>
+        }
+        @if (status()?.cloudConfigured && !status()?.canUseCloudBackup) {
+            <div class="col-12 md:col-6">
+                <p-card header="Respaldo en la nube">
+                    <p class="mb-0 text-color-secondary">El servicio en la nube está configurado, pero la licencia actual no incluye la función de respaldo en la nube.</p>
+                </p-card>
+            </div>
+        }
+    </div>
+
+    <p-card header="Restaurar desde archivo" class="mt-4">
+        <p class="mb-3">Seleccione un archivo ZIP de backup generado por Zentra. <strong>Advertencia:</strong> se reemplazarán todos los datos actuales. Solo administradores.</p>
+        <p-fileupload
+            mode="basic"
+            chooseLabel="Elegir archivo ZIP"
+            [showCancelButton]="false"
+            [showUploadButton]="false"
+            accept=".zip,application/zip"
+            (onSelect)="onFileSelect($event)"
+        />
+        @if (selectedFile(); as file) {
+            <p class="mt-2 text-color-secondary">
+                <i class="pi pi-file"></i> {{ file.name }}
+            </p>
+            <p-button
+                label="Restaurar"
+                icon="pi pi-refresh"
+                severity="warn"
+                [loading]="loadingRestore()"
+                (onClick)="restaurar()"
+                styleClass="mt-2"
+            />
+        }
+    </p-card>
+</div>

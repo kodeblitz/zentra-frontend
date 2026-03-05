@@ -3,7 +3,7 @@
     "version": 1,
     "newProjectRoot": "projects",
     "projects": {
-        "sakai-ng": {
+        "zentra": {
             "projectType": "application",
             "schematics": {
                 "@schematics/angular:component": {
@@ -17,9 +17,12 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
                     "options": {
-                        "outputPath": "dist/sakai-ng",
+                        "outputPath": "dist/zentra",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
+                        "polyfills": [
+                            "zone.js"
+                        ],
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
                         "assets": [
@@ -29,25 +32,12 @@
                             }
                         ],
                         "styles": [
-                            "src/assets/styles.scss",
-                            "src/assets/tailwind.css"
+                            "src/assets/styles.scss"
                         ],
                         "scripts": []
                     },
                     "configurations": {
                         "production": {
-                            "budgets": [
-                                {
-                                    "type": "initial",
-                                    "maximumWarning": "1mb",
-                                    "maximumError": "5mb"
-                                },
-                                {
-                                    "type": "anyComponentStyle",
-                                    "maximumWarning": "2kb",
-                                    "maximumError": "4kb"
-                                }
-                            ],
                             "outputHashing": "all"
                         },
                         "development": {
@@ -62,10 +52,10 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                            "buildTarget": "sakai-ng:build:production"
+                            "buildTarget": "zentra:build:production"
                         },
                         "development": {
-                            "buildTarget": "sakai-ng:build:development"
+                            "buildTarget": "zentra:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -76,11 +66,17 @@
                 "test": {
                     "builder": "@angular-devkit/build-angular:karma",
                     "options": {
+                        "polyfills": [
+                            "zone.js",
+                            "zone.js/testing"
+                        ],
                         "tsConfig": "tsconfig.spec.json",
                         "inlineStyleLanguage": "scss",
                         "assets": [
-                            "src/favicon.ico",
-                            "src/assets"
+                            {
+                                "glob": "**/*",
+                                "input": "public"
+                            }
                         ],
                         "styles": [
                             "src/assets/styles.scss"
@@ -92,6 +88,6 @@
         }
     },
     "cli": {
-        "analytics": false
+      "analytics": false
     }
 }

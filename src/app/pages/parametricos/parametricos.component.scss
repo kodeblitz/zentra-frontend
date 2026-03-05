@@ -1,0 +1,20 @@
+.parametricos-container {
+    padding: 1rem;
+    max-width: 56rem;
+}
+
+.parametricos-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+}
+
+.parametricos-desc {
+    margin: 0;
+}
+
+.parametricos-tabs ::ng-deep .p-tabview-panels {
+    padding: 1rem 0;
+}

@@ -1,0 +1,10 @@
+// Estilos del módulo Comandas
+:host ::ng-deep .comanda-card {
+    .p-card-body {
+        padding: 1rem;
+    }
+    .p-card-footer {
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--surface-border);
+    }
+}

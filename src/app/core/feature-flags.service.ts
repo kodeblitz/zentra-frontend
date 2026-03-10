@@ -10,6 +10,7 @@ export const FEATURE_KEYS = {
     pdv: 'pdv',
     presupuestos: 'presupuestos',
     pedidos: 'pedidos',
+    comandas: 'comandas',
     alquileres: 'alquileres',
     devoluciones: 'devoluciones',
     creditos: 'creditos',
@@ -20,7 +21,8 @@ export const FEATURE_KEYS = {
     inventario: 'inventario',
     parametricos: 'parametricos',
     compras: 'compras',
-    gastos: 'gastos'
+    gastos: 'gastos',
+    usuarios: 'usuarios'
 } as const;
 
 export type FeatureKey = keyof typeof FEATURE_KEYS;

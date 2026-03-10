@@ -16,6 +16,13 @@ export interface UsuarioInfo {
     roles?: string[];
 }
 
+export interface UpdatePerfilRequest {
+    nombre?: string;
+    email?: string;
+    passwordActual?: string;
+    passwordNueva?: string;
+}
+
 export interface LoginResponse {
     accessToken: string;
     expiresIn: number;
@@ -98,5 +105,17 @@ export class AuthService {
         const u = this.getStoredUser();
         if (t) this.token.set(t);
         if (u) this.user.set(u);
+    }
+
+    /** Actualiza el perfil del usuario actual. Devuelve el usuario actualizado. */
+    updateProfile(data: UpdatePerfilRequest): Observable<UsuarioInfo> {
+        return this.http.put<UsuarioInfo>(`${this.base}/auth/me`, data).pipe(
+            tap((usuario) => {
+                if (usuario) {
+                    localStorage.setItem(STORAGE_USER, JSON.stringify(usuario));
+                    this.user.set(usuario);
+                }
+            })
+        );
     }
 }

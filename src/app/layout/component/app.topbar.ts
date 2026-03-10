@@ -7,16 +7,35 @@ import { StyleClassModule } from 'primeng/styleclass';
 import { MenuModule } from 'primeng/menu';
 import { AutoCompleteModule, AutoCompleteCompleteEvent, AutoCompleteSelectEvent } from 'primeng/autocomplete';
 import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../core/auth.service';
 import { ThemePreferenceService } from '../../core/theme-preference.service';
 import { MenuSearchService, MenuSearchItem } from '../../core/menu-search.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, MenuModule, AutoCompleteModule, DialogModule, AppConfigurator],
+    imports: [
+        RouterModule,
+        CommonModule,
+        FormsModule,
+        StyleClassModule,
+        MenuModule,
+        AutoCompleteModule,
+        DialogModule,
+        InputTextModule,
+        PasswordModule,
+        ButtonModule,
+        ToastModule,
+        AppConfigurator
+    ],
+    providers: [MessageService],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -145,6 +164,49 @@ import { MenuSearchService, MenuSearchItem } from '../../core/menu-search.servic
             <p class="text-sm text-color-secondary mt-2">Usa el buscador (Ctrl+K o ⌘K en Mac) para ir a cualquier pantalla del menú.</p>
             <p class="text-xs text-color-secondary mt-2">En Mac: Ctrl = ⌘ (Cmd), Alt = ⌥ (Option).</p>
         </div>
+    </p-dialog>
+
+    <p-dialog
+        header="Mi perfil"
+        [(visible)]="showProfileDialog"
+        [modal]="true"
+        [style]="{ width: '28rem' }"
+        [draggable]="false"
+        [resizable]="false"
+        (onHide)="profileForm = { nombre: '', email: '', passwordActual: '', passwordNueva: '', passwordNuevaRepeat: '' }"
+    >
+        <p-toast />
+        <form class="flex flex-col gap-3" (ngSubmit)="guardarPerfil()">
+            <div>
+                <label for="profile-nombre" class="block text-sm font-medium mb-1">Nombre</label>
+                <input pInputText id="profile-nombre" [(ngModel)]="profileForm.nombre" name="nombre" class="w-full" placeholder="Su nombre" />
+            </div>
+            <div>
+                <label for="profile-email" class="block text-sm font-medium mb-1">Correo</label>
+                <input pInputText id="profile-email" [(ngModel)]="profileForm.email" name="email" type="email" class="w-full" placeholder="correo&#64;ejemplo.com" />
+            </div>
+            <div class="border-t pt-3 mt-1">
+                <p class="text-sm text-color-secondary mb-2">Dejar en blanco para no cambiar la contraseña.</p>
+                <div class="flex flex-col gap-2">
+                    <div>
+                        <label for="profile-pwd-actual" class="block text-sm font-medium mb-1">Contraseña actual</label>
+                        <p-password id="profile-pwd-actual" [(ngModel)]="profileForm.passwordActual" name="passwordActual" [feedback]="false" [toggleMask]="true" inputStyleClass="w-full" placeholder="Solo si cambia contraseña" />
+                    </div>
+                    <div>
+                        <label for="profile-pwd-nueva" class="block text-sm font-medium mb-1">Nueva contraseña</label>
+                        <p-password id="profile-pwd-nueva" [(ngModel)]="profileForm.passwordNueva" name="passwordNueva" [feedback]="true" [toggleMask]="true" inputStyleClass="w-full" placeholder="Mín. 8 caracteres" />
+                    </div>
+                    <div>
+                        <label for="profile-pwd-repeat" class="block text-sm font-medium mb-1">Repetir nueva contraseña</label>
+                        <p-password id="profile-pwd-repeat" [(ngModel)]="profileForm.passwordNuevaRepeat" name="passwordNuevaRepeat" [feedback]="false" [toggleMask]="true" inputStyleClass="w-full" placeholder="Repetir nueva contraseña" />
+                    </div>
+                </div>
+            </div>
+        </form>
+        <ng-template pTemplate="footer">
+            <button pButton label="Cancelar" class="p-button-text" (click)="showProfileDialog = false"></button>
+            <button pButton label="Guardar" [loading]="profileSaving" (click)="guardarPerfil()"></button>
+        </ng-template>
     </p-dialog>`
 })
 export class AppTopbar {
@@ -152,20 +214,79 @@ export class AppTopbar {
 
     items!: MenuItem[];
     userMenuItems: MenuItem[] = [
+        { label: 'Mi perfil', icon: 'pi pi-user-edit', command: () => this.openProfileDialog() },
         { label: 'Cerrar sesión', icon: 'pi pi-sign-out', command: () => this.authService.logout() }
     ];
 
     searchQuery = '';
     searchResults: MenuSearchItem[] = [];
     showHelpDialog = false;
+    showProfileDialog = false;
+    profileSaving = false;
+    profileForm = {
+        nombre: '',
+        email: '',
+        passwordActual: '',
+        passwordNueva: '',
+        passwordNuevaRepeat: ''
+    };
 
     constructor(
         public layoutService: LayoutService,
         public authService: AuthService,
         private themePreference: ThemePreferenceService,
         public menuSearchService: MenuSearchService,
-        private router: Router
+        private router: Router,
+        private messageService: MessageService
     ) {}
+
+    openProfileDialog(): void {
+        const u = this.authService.currentUser();
+        this.profileForm = {
+            nombre: u?.nombre ?? '',
+            email: u?.email ?? '',
+            passwordActual: '',
+            passwordNueva: '',
+            passwordNuevaRepeat: ''
+        };
+        this.showProfileDialog = true;
+    }
+
+    guardarPerfil(): void {
+        const f = this.profileForm;
+        if (f.passwordNueva && f.passwordNueva !== f.passwordNuevaRepeat) {
+            this.messageService.add({ severity: 'warn', summary: 'Contraseñas distintas', detail: 'La nueva contraseña y su repetición no coinciden.' });
+            return;
+        }
+        if (f.passwordNueva && f.passwordNueva.length < 8) {
+            this.messageService.add({ severity: 'warn', summary: 'Contraseña corta', detail: 'La nueva contraseña debe tener al menos 8 caracteres.' });
+            return;
+        }
+        if (f.passwordNueva && !f.passwordActual) {
+            this.messageService.add({ severity: 'warn', summary: 'Contraseña actual requerida', detail: 'Debe ingresar su contraseña actual para cambiarla.' });
+            return;
+        }
+        this.profileSaving = true;
+        this.authService
+            .updateProfile({
+                nombre: f.nombre || undefined,
+                email: f.email || undefined,
+                passwordActual: f.passwordActual || undefined,
+                passwordNueva: f.passwordNueva || undefined
+            })
+            .subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Perfil actualizado', detail: 'Sus datos se guardaron correctamente.' });
+                    this.showProfileDialog = false;
+                    this.profileSaving = false;
+                },
+                error: (err) => {
+                    this.profileSaving = false;
+                    const msg = err?.error?.message ?? err?.error?.detail ?? 'No se pudo actualizar el perfil.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
+    }
 
     @HostListener('document:keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {

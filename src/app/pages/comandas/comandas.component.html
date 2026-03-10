@@ -1,0 +1,134 @@
+<p-toast />
+<div class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h5 class="m-0 font-semibold">Comandas</h5>
+        <div class="flex gap-2">
+            <p-button label="Ir al PDV" icon="pi pi-shopping-cart" severity="secondary" [outlined]="true" (onClick)="irAPdv()" />
+            <p-button label="Ver todos los pedidos" icon="pi pi-list" severity="secondary" [outlined]="true" (onClick)="irAPedidos()" />
+        </div>
+    </div>
+
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab [value]="0">
+                <span class="flex items-center gap-2">
+                    <i class="pi pi-th-large"></i>
+                    Mesas
+                    <p-tag [value]="mesas().length.toString()" severity="info" />
+                </span>
+            </p-tab>
+            <p-tab [value]="1">
+                <span class="flex items-center gap-2">
+                    <i class="pi pi-truck"></i>
+                    Delivery
+                    <p-tag [value]="delivery().length.toString()" severity="info" />
+                </span>
+            </p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <p-tabpanel [value]="0">
+            @if (loading()) {
+                <div class="flex justify-center py-8"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
+            } @else if (mesas().length === 0) {
+                <p-card>
+                    <div class="text-center py-8 text-color-secondary">
+                        <i class="pi pi-inbox text-4xl mb-4 block"></i>
+                        <p class="m-0">No hay comandas activas en mesas.</p>
+                        <p class="text-sm mt-2">Creá pedidos desde el PDV con tipo "In situ" o "Retiro".</p>
+                        <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" class="mt-4" />
+                    </div>
+                </p-card>
+            } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @for (p of mesas(); track p.id) {
+                        <p-card [header]="getMesaLabel(p)" styleClass="comanda-card">
+                            <ng-template pTemplate="subtitle">
+                                <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" />
+                            </ng-template>
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div><span class="font-semibold">Cliente:</span> {{ getClienteNombre(p.cliente?.id) }}</div>
+                                <div><span class="font-semibold">Total:</span> {{ p.total | number:'1.0-0' }} Gs.</div>
+                                @if (p.creadoEn) {
+                                    <div class="text-color-secondary text-xs">{{ p.creadoEn | date:'HH:mm' }}</div>
+                                }
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <div class="flex flex-wrap gap-1">
+                                    @if (p.estado === 'PENDIENTE') {
+                                        <p-button icon="pi pi-check" pTooltip="Confirmar" [rounded]="true" [text]="true" (onClick)="confirmar(p)" />
+                                        <p-button icon="pi pi-times" severity="danger" pTooltip="Cancelar" [rounded]="true" [text]="true" (onClick)="cancelar(p)" />
+                                    }
+                                    @if (p.estado === 'CONFIRMADO') {
+                                        <p-button icon="pi pi-box" pTooltip="En preparación" [rounded]="true" [text]="true" (onClick)="enPreparacion(p)" />
+                                    }
+                                    @if (p.estado === 'EN_PREPARACION') {
+                                        <p-button icon="pi pi-check-circle" pTooltip="Entregado" [rounded]="true" [text]="true" (onClick)="entregado(p)" />
+                                    }
+                                    @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
+                                        <p-button icon="pi pi-file-edit" pTooltip="Facturar" [rounded]="true" [text]="true" (onClick)="facturar(p)" />
+                                    }
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    }
+                </div>
+            }
+            </p-tabpanel>
+            <p-tabpanel [value]="1">
+            @if (delivery().length === 0) {
+                <p-card>
+                    <div class="text-center py-8 text-color-secondary">
+                        <i class="pi pi-truck text-4xl mb-4 block"></i>
+                        <p class="m-0">No hay pedidos de delivery activos.</p>
+                        <p class="text-sm mt-2">Creá pedidos desde el PDV con tipo "Delivery".</p>
+                        <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" class="mt-4" />
+                    </div>
+                </p-card>
+            } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @for (p of delivery(); track p.id) {
+                        <p-card [header]="'#' + (p.numero || p.id)" styleClass="comanda-card">
+                            <ng-template pTemplate="subtitle">
+                                <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" />
+                            </ng-template>
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div><span class="font-semibold">Cliente:</span> {{ getClienteNombre(p.cliente?.id) }}</div>
+                                @if (p.direccionEntrega) {
+                                    <div class="text-color-secondary"><i class="pi pi-map-marker mr-1"></i>{{ p.direccionEntrega }}</div>
+                                }
+                                @if (p.telefonoContacto) {
+                                    <div><i class="pi pi-phone mr-1"></i>{{ p.telefonoContacto }}</div>
+                                }
+                                <div><span class="font-semibold">Total:</span> {{ p.total | number:'1.0-0' }} Gs.</div>
+                                @if (p.creadoEn) {
+                                    <div class="text-color-secondary text-xs">{{ p.creadoEn | date:'HH:mm' }}</div>
+                                }
+                            </div>
+                            <ng-template pTemplate="footer">
+                                <div class="flex flex-wrap gap-1">
+                                    @if (p.estado === 'PENDIENTE') {
+                                        <p-button icon="pi pi-check" pTooltip="Confirmar" [rounded]="true" [text]="true" (onClick)="confirmar(p)" />
+                                        <p-button icon="pi pi-times" severity="danger" pTooltip="Cancelar" [rounded]="true" [text]="true" (onClick)="cancelar(p)" />
+                                    }
+                                    @if (p.estado === 'CONFIRMADO') {
+                                        <p-button icon="pi pi-box" pTooltip="En preparación" [rounded]="true" [text]="true" (onClick)="enPreparacion(p)" />
+                                    }
+                                    @if (p.estado === 'EN_PREPARACION') {
+                                        <p-button icon="pi pi-truck" pTooltip="En entrega" [rounded]="true" [text]="true" (onClick)="enEntrega(p)" />
+                                    }
+                                    @if (p.estado === 'EN_ENTREGA') {
+                                        <p-button icon="pi pi-check-circle" pTooltip="Entregado" [rounded]="true" [text]="true" (onClick)="entregado(p)" />
+                                    }
+                                    @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
+                                        <p-button icon="pi pi-file-edit" pTooltip="Facturar" [rounded]="true" [text]="true" (onClick)="facturar(p)" />
+                                    }
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    }
+                </div>
+            }
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

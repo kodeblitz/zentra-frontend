@@ -1,0 +1,157 @@
+<p-toast />
+<div class="setup-page flex flex-col min-h-screen bg-surface-ground">
+    <header class="setup-header p-6 bg-primary text-primary-contrast rounded-b-lg shadow-md">
+        <h1 class="m-0 text-2xl font-bold flex items-center gap-3">
+            <i class="pi pi-cog text-3xl"></i>
+            Configuración inicial de Zentra
+        </h1>
+        <p class="m-0 mt-2 text-white/90 text-sm max-w-2xl">
+            Completá los datos básicos de tu empresa para facturación y operación. Solo se hace una vez.
+        </p>
+    </header>
+
+    <main class="flex-1 p-6 max-w-2xl mx-auto w-full">
+        <p-stepper [(value)]="activeStep" [linear]="false" class="setup-stepper">
+            <p-step-list>
+                <p-step [value]="1">Empresa</p-step>
+                <p-step [value]="2">Sucursal</p-step>
+                <p-step [value]="3">Timbrado</p-step>
+                <p-step [value]="4">Listo</p-step>
+            </p-step-list>
+            <p-step-panels>
+                <!-- Paso 1: Datos de la empresa -->
+                <p-step-panel [value]="1">
+                    <ng-template #content>
+                        <p-card header="Datos de la empresa" subheader="Para facturación y documentos" styleClass="mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Razón social <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="empresa.razonSocial" class="w-full" placeholder="Ej. Mi Empresa S.A." />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Nombre fantasía</label>
+                                    <input pInputText [(ngModel)]="empresa.nombreFantasia" class="w-full" placeholder="Ej. Mi Empresa (opcional)" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">RUC <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="empresa.ruc" class="w-full" placeholder="Ej. 80012345-6" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">DV</label>
+                                    <input pInputText [(ngModel)]="empresa.dv" class="w-full" placeholder="Ej. 6" maxlength="2" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Dirección</label>
+                                    <input pInputText [(ngModel)]="empresa.direccion" class="w-full" placeholder="Dirección fiscal" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Teléfono</label>
+                                    <input pInputText [(ngModel)]="empresa.telefono" class="w-full" placeholder="+595 21 123456" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Correo</label>
+                                    <input pInputText type="email" [(ngModel)]="empresa.correo" class="w-full" placeholder="contacto@empresa.com" />
+                                </div>
+                            </div>
+                            <ng-template #footer>
+                                <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="guardarEmpresa()"
+                                    [disabled]="!puedePaso1()" [loading]="saving()" />
+                            </ng-template>
+                        </p-card>
+                    </ng-template>
+                </p-step-panel>
+
+                <!-- Paso 2: Sucursal -->
+                <p-step-panel [value]="2">
+                    <ng-template #content>
+                        <p-card header="Sucursal" subheader="Establecimiento y punto de expedición para facturación (Paraguay)" styleClass="mb-4">
+                            <p class="text-color-secondary text-sm mb-4">
+                                El número de factura sigue el formato 001-002-0000145 (establecimiento - punto de expedición - consecutivo).
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Código</label>
+                                    <input pInputText [(ngModel)]="sucursal.codigo" class="w-full" placeholder="001" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Nombre</label>
+                                    <input pInputText [(ngModel)]="sucursal.nombre" class="w-full" placeholder="Casa central" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Establecimiento <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="sucursal.establecimiento" class="w-full" placeholder="001" maxlength="5" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Punto de expedición <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="sucursal.puntoEmision" class="w-full" placeholder="001" maxlength="5" />
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Dirección</label>
+                                    <input pInputText [(ngModel)]="sucursal.direccion" class="w-full" placeholder="Opcional" />
+                                </div>
+                            </div>
+                            <ng-template #footer>
+                                <div class="flex gap-2">
+                                    <p-button label="Omitir" icon="pi pi-forward" severity="secondary" (onClick)="saltarSucursal()" />
+                                    <p-button label="Guardar y continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="guardarSucursal()"
+                                        [disabled]="!puedePaso2()" [loading]="saving()" />
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </ng-template>
+                </p-step-panel>
+
+                <!-- Paso 3: Timbrado -->
+                <p-step-panel [value]="3">
+                    <ng-template #content>
+                        <p-card header="Timbrado" subheader="Facturación física Paraguay - vigencia del timbrado" styleClass="mb-4">
+                            <p class="text-color-secondary text-sm mb-4">
+                                El timbrado es obligatorio para emitir facturas físicas en Paraguay. Ingresá el número y las fechas de vigencia.
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block font-semibold mb-2 text-color">Número timbrado <span class="text-red-500">*</span></label>
+                                    <input pInputText [(ngModel)]="timbrado.numeroTimbrado" class="w-full" placeholder="Ej. 18196811" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Fecha inicio vigencia <span class="text-red-500">*</span></label>
+                                    <input pInputText type="date" [(ngModel)]="timbrado.fechaInicioVigencia" class="w-full" />
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-2 text-color">Fecha fin vigencia <span class="text-red-500">*</span></label>
+                                    <input pInputText type="date" [(ngModel)]="timbrado.fechaFinVigencia" class="w-full" />
+                                </div>
+                            </div>
+                            <ng-template #footer>
+                                <div class="flex gap-2">
+                                    <p-button label="Omitir (configurar después)" icon="pi pi-forward" severity="secondary" (onClick)="saltarTimbrado()" />
+                                    <p-button label="Guardar y finalizar" icon="pi pi-check" (onClick)="guardarTimbrado()"
+                                        [disabled]="!puedePaso3()" [loading]="saving()" />
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </ng-template>
+                </p-step-panel>
+
+                <!-- Paso 4: Listo -->
+                <p-step-panel [value]="4">
+                    <ng-template #content>
+                        <p-card header="Configuración completada" styleClass="mb-4">
+                            <div class="flex flex-col items-center gap-4 py-6">
+                                <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                    <i class="pi pi-check text-4xl text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <h3 class="m-0 text-xl font-semibold text-color">¡Todo listo!</h3>
+                                <p class="m-0 text-center text-color-secondary max-w-md">
+                                    La configuración inicial está completa. Ya podés usar el punto de venta, crear presupuestos y emitir facturas.
+                                    Los parámetros adicionales (IVA, moneda, etc.) se gestionan en <strong>Paramétricos</strong>.
+                                </p>
+                                <p-button label="Ir al Dashboard" icon="pi pi-home" size="large" (onClick)="finalizar()" />
+                            </div>
+                        </p-card>
+                    </ng-template>
+                </p-step-panel>
+            </p-step-panels>
+        </p-stepper>
+    </main>
+</div>

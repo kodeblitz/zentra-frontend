@@ -23,9 +23,14 @@ export interface Moneda {
 }
 
 export interface Empresa {
-    id: number;
+    id?: number;
     razonSocial?: string;
+    nombreFantasia?: string;
     ruc?: string;
+    dv?: string;
+    direccion?: string;
+    telefono?: string;
+    correo?: string;
     /** Establecimiento por defecto para facturación (Paraguay: ej. 001). */
     establecimientoDefault?: string;
     /** Punto de expedición por defecto (Paraguay: ej. 001). */
@@ -138,6 +143,10 @@ export class MaestrosService {
 
     empresas(): Observable<Empresa[]> {
         return this.api.get<Empresa[]>('/empresas');
+    }
+
+    createEmpresa(e: Partial<Empresa>): Observable<Empresa> {
+        return this.api.post<Empresa>('/empresas', e);
     }
 
     updateEmpresa(id: number, body: Partial<Empresa>): Observable<void> {

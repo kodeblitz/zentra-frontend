@@ -131,12 +131,14 @@ export class PdvComponent implements OnInit {
         if (catId != null) {
             out = out.filter((p) => p.categoria?.id === catId);
         }
-        if (!f) return out;
-        return out.filter(
-            (p) =>
-                (p.nombre ?? '').toLowerCase().includes(f) ||
-                (p.codigo ?? '').toLowerCase().includes(f)
-        );
+        if (!f) return [...out].sort((a, b) => (a.nombre ?? '').localeCompare(b.nombre ?? ''));
+        return out
+            .filter(
+                (p) =>
+                    (p.nombre ?? '').toLowerCase().includes(f) ||
+                    (p.codigo ?? '').toLowerCase().includes(f)
+            )
+            .sort((a, b) => (a.nombre ?? '').localeCompare(b.nombre ?? ''));
     });
 
     totalCarrito = computed(() =>

@@ -8,6 +8,22 @@
     min-height: 0;
 }
 
+// Grilla de productos: 3 filas visibles, luego scroll (igual que presupuesto)
+.pdv-productos-grid {
+    max-height: 26rem;
+}
+
+// Catálogo: barra de búsqueda y filtros fija arriba al hacer scroll en la grid
+.pdv-catalogo-card .pdv-catalogo-filtros {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--p-card-background, var(--p-surface-0));
+}
+:host-context(.app-dark) .pdv-catalogo-card .pdv-catalogo-filtros {
+    background: var(--p-surface-900, #1e1e1e);
+}
+
 // Paso 1: limitar altura del grid para que no empuje el botón fuera de la vista
 .pdv-paso1-grid {
     max-height: calc(100vh - 8rem);

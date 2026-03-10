@@ -1,0 +1,13 @@
+.setup-page {
+    min-height: 100vh;
+}
+
+.setup-header {
+    flex-shrink: 0;
+}
+
+.setup-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

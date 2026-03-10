@@ -35,6 +35,7 @@ export class AppMenu {
                     { label: 'Documentos de venta', icon: 'pi pi-fw pi-file-edit', routerLink: ['/pages/documentos-venta'], data: { feature: 'documentos_venta' }, visible: isEnabled('documentos_venta') },
                     { label: 'Punto de venta (PDV)', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/pages/pdv'], data: { feature: 'pdv' }, visible: isEnabled('pdv') },
                     { label: 'Presupuestos', icon: 'pi pi-fw pi-file', routerLink: ['/pages/presupuestos'], data: { feature: 'presupuestos' }, visible: isEnabled('presupuestos') },
+                    { label: 'Comandas (mesas / delivery)', icon: 'pi pi-fw pi-th-large', routerLink: ['/pages/comandas'], data: { feature: 'comandas' }, visible: isEnabled('comandas') },
                     { label: 'Pedidos (delivery)', icon: 'pi pi-fw pi-truck', routerLink: ['/pages/pedidos'], data: { feature: 'pedidos' }, visible: isEnabled('pedidos') },
                     { label: 'Alquileres', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/alquileres'], data: { feature: 'alquileres' }, visible: isEnabled('alquileres') },
                     { label: 'Devoluciones', icon: 'pi pi-fw pi-undo', routerLink: ['/pages/devoluciones'], data: { feature: 'devoluciones' }, visible: isEnabled('devoluciones') },
@@ -50,7 +51,8 @@ export class AppMenu {
                     { label: 'Gastos', icon: 'pi pi-fw pi-wallet', routerLink: ['/pages/gastos'], data: { feature: 'gastos' }, visible: isEnabled('gastos') },
                     { label: 'Paramétricos', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/pages/parametricos'], data: { feature: 'parametricos' }, visible: isEnabled('parametricos') },
                     { label: 'Importación masiva', icon: 'pi pi-fw pi-upload', routerLink: ['/pages/importacion'], data: { feature: 'parametricos' }, visible: isEnabled('parametricos') },
-                    { label: 'Respaldo y restauración', icon: 'pi pi-fw pi-cloud-download', routerLink: ['/pages/backup'] }
+                    { label: 'Respaldo y restauración', icon: 'pi pi-fw pi-cloud-download', routerLink: ['/pages/backup'] },
+                    { label: 'Usuarios y roles', icon: 'pi pi-fw pi-users', routerLink: ['/pages/usuarios'], data: { feature: 'usuarios' }, visible: isEnabled('usuarios') }
                 ].filter((it) => it.visible !== false)
             }
         ];

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { TooltipModule } from 'primeng/tooltip';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
@@ -40,7 +41,8 @@ interface CarritoLinea {
         CardModule,
         StepperModule,
         IconFieldModule,
-        InputIconModule
+        InputIconModule,
+        TooltipModule
     ],
     templateUrl: './presupuesto-form.component.html',
     styleUrls: ['./presupuesto-form.component.scss'],
@@ -88,12 +90,14 @@ export class PresupuestoFormComponent implements OnInit {
         const catId = this.categoriaIdSeleccionada();
         let out = list.filter((p) => (this.precioParaLista(p) ?? 0) >= 0);
         if (catId != null) out = out.filter((p) => p.categoria?.id === catId);
-        if (!f) return out;
-        return out.filter(
-            (p) =>
-                (p.nombre ?? '').toLowerCase().includes(f) ||
-                (p.codigo ?? '').toLowerCase().includes(f)
-        );
+        if (!f) return [...out].sort((a, b) => (a.nombre ?? '').localeCompare(b.nombre ?? ''));
+        return out
+            .filter(
+                (p) =>
+                    (p.nombre ?? '').toLowerCase().includes(f) ||
+                    (p.codigo ?? '').toLowerCase().includes(f)
+            )
+            .sort((a, b) => (a.nombre ?? '').localeCompare(b.nombre ?? ''));
     });
 
     totalCarrito = computed(() => this.carrito().reduce((sum, l) => sum + l.totalLinea, 0));

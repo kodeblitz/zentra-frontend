@@ -1,0 +1,108 @@
+<p-toast />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo usuario" icon="pi pi-plus" severity="secondary" (onClick)="openNew()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    [value]="usuarios()"
+    [rows]="10"
+    [paginator]="true"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Usuarios y roles</h5>
+            <p class="text-color-secondary text-sm m-0">Los roles determinan qué secciones puede ver cada usuario.</p>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="username" style="min-width:10rem">Usuario <p-sortIcon field="username" /></th>
+            <th style="min-width:12rem">Nombre</th>
+            <th style="min-width:12rem">Correo</th>
+            <th style="min-width:14rem">Roles</th>
+            <th style="min-width:6rem">Activo</th>
+            <th style="min-width:8rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-row>
+        <tr>
+            <td>{{ row.username }}</td>
+            <td>{{ row.nombre ?? '-' }}</td>
+            <td>{{ row.email ?? '-' }}</td>
+            <td>{{ getRolesLabel(row.roles) }}</td>
+            <td><p-tag [value]="row.activo ? 'Sí' : 'No'" [severity]="row.activo ? 'success' : 'secondary'" /></td>
+            <td>
+                <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" (click)="edit(row)" pTooltip="Editar" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr><td colspan="6">No hay usuarios.</td></tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialog" [style]="{ width: '480px' }" [header]="editing ? 'Editar usuario' : 'Nuevo usuario'" [modal]="true" (onHide)="onDialogHide()">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="block font-bold mb-2">Usuario (login) <span class="text-red-500">*</span></label>
+                <input pInputText [(ngModel)]="usuario.username" class="w-full" placeholder="Ej. jperez" [readonly]="editing" />
+            </div>
+            @if (!editing) {
+                <div>
+                    <label class="block font-bold mb-2">Contraseña <span class="text-red-500">*</span></label>
+                    <input pInputText type="password" [(ngModel)]="usuario.password" class="w-full" placeholder="Mínimo 8 caracteres" />
+                </div>
+            } @else {
+                <div>
+                    <label class="block font-bold mb-2">Nueva contraseña</label>
+                    <input pInputText type="password" [(ngModel)]="usuario.password" class="w-full" placeholder="Dejar vacío para no cambiar" />
+                </div>
+            }
+            <div>
+                <label class="block font-bold mb-2">Nombre</label>
+                <input pInputText [(ngModel)]="usuario.nombre" class="w-full" placeholder="Ej. Juan Pérez" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Correo</label>
+                <input pInputText type="email" [(ngModel)]="usuario.email" class="w-full" placeholder="correo@ejemplo.com" />
+            </div>
+            <div>
+                <label class="block font-bold mb-2">Roles</label>
+                <div class="flex flex-wrap gap-3">
+                    @for (rol of rolesDisponibles; track rol.codigo) {
+                        <div class="flex items-center gap-2">
+                            <p-checkbox
+                                [inputId]="'rol-' + rol.codigo"
+                                [ngModel]="rolesSeleccionados.includes(rol.codigo)"
+                                (ngModelChange)="onRolToggle(rol.codigo, $event)"
+                                [binary]="true"
+                            />
+                            <label [for]="'rol-' + rol.codigo" class="cursor-pointer" [title]="rol.descripcion">{{ rol.nombre }}</label>
+                        </div>
+                    }
+                </div>
+                <small class="text-color-secondary block mt-1">Los roles habilitan secciones del menú.</small>
+            </div>
+            @if (editing) {
+                <div class="flex items-center gap-2">
+                    <p-checkbox [(ngModel)]="usuario.activo" [binary]="true" inputId="activo" />
+                    <label for="activo">Activo</label>
+                </div>
+            }
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="dialog = false" />
+        <p-button label="Guardar" icon="pi pi-check" (onClick)="guardar()" [loading]="saving()" />
+    </ng-template>
+</p-dialog>

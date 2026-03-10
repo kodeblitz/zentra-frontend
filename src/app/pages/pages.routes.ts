@@ -14,6 +14,7 @@ import { CreditoNuevoComponent } from './creditos/credito-nuevo/credito-nuevo';
 import { PagosComponent } from './pagos/pagos';
 import { CarteraComponent } from './cartera/cartera';
 import { PedidosComponent } from './pedidos/pedidos';
+import { ComandasComponent } from './comandas/comandas';
 import { AlquileresComponent } from './alquileres/alquileres';
 import { AlquilerVerComponent } from './alquileres/alquiler-ver/alquiler-ver';
 import { PresupuestosComponent } from './presupuestos/presupuestos';
@@ -33,6 +34,7 @@ import { ComprasComponent } from './compras/compras';
 import { CompraFormComponent } from './compras/compra-form/compra-form';
 import { CompraVerComponent } from './compras/compra-ver/compra-ver';
 import { GastosComponent } from './gastos/gastos';
+import { UsuariosComponent } from './usuarios/usuarios';
 import { featureGuard } from '../core/feature.guard';
 
 export default [
@@ -52,6 +54,7 @@ export default [
     { path: 'pagos', component: PagosComponent, data: { feature: 'pagos' }, canActivate: [featureGuard] },
     { path: 'cartera', component: CarteraComponent, data: { feature: 'cartera' }, canActivate: [featureGuard] },
     { path: 'pedidos', component: PedidosComponent, data: { feature: 'pedidos' }, canActivate: [featureGuard] },
+    { path: 'comandas', component: ComandasComponent, data: { feature: 'comandas' }, canActivate: [featureGuard] },
     { path: 'alquileres', component: AlquileresComponent, data: { feature: 'alquileres' }, canActivate: [featureGuard] },
     { path: 'alquileres/ver/:id', component: AlquilerVerComponent, data: { feature: 'alquileres' }, canActivate: [featureGuard] },
     { path: 'presupuestos', component: PresupuestosComponent, data: { feature: 'presupuestos' }, canActivate: [featureGuard] },
@@ -73,6 +76,7 @@ export default [
     { path: 'compras/editar/:id', component: CompraFormComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
     { path: 'compras/ver/:id', component: CompraVerComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
     { path: 'gastos', component: GastosComponent, data: { feature: 'gastos' }, canActivate: [featureGuard] },
+    { path: 'usuarios', component: UsuariosComponent, data: { feature: 'usuarios' }, canActivate: [featureGuard] },
     { path: 'backup', component: BackupComponent },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

@@ -23,6 +23,22 @@ header.bg-primary .presupuesto-tabs button.bg-white {
     max-width: 100%;
 }
 
+// Catálogo: barra de búsqueda y filtros fija arriba al hacer scroll en la grid
+.presupuesto-catalogo-card .presupuesto-catalogo-filtros {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--p-card-background, var(--p-surface-0));
+}
+:host-context(.app-dark) .presupuesto-catalogo-card .presupuesto-catalogo-filtros {
+    background: var(--p-surface-900, #1e1e1e);
+}
+
+// Grilla de productos: 3 filas visibles, luego scroll
+.presupuesto-productos-grid {
+    max-height: 26rem; // ~3 filas de cards (min-h 120px + gap)
+}
+
 // Barra de acciones (Atrás / Siguiente o Guardar) fija al pie al hacer scroll
 .presupuesto-step-actions {
     position: sticky;

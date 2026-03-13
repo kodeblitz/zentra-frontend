@@ -1,3 +1,128 @@
-.credito-ver-page {
-    max-width: 64rem;
+// ─── Card genérica (patrón cartera) ───
+.credito-card {
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-card);
+}
+
+.credito-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-ground);
+    border-bottom: 1px solid var(--surface-border);
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    i { font-size: 1rem; }
+}
+
+.credito-card-body {
+    padding: 1.25rem;
+}
+
+// ─── Campos label/value ───
+.credito-field-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+}
+
+.credito-field-value {
+    display: block;
+    color: var(--text-color);
+    font-size: 0.9375rem;
+}
+
+// ─── Progress bar ───
+.credito-progress-bar {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--surface-200, var(--surface-border));
+    overflow: hidden;
+}
+
+.credito-progress-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--green-500, #22c55e), var(--green-600, #16a34a));
+    transition: width 0.5s ease;
+}
+
+// ─── Cuota row colors ───
+:host ::ng-deep .cuota-pagada {
+    background: rgba(34, 197, 94, 0.05) !important;
+}
+
+:host ::ng-deep .cuota-vencida {
+    background: rgba(239, 68, 68, 0.06) !important;
+}
+
+:host ::ng-deep .cuota-parcial {
+    background: rgba(245, 158, 11, 0.06) !important;
+}
+
+:host ::ng-deep .cuota-proxima {
+    border-left: 3px solid var(--primary-color);
+}
+
+// ─── Dialog info banners ───
+.credito-dialog-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    font-size: 0.875rem;
+
+    i {
+        font-size: 1rem;
+        color: var(--primary-color);
+    }
+}
+
+.credito-dialog-warn {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+
+    i { color: var(--yellow-600, #ca8a04); }
+}
+
+.credito-dialog-monto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+}
+
+// ─── Table tweaks ───
+:host ::ng-deep {
+    .p-datatable-sm .p-datatable-tbody > tr > td {
+        padding: 0.5rem 0.75rem;
+    }
+    .p-datatable .p-datatable-thead > tr > th {
+        white-space: nowrap;
+    }
+    .p-datatable-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 768px) {
+    .credito-card-body {
+        padding: 1rem;
+    }
 }

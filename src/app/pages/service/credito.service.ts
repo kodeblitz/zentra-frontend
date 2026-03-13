@@ -8,6 +8,8 @@ export interface CreditoCuota {
     fechaVencimiento?: string;
     montoCapital?: number;
     montoInteres?: number;
+    montoGastoAdmin?: number;
+    montoSeguro?: number;
     montoCuota?: number;
     saldoInsoluto?: number;
     estado?: string;
@@ -30,6 +32,8 @@ export interface Credito {
     fechaPrimerVencimiento?: string;
     estado?: string;
     observaciones?: string;
+    gastoAdministrativo?: number;
+    seguroCuota?: number;
     cuotas?: CreditoCuota[];
 }
 

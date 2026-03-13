@@ -7,4 +7,4 @@ const RAW = typeof (window as any).__ZENTRA_API__ !== 'undefined' ? (window as a
 const PLACEHOLDER = '__ZENTRA_API_URL__';
 export const API_BASE_URL = (RAW && RAW !== PLACEHOLDER && RAW.startsWith('http'))
     ? RAW.replace(/\/$/, '')
-    : 'http://localhost:8080';
+    : 'http://localhost:8081';

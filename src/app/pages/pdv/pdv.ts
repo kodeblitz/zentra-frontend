@@ -22,6 +22,7 @@ import { MaestrosService, Producto, Categoria } from '../service/maestros.servic
 import { DocumentoVentaService } from '../service/documento-venta.service';
 import { AlquilerService } from '../service/alquiler.service';
 import { StockActualService } from '../service/stock-actual.service';
+import { FidelizacionService, ClienteFidelizacionDTO } from '../service/fidelizacion.service';
 
 interface CarritoLinea {
     producto: Producto;
@@ -88,12 +89,21 @@ export class PdvComponent implements OnInit {
     formaPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'QR' = 'EFECTIVO';
     /** Nº referencia del voucher de la procesadora (obligatorio cuando formaPago = QR). */
     referenciaVoucher = '';
+    /** Nombre de la comanda (modo ticket): para que cocina pueda llamar al cliente. */
+    nombreComanda = '';
     /** Solo en modo venta: si true, al crear el pedido se confirma, se factura y se emite la factura para entregar en el momento. Por defecto true cuando tipo es In situ. */
     facturarAhora = true;
 
     /** Solo en modo alquiler: fecha inicio y fin prevista del alquiler (YYYY-MM-DD). */
     fechaInicioAlquiler = '';
     fechaFinAlquiler = '';
+
+    fidelizacionCliente = signal<ClienteFidelizacionDTO | null>(null);
+    dialogCanjePuntos = false;
+    canjePuntosInput = 0;
+    dialogCashback = false;
+    cashbackInput = 0;
+    descuentoFidelizacion = signal(0);
 
     dialogNuevoCliente = false;
     nuevoCliente: Cliente = {};
@@ -184,7 +194,8 @@ export class PdvComponent implements OnInit {
         private alquilerService: AlquilerService,
         private stockActualService: StockActualService,
         private router: Router,
-        private ngZone: NgZone
+        private ngZone: NgZone,
+        private fidelizacionService: FidelizacionService
     ) {}
 
     /** Cliente "Consumidor Final" para modo ticket (cobro rápido). */
@@ -650,6 +661,10 @@ export class PdvComponent implements OnInit {
                     this.pasoActual = 1;
                     this.observaciones = '';
                     this.lineaSeleccionada = null;
+                    this.maestros.invalidar('productos');
+                    this.stockActualService.invalidar();
+                    this.cargarProductos();
+                    this.cargarStock();
                     if (a.id) this.router.navigate(['/pages/alquileres/ver', a.id]);
                 },
                 error: (err) =>
@@ -711,9 +726,14 @@ export class PdvComponent implements OnInit {
             this.telefonoContacto = '';
             this.formaPago = 'EFECTIVO';
             this.referenciaVoucher = '';
+            this.nombreComanda = '';
             this.descuentoPorcentaje.set(0);
             this.lineaSeleccionada = null;
             this.pasoActual = 1;
+            this.maestros.invalidar('productos');
+            this.stockActualService.invalidar();
+            this.cargarProductos();
+            this.cargarStock();
         };
 
         const successFactura = (doc: { id: number; numero?: string; numeroCompleto?: string }): void => {
@@ -731,36 +751,49 @@ export class PdvComponent implements OnInit {
             window.open(url, 'ticket-print', 'width=400,height=600,scrollbars=yes');
         };
 
-        // Modo ticket: factura in situ con Consumidor Final, emitir y abrir ventana ticket para imprimir
+        // Modo ticket: crear pedido (comanda) → confirmar → facturar → emitir; la comanda queda visible en cocina
         if (this.modoOperacion === 'ticket') {
             const cfId = this.clienteConsumidorFinal()?.id ?? this.clienteId;
             if (!cfId) {
                 this.messageService.add({ severity: 'warn', summary: 'Cliente', detail: 'No hay Consumidor Final. Creá uno en Clientes.' });
                 return;
             }
-            const facturaPayload = {
-                clienteId: cfId,
-                observaciones: undefined,
-                detalle: this.carrito()
-                    .filter((l) => l.producto.id != null)
-                    .map((l) => ({
-                        productoId: l.producto.id as number,
-                        descripcion: l.producto.nombre,
-                        cantidad: l.cantidad,
-                        precioUnitario: l.precioUnitario,
-                        descuento: l.descuentoPct ?? 0,
-                        descuentoMonto: l.descuentoMonto ?? 0,
-                        totalLinea: this.getTotalEfectivoLinea(l)
-                    }))
+            const ticketDetalle: PedidoDetalle[] = this.carrito()
+                .filter((l) => l.producto.id != null)
+                .map((l, i) => ({
+                    nroLinea: i + 1,
+                    producto: { id: l.producto.id as number },
+                    descripcion: l.producto.nombre,
+                    cantidad: l.cantidad,
+                    precioUnitario: l.precioUnitario,
+                    descuento: l.descuentoPct ?? 0,
+                    descuentoMonto: l.descuentoMonto ?? 0,
+                    totalLinea: this.getTotalEfectivoLinea(l)
+                }));
+            const ticketPedido: Pedido = {
+                cliente: { id: cfId },
+                fechaPedido: new Date().toISOString().slice(0, 10),
+                estado: 'PENDIENTE',
+                tipoPedido: 'IN_SITU',
+                observaciones: this.nombreComanda?.trim() || undefined,
+                formaPago: 'EFECTIVO',
+                subtotal: this.totalCarrito(),
+                total: this.totalConDescuento(),
+                detalle: ticketDetalle
             };
-            this.documentoVentaService.facturaInSitu(facturaPayload).pipe(
-                switchMap((doc) =>
-                    this.documentoVentaService.emitir(doc.id!).pipe(map(() => doc))
+            this.pedidoService.create(ticketPedido).pipe(
+                switchMap((pedidoCreado) =>
+                    this.pedidoService.confirmar(pedidoCreado.id!).pipe(
+                        switchMap(() => this.pedidoService.facturar(pedidoCreado.id!)),
+                        switchMap((doc) =>
+                            this.documentoVentaService.emitir(doc.id!).pipe(map(() => doc))
+                        )
+                    )
                 )
             ).subscribe({
                 next: (doc) => {
                     resetCarritoYForm();
-                    this.messageService.add({ severity: 'success', summary: 'Ticket emitido', detail: `N° ${doc.numeroCompleto ?? doc.numero}. Se abrió la ventana para imprimir.` });
+                    this.messageService.add({ severity: 'success', summary: 'Ticket emitido', detail: `N° ${doc.numeroCompleto ?? doc.numero}. Comanda creada y se abrió ventana para imprimir.` });
                     abrirTicketPrint(doc.id!);
                 },
                 error: (err) =>
@@ -826,6 +859,58 @@ export class PdvComponent implements OnInit {
             },
             error: (err) =>
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo completar la operación.' })
+        });
+    }
+
+    cargarFidelizacion(): void {
+        const id = this.selectedCliente?.id;
+        if (!id) { this.fidelizacionCliente.set(null); return; }
+        this.fidelizacionService.estadoCliente(id).subscribe({
+            next: (estado) => this.fidelizacionCliente.set(estado),
+            error: () => this.fidelizacionCliente.set(null)
+        });
+    }
+
+    limpiarFidelizacion(): void {
+        this.fidelizacionCliente.set(null);
+        this.descuentoFidelizacion.set(0);
+    }
+
+    abrirCanjePuntos(): void {
+        this.canjePuntosInput = 0;
+        this.dialogCanjePuntos = true;
+    }
+
+    confirmarCanjePuntos(): void {
+        const clienteId = this.selectedCliente?.id;
+        if (!clienteId || this.canjePuntosInput <= 0) return;
+        this.fidelizacionService.canjearPuntos(clienteId, this.canjePuntosInput).subscribe({
+            next: (res) => {
+                this.descuentoFidelizacion.update((v) => v + res.descuento);
+                this.messageService.add({ severity: 'success', summary: 'Puntos canjeados', detail: `Descuento de ${res.descuento} Gs. aplicado.` });
+                this.dialogCanjePuntos = false;
+                this.cargarFidelizacion();
+            },
+            error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo canjear.' })
+        });
+    }
+
+    abrirAplicarCashback(): void {
+        this.cashbackInput = 0;
+        this.dialogCashback = true;
+    }
+
+    confirmarAplicarCashback(): void {
+        const clienteId = this.selectedCliente?.id;
+        if (!clienteId || this.cashbackInput <= 0) return;
+        this.fidelizacionService.aplicarCashback(clienteId, this.cashbackInput).subscribe({
+            next: (res) => {
+                this.descuentoFidelizacion.update((v) => v + res.aplicado);
+                this.messageService.add({ severity: 'success', summary: 'Cashback aplicado', detail: `Descuento de ${res.aplicado} Gs. aplicado.` });
+                this.dialogCashback = false;
+                this.cargarFidelizacion();
+            },
+            error: (err) => this.messageService.add({ severity: 'error', summary: 'Error', detail: err?.error?.message || 'No se pudo aplicar.' })
         });
     }
 }

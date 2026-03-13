@@ -10,6 +10,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CreditoService, Credito } from '../service/credito.service';
 
@@ -26,7 +27,8 @@ import { CreditoService, Credito } from '../service/credito.service';
         ConfirmDialogModule,
         IconFieldModule,
         InputIconModule,
-        TagModule
+        TagModule,
+        TooltipModule
     ],
     templateUrl: './creditos.component.html',
     styleUrls: ['./creditos.component.scss'],
@@ -37,6 +39,7 @@ export class CreditosComponent implements OnInit {
     creditos = signal<Credito[]>([]);
     clienteNombreCache: Record<number, string> = {};
     loading = signal(false);
+    filtroEstado = '';
 
     constructor(
         private creditoService: CreditoService,
@@ -80,9 +83,27 @@ export class CreditosComponent implements OnInit {
 
     getEstadoSeverity(estado: string | undefined): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         if (estado === 'VIGENTE') return 'info';
+        if (estado === 'VENCIDO') return 'warn';
         if (estado === 'CANCELADO') return 'danger';
         if (estado === 'PAGADO') return 'success';
         return 'secondary';
+    }
+
+    getCountByEstado(estado: string): number {
+        return this.creditos().filter((c) => c.estado === estado).length;
+    }
+
+    getMontoTotal(): number {
+        return this.creditos().reduce((sum, c) => sum + (c.montoTotal ?? 0), 0);
+    }
+
+    filtrarEstado(estado: string): void {
+        this.filtroEstado = estado;
+        if (estado) {
+            this.dt.filter(estado, 'estado', 'equals');
+        } else {
+            this.dt.clear();
+        }
     }
 
     openNew(): void {

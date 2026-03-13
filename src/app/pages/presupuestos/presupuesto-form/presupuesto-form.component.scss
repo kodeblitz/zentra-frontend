@@ -50,3 +50,13 @@ header.bg-primary .presupuesto-tabs button.bg-white {
     padding-right: 1rem !important;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 }
+
+@media (max-width: 768px) {
+    .presupuesto-productos-grid {
+        max-height: 18rem;
+    }
+    .presupuesto-step-actions {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

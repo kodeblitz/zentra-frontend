@@ -14,7 +14,7 @@ import { MessageService } from 'primeng/api';
 import { CreditoService, Credito } from '../../service/credito.service';
 import { ClienteService, Cliente } from '../../service/cliente.service';
 import { MaestrosService } from '../../service/maestros.service';
-import { generarCuotas, CuotaCalculada } from '../amortizacion.util';
+import { generarCuotasConCargos, CuotaCalculada } from '../amortizacion.util';
 
 @Component({
     selector: 'app-credito-nuevo',
@@ -47,7 +47,9 @@ export class CreditoNuevoComponent implements OnInit {
         nroCuotas: 12,
         tasaInteresAnual: 0,
         tasaMoraAnual: undefined,
-        diasGracia: 0
+        diasGracia: 0,
+        gastoAdministrativo: 0,
+        seguroCuota: 0
     };
 
     sistemasOpt = [
@@ -98,27 +100,34 @@ export class CreditoNuevoComponent implements OnInit {
         return d.toISOString().slice(0, 10);
     }
 
-    /** Cuotas calculadas en tiempo real según parámetros. */
+    /** Cuotas calculadas en tiempo real según parámetros (incluye gastos admin y seguro). */
     readonly cuotasPreview = computed(() => {
-        this.previewVersion(); // dependencia para re-ejecutar al cambiar params
+        this.previewVersion();
         const monto = this.credito.montoTotal ?? 0;
         const n = this.credito.nroCuotas ?? 0;
         const tasa = this.credito.tasaInteresAnual ?? 0;
         const sistema = (this.credito.sistemaAmort === 'AL' ? 'AL' : 'FR') as 'FR' | 'AL';
         if (monto <= 0 || n <= 0) return [];
-        return generarCuotas(monto, tasa, n, this.fechaPrimerVencimientoCalc, sistema);
+        return generarCuotasConCargos(
+            monto, tasa, n, this.fechaPrimerVencimientoCalc, sistema,
+            this.credito.gastoAdministrativo ?? 0,
+            this.credito.seguroCuota ?? 0
+        );
     });
 
-    /** Resumen del preview: total a pagar, intereses, primera/última cuota. */
     readonly resumenPreview = computed(() => {
         const list = this.cuotasPreview();
         if (list.length === 0)
-            return { totalPagar: 0, totalIntereses: 0, primeraCuota: 0, ultimaCuota: 0, montoPrincipal: this.credito.montoTotal ?? 0 };
+            return { totalPagar: 0, totalIntereses: 0, totalGastosAdmin: 0, totalSeguro: 0, primeraCuota: 0, ultimaCuota: 0, montoPrincipal: this.credito.montoTotal ?? 0 };
         const totalPagar = list.reduce((s, c) => s + c.montoCuota, 0);
         const totalIntereses = list.reduce((s, c) => s + c.montoInteres, 0);
+        const totalGastosAdmin = list.reduce((s, c) => s + c.montoGastoAdmin, 0);
+        const totalSeguro = list.reduce((s, c) => s + c.montoSeguro, 0);
         return {
             totalPagar,
             totalIntereses,
+            totalGastosAdmin,
+            totalSeguro,
             primeraCuota: list[0].montoCuota,
             ultimaCuota: list[list.length - 1].montoCuota,
             montoPrincipal: this.credito.montoTotal ?? 0

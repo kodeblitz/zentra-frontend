@@ -11,6 +11,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { CreditoService, Credito, CreditoCuota } from '../../service/credito.service';
 import { ClienteService } from '../../service/cliente.service';
@@ -33,7 +34,8 @@ import { MaestrosService } from '../../service/maestros.service';
         DialogModule,
         InputNumberModule,
         InputTextModule,
-        SelectModule
+        SelectModule,
+        TooltipModule
     ],
     templateUrl: './credito-ver.component.html',
     styleUrl: './credito-ver.component.scss',
@@ -156,6 +158,15 @@ export class CreditoVerComponent implements OnInit {
         if (cuota.estado === 'PAGADA' || cuota.id == null) return null;
         const m = this.montosPagarHoy()[String(cuota.id)];
         return m != null ? m : null;
+    }
+
+    getCuotaRowClass(cuota: CreditoCuota): string {
+        if (cuota.estado === 'PAGADA') return 'cuota-pagada';
+        if (cuota.estado === 'VENCIDA') return 'cuota-vencida';
+        if (cuota.estado === 'PARCIAL') return 'cuota-parcial';
+        const proxima = this.getProximaCuota();
+        if (proxima?.id != null && proxima.id === cuota.id) return 'cuota-proxima';
+        return '';
     }
 
     /** Primera cuota no pagada (cuota a pagar). */

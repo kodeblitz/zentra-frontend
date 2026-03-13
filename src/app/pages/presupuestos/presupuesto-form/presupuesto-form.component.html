@@ -150,7 +150,7 @@
                                                 }
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto content-start presupuesto-productos-grid">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto content-start presupuesto-productos-grid">
                                             @for (p of productosVisibles(); track p.id) {
                                                 <button type="button" (click)="onProductoClick(p)" class="flex flex-col items-center justify-start p-4 min-h-[120px] rounded-border border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 text-center transition-all hover:border-primary hover:bg-primary-50 dark:hover:bg-surface-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                                     <div class="w-12 h-12 rounded-border bg-surface-200 dark:bg-surface-700 flex items-center justify-center mb-2">

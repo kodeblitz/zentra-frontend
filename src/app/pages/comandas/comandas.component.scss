@@ -1,10 +1,236 @@
-// Estilos del módulo Comandas
-:host ::ng-deep .comanda-card {
-    .p-card-body {
-        padding: 1rem;
+// ─── Grid ───
+.comanda-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+
+    @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+    @media (min-width: 1280px) { grid-template-columns: repeat(4, 1fr); }
+}
+
+// ─── Card ───
+.comanda-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    border-left: 5px solid var(--surface-border);
+    background: var(--surface-card);
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.15s;
+
+    &:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
     }
-    .p-card-footer {
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--surface-border);
+
+    &.comanda-border-pendiente   { border-left-color: var(--gray-400); }
+    &.comanda-border-confirmado  { border-left-color: var(--yellow-500); }
+    &.comanda-border-preparacion { border-left-color: var(--blue-500); }
+    &.comanda-border-entrega     { border-left-color: var(--green-500); }
+}
+
+// ─── Header ───
+.comanda-card-header {
+    padding: 0.875rem 1rem 0.625rem;
+}
+
+.comanda-card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.375rem;
+}
+
+.comanda-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+}
+
+.comanda-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.comanda-card-numero {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+}
+
+.comanda-card-time {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+
+    i { font-size: 0.7rem; }
+}
+
+.comanda-elapsed {
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+
+    &.elapsed-normal  { color: var(--text-color-secondary); background: var(--surface-100); }
+    &.elapsed-alerta  { color: var(--yellow-700); background: var(--yellow-50); }
+    &.elapsed-urgente { color: var(--red-700); background: var(--red-50); }
+}
+
+// ─── Items del pedido ───
+.comanda-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid var(--surface-border);
+    border-bottom: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.comanda-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.comanda-item-qty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 6px;
+    background: var(--primary-color);
+    color: var(--primary-color-text, #fff);
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.comanda-item-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+// ─── Info ───
+.comanda-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+}
+
+.comanda-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    line-height: 1.4;
+
+    i {
+        font-size: 0.75rem;
+        width: 1rem;
+        text-align: center;
+        margin-top: 2px;
+        flex-shrink: 0;
     }
+}
+
+.comanda-info-direccion {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+// ─── Total ───
+.comanda-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--surface-border);
+}
+
+.comanda-pago {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+
+    i { font-size: 0.875rem; }
+}
+
+.comanda-total-valor {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+// ─── Acciones ───
+.comanda-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-top: 1px solid var(--surface-border);
+
+    :host ::ng-deep .flex-1 .p-button { width: 100%; }
+}
+
+// ─── Empty state ───
+.comanda-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    background: var(--surface-card);
+    border-radius: 12px;
+    border: 1px dashed var(--surface-border);
+
+    > i {
+        font-size: 3rem;
+        color: var(--text-color-secondary);
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+}
+
+.comanda-empty-title {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.comanda-empty-hint {
+    margin: 0.25rem 0 1rem;
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+}
+
+// ─── Tag override para tamaño consistente ───
+:host ::ng-deep .comanda-estado-tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    white-space: nowrap;
 }

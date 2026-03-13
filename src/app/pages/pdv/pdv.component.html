@@ -1,7 +1,7 @@
 <p-toast />
 <div class="flex flex-col flex-1 min-h-0 bg-surface-ground">
     <!-- Barra superior: título, modo y stepper -->
-    <header class="pdv-header flex flex-wrap items-center gap-4 p-4 mb-4 rounded-border bg-primary">
+    <header class="pdv-header flex flex-wrap items-center gap-2 sm:gap-4 p-3 sm:p-4 mb-4 rounded-border bg-primary">
         <h1 class="m-0 text-xl font-semibold text-white">{{ modoOperacion === 'ticket' ? 'Ticket rápido' : (modoOperacion === 'alquiler' ? 'Punto de alquiler' : 'Punto de venta') }}</h1>
         <div class="flex gap-1 rounded-full bg-white/20 p-1 pdv-tabs">
             <button type="button" (click)="setModoOperacion('venta')" class="px-4 py-2 rounded-full text-sm font-medium transition-colors" [class.bg-white]="modoOperacion === 'venta'" [class.text-primary]="modoOperacion === 'venta'">Venta</button>
@@ -142,20 +142,33 @@
                             }
                         </div>
                         @if (modoOperacion === 'ticket') {
-                            <div class="pt-3 mt-2 border-t border-surface-200 shrink-0">
-                                <label class="block font-medium mb-2 text-color text-sm">Cliente (opcional)</label>
-                                <p-autocomplete
-                                    [(ngModel)]="selectedCliente"
-                                    [suggestions]="clientesSugeridos"
-                                    (completeMethod)="buscarClientes($event)"
-                                    optionLabel="razonSocial"
-                                    placeholder="Consumidor Final por defecto; buscá si quiere factura a su nombre"
-                                    styleClass="w-full"
-                                    [dropdown]="false"
-                                    [showClear]="true"
-                                    [minLength]="2"
-                                />
-                                <small class="text-muted-color text-xs block mt-1">Dejá vacío para Consumidor Final.</small>
+                            <div class="pt-3 mt-2 border-t border-surface-200 shrink-0 flex flex-col gap-3">
+                                <div>
+                                    <label class="block font-medium mb-2 text-color text-sm">Nombre de la comanda</label>
+                                    <input
+                                        pInputText
+                                        [(ngModel)]="nombreComanda"
+                                        placeholder="Ej. Juan, Mesa 3, Pedido rojo..."
+                                        class="w-full"
+                                        maxlength="100"
+                                    />
+                                    <small class="text-muted-color text-xs block mt-1">Para identificar y llamar la comanda en cocina.</small>
+                                </div>
+                                <div>
+                                    <label class="block font-medium mb-2 text-color text-sm">Cliente (opcional)</label>
+                                    <p-autocomplete
+                                        [(ngModel)]="selectedCliente"
+                                        [suggestions]="clientesSugeridos"
+                                        (completeMethod)="buscarClientes($event)"
+                                        optionLabel="razonSocial"
+                                        placeholder="Consumidor Final por defecto; buscá si quiere factura a su nombre"
+                                        styleClass="w-full"
+                                        [dropdown]="false"
+                                        [showClear]="true"
+                                        [minLength]="2"
+                                    />
+                                    <small class="text-muted-color text-xs block mt-1">Dejá vacío para Consumidor Final.</small>
+                                </div>
                             </div>
                         }
                         <!-- Resumen y botón: siempre visibles al pie del card -->
@@ -249,7 +262,7 @@
                             }
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto content-start pdv-productos-grid">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto content-start pdv-productos-grid">
                         @for (p of productosVisibles(); track p.id) {
                             <button
                                 type="button"
@@ -288,6 +301,8 @@
                                 [(ngModel)]="selectedCliente"
                                 [suggestions]="clientesSugeridos"
                                 (completeMethod)="buscarClientes($event)"
+                                (onSelect)="cargarFidelizacion()"
+                                (onClear)="limpiarFidelizacion()"
                                 optionLabel="razonSocial"
                                 placeholder="Buscar por nombre, código o RUC (mín. 2 caracteres)"
                                 styleClass="flex-1 w-full"
@@ -297,6 +312,36 @@
                             />
                             <p-button icon="pi pi-user-plus" [rounded]="true" severity="secondary" title="Nuevo cliente" (onClick)="abrirNuevoCliente()" />
                         </div>
+                        <!-- Fidelización del cliente -->
+                        @if (fidelizacionCliente()?.inscrito) {
+                            @let fc = fidelizacionCliente()!;
+                            <div class="pdv-fidel-strip mt-2">
+                                @if ((fc.puntosDisponibles ?? 0) > 0) {
+                                    <div class="pdv-fidel-chip" (click)="abrirCanjePuntos()">
+                                        <i class="pi pi-star"></i>
+                                        <span>{{ fc.puntosDisponibles | number:'1.0-0' }} pts</span>
+                                    </div>
+                                }
+                                @if (fc.nivel) {
+                                    <div class="pdv-fidel-chip pdv-fidel-nivel">
+                                        <i class="pi pi-sort-amount-up"></i>
+                                        <span>{{ fc.nivel.nombre }} ({{ fc.nivel.beneficioPorcentaje }}%)</span>
+                                    </div>
+                                }
+                                @if ((fc.saldoCashback ?? 0) > 0) {
+                                    <div class="pdv-fidel-chip pdv-fidel-cashback" (click)="abrirAplicarCashback()">
+                                        <i class="pi pi-wallet"></i>
+                                        <span>{{ fc.saldoCashback | number:'1.0-0' }} Gs cb</span>
+                                    </div>
+                                }
+                                @if (descuentoFidelizacion() > 0) {
+                                    <div class="pdv-fidel-chip pdv-fidel-applied">
+                                        <i class="pi pi-check-circle"></i>
+                                        <span>-{{ descuentoFidelizacion() | number:'1.0-0' }} Gs</span>
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                     <div>
                         <label class="block font-semibold mb-2 text-color">Tipo de pedido</label>
@@ -337,7 +382,7 @@
                         </div>
                     }
                     @if (modoOperacion === 'alquiler') {
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold mb-2 text-color">Fecha inicio <span class="text-red-500">*</span></label>
                                 <input type="date" pInputText [(ngModel)]="fechaInicioAlquiler" class="w-full" />
@@ -516,5 +561,35 @@
     <ng-template #footer>
         <p-button label="Cancelar" icon="pi pi-times" [text]="true" (click)="cerrarDialogCliente()" />
         <p-button label="Guardar cliente" icon="pi pi-check" (click)="guardarNuevoCliente()" [loading]="guardandoCliente()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Dialog Canjear Puntos -->
+<p-dialog [(visible)]="dialogCanjePuntos" [style]="{ width: 'min(380px, 95vw)' }" header="Canjear puntos" [modal]="true">
+    <div class="flex flex-col gap-3">
+        <div class="text-sm text-muted-color">Puntos disponibles: <strong>{{ fidelizacionCliente()?.puntosDisponibles | number:'1.0-0' }}</strong></div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Puntos a canjear</label>
+            <p-inputnumber [(ngModel)]="canjePuntosInput" [min]="1" [max]="fidelizacionCliente()?.puntosDisponibles ?? 0" styleClass="w-full" inputStyleClass="w-full" />
+        </div>
+    </div>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="dialogCanjePuntos = false" />
+        <p-button label="Canjear" icon="pi pi-star" (onClick)="confirmarCanjePuntos()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Dialog Aplicar Cashback -->
+<p-dialog [(visible)]="dialogCashback" [style]="{ width: 'min(380px, 95vw)' }" header="Aplicar cashback" [modal]="true">
+    <div class="flex flex-col gap-3">
+        <div class="text-sm text-muted-color">Saldo disponible: <strong>{{ fidelizacionCliente()?.saldoCashback | number:'1.0-0' }} Gs.</strong></div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Monto a aplicar</label>
+            <p-inputnumber [(ngModel)]="cashbackInput" [min]="1" mode="decimal" [minFractionDigits]="0" styleClass="w-full" inputStyleClass="w-full" />
+        </div>
+    </div>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="dialogCashback = false" />
+        <p-button label="Aplicar" icon="pi pi-wallet" (onClick)="confirmarAplicarCashback()" />
     </ng-template>
 </p-dialog>

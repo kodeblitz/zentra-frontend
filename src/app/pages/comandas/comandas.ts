@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
@@ -29,13 +29,18 @@ const ESTADOS = [
     styleUrls: ['./comandas.component.scss'],
     providers: [MessageService]
 })
-export class ComandasComponent implements OnInit {
+export class ComandasComponent implements OnInit, OnDestroy {
     mesas = signal<Pedido[]>([]);
     delivery = signal<Pedido[]>([]);
     loading = signal(false);
     clienteNombreCache: Record<number, string> = {};
     estadosOpt = ESTADOS;
     activeTab = 0;
+
+    /** Signal que se actualiza cada minuto para que el elapsed time sea reactivo. */
+    now = signal(Date.now());
+    private tickTimer: ReturnType<typeof setInterval> | null = null;
+    private autoRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
     constructor(
         private comandaService: ComandaService,
@@ -47,6 +52,13 @@ export class ComandasComponent implements OnInit {
 
     ngOnInit(): void {
         this.load();
+        this.tickTimer = setInterval(() => this.now.set(Date.now()), 30_000);
+        this.autoRefreshTimer = setInterval(() => this.load(), 60_000);
+    }
+
+    ngOnDestroy(): void {
+        if (this.tickTimer) clearInterval(this.tickTimer);
+        if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
     }
 
     load(): void {
@@ -94,6 +106,7 @@ export class ComandasComponent implements OnInit {
             case 'CANCELADO':
                 return 'danger';
             case 'EN_ENTREGA':
+                return 'success';
             case 'EN_PREPARACION':
                 return 'info';
             case 'CONFIRMADO':
@@ -103,25 +116,69 @@ export class ComandasComponent implements OnInit {
         }
     }
 
-    getTipoLabel(tipo: string | undefined): string {
-        switch (tipo) {
-            case 'IN_SITU':
-                return 'In situ';
-            case 'DELIVERY':
-                return 'Delivery';
-            case 'RETIRO':
-                return 'Retiro';
-            default:
-                return tipo ?? '-';
+    getEstadoBorderClass(estado: string | undefined): string {
+        switch (estado) {
+            case 'PENDIENTE': return 'comanda-border-pendiente';
+            case 'CONFIRMADO': return 'comanda-border-confirmado';
+            case 'EN_PREPARACION': return 'comanda-border-preparacion';
+            case 'EN_ENTREGA': return 'comanda-border-entrega';
+            default: return '';
         }
     }
 
-    /** Extrae número de mesa de observaciones si existe (ej. "Mesa 5" o "mesa: 5"). */
+    getTipoLabel(tipo: string | undefined): string {
+        switch (tipo) {
+            case 'IN_SITU': return 'In situ';
+            case 'DELIVERY': return 'Delivery';
+            case 'RETIRO': return 'Retiro';
+            default: return tipo ?? '-';
+        }
+    }
+
+    /** Extrae número de mesa de observaciones o nombre de comanda si existe. */
     getMesaLabel(p: Pedido): string {
         const obs = (p.observaciones ?? '').trim();
         const match = obs.match(/(?:mesa|mesa:)\s*(\d+)/i);
         if (match) return `Mesa ${match[1]}`;
+        if (obs) return obs;
         return p.numero ?? `#${p.id}`;
+    }
+
+    getElapsedTime(creadoEn: string | undefined): string {
+        if (!creadoEn) return '';
+        const _tick = this.now();
+        const diff = _tick - new Date(creadoEn).getTime();
+        const mins = Math.floor(diff / 60_000);
+        if (mins < 1) return 'ahora';
+        if (mins < 60) return `hace ${mins} min`;
+        const hrs = Math.floor(mins / 60);
+        const rest = mins % 60;
+        return rest > 0 ? `hace ${hrs}h ${rest}min` : `hace ${hrs}h`;
+    }
+
+    getElapsedClass(creadoEn: string | undefined): string {
+        if (!creadoEn) return '';
+        const diff = this.now() - new Date(creadoEn).getTime();
+        const mins = Math.floor(diff / 60_000);
+        if (mins >= 30) return 'elapsed-urgente';
+        if (mins >= 15) return 'elapsed-alerta';
+        return 'elapsed-normal';
+    }
+
+    getFormaPagoIcon(formaPago: string | undefined): string {
+        switch (formaPago) {
+            case 'TRANSFERENCIA': return 'pi pi-wallet';
+            case 'QR': return 'pi pi-qrcode';
+            default: return 'pi pi-money-bill';
+        }
+    }
+
+    getFormaPagoLabel(formaPago: string | undefined): string {
+        switch (formaPago) {
+            case 'TRANSFERENCIA': return 'Transferencia';
+            case 'QR': return 'QR';
+            default: return 'Efectivo';
+        }
     }
 
     confirmar(p: Pedido): void {
@@ -160,7 +217,7 @@ export class ComandasComponent implements OnInit {
         if (!p.id) return;
         this.pedidoService.marcarEnEntrega(p.id).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', summary: 'En entrega', detail: 'Comanda en camino.' });
+                this.messageService.add({ severity: 'success', summary: 'En entrega', detail: 'Comanda lista para entregar.' });
                 this.load();
             },
             error: (e) =>

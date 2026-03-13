@@ -192,6 +192,86 @@
     &:hover { border-color: #b45309 !important; }
 }
 .pdv-stock-ok {
-    border: 2px solid #16a34a !important; // verde: al menos 15 unidades
+    border: 2px solid #16a34a !important;
     &:hover { border-color: #15803d !important; }
+}
+
+.pdv-fidel-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pdv-fidel-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color);
+    transition: background 0.15s;
+
+    &:hover { background: var(--surface-hover); }
+
+    i { font-size: 0.85rem; }
+}
+
+.pdv-fidel-nivel {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    cursor: default;
+}
+
+.pdv-fidel-cashback {
+    border-color: var(--green-500);
+    color: var(--green-500);
+}
+
+.pdv-fidel-applied {
+    background: var(--green-50);
+    border-color: var(--green-500);
+    color: var(--green-700);
+    cursor: default;
+}
+
+// ─── Responsive Mobile ───
+@media (max-width: 768px) {
+    .pdv-paso1-grid {
+        min-height: 12rem;
+        max-height: none;
+    }
+    .pdv-productos-grid {
+        max-height: 18rem;
+    }
+    .pdv-monto-final-wrap {
+        min-width: 0;
+        .pdv-monto-final-input.p-inputnumber {
+            min-width: 0;
+            max-width: none;
+            width: 100%;
+        }
+    }
+    :host ::ng-deep .pdv-dias-input.p-inputnumber {
+        min-width: 0;
+    }
+    :host ::ng-deep .pdv-descuento-input.p-inputnumber {
+        min-width: 0;
+        width: 100%;
+    }
+    :host ::ng-deep .pdv-promo-pct.p-inputnumber {
+        min-width: 0;
+        width: 100%;
+    }
+    :host ::ng-deep .pdv-promo-monto.p-inputnumber {
+        min-width: 0;
+        width: 100%;
+    }
+    .pdv-carrito-lista {
+        max-height: min(50vh, 16rem);
+    }
 }

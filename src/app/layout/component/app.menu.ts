@@ -43,6 +43,7 @@ export class AppMenu {
                     { label: 'Pagos / Cobranzas', icon: 'pi pi-fw pi-wallet', routerLink: ['/pages/pagos'], data: { feature: 'pagos' }, visible: isEnabled('pagos') },
                     { label: 'Caja (efectivo)', icon: 'pi pi-fw pi-money-bill', routerLink: ['/pages/caja'], data: { feature: 'caja' }, visible: isEnabled('caja') },
                     { label: 'Cartera', icon: 'pi pi-fw pi-chart-line', routerLink: ['/pages/cartera'], data: { feature: 'cartera' }, visible: isEnabled('cartera') },
+                    { label: 'Fidelización', icon: 'pi pi-fw pi-star', routerLink: ['/pages/fidelizacion'], data: { feature: 'fidelizacion' }, visible: isEnabled('fidelizacion') },
                     { label: 'Productos / Servicios', icon: 'pi pi-fw pi-box', routerLink: ['/pages/productos'], data: { feature: 'productos' }, visible: isEnabled('productos') },
                     { label: 'Visor de precios', icon: 'pi pi-fw pi-qrcode', routerLink: ['/pages/productos/visor-precios'], data: { feature: 'productos' }, visible: isEnabled('productos') },
                     { label: 'Inventario', icon: 'pi pi-fw pi-box', routerLink: ['/pages/inventario'], data: { feature: 'inventario' }, visible: isEnabled('inventario') },

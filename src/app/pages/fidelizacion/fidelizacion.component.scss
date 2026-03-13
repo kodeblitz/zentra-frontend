@@ -1,0 +1,137 @@
+.fidel-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.fidel-kpi {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fidel-kpi-icon {
+    font-size: 1.5rem;
+    color: var(--text-color-secondary);
+}
+
+.fidel-kpi-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.fidel-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.fidel-kpi-label {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+.fidel-kpi-primary {
+    border-left: 4px solid var(--primary-color);
+    .fidel-kpi-icon { color: var(--primary-color); }
+}
+
+.fidel-kpi-accent {
+    border-left: 4px solid var(--orange-500);
+    .fidel-kpi-icon { color: var(--orange-500); }
+}
+
+.fidel-kpi-green {
+    border-left: 4px solid var(--green-500);
+    .fidel-kpi-icon { color: var(--green-500); }
+}
+
+.fidel-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.fidel-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--surface-border);
+    font-weight: 600;
+
+    i {
+        font-size: 1.1rem;
+    }
+}
+
+.fidel-card-body {
+    padding: 1.25rem;
+}
+
+.fidel-nivel-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--surface-ground);
+    border-radius: 8px;
+    min-width: 100px;
+}
+
+.fidel-nivel-stat-count {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.fidel-nivel-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.25rem;
+}
+
+.fidel-nivel-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    min-width: 120px;
+}
+
+:host ::ng-deep .p-datatable-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 480px) {
+    .fidel-kpi-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .fidel-card-header {
+        flex-wrap: wrap;
+    }
+    .fidel-nivel-badge {
+        min-width: 0;
+        flex: 1;
+    }
+    .fidel-nivel-stat {
+        min-width: 0;
+        padding: 0.75rem 1rem;
+    }
+}

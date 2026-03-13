@@ -102,3 +102,23 @@
 :host-context(.app-dark) .doc-ver-tabla-wrap .p-datatable .p-datatable-thead > tr > th {
     background: var(--p-surface-800);
 }
+
+.doc-ver-tabla-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .presupuesto-ver-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .presupuesto-ver-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .doc-ver-layout .doc-ver-datos .p-card-content,
+    .doc-ver-layout .doc-ver-detalle-card .p-card-content {
+        padding: 1rem;
+    }
+}

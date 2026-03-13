@@ -29,6 +29,7 @@ const MENU_ITEMS_WITH_FEATURES: Array<{
     { label: 'Pagos / Cobranzas', routerLink: ['/pages/pagos'], icon: 'pi pi-fw pi-wallet', feature: 'pagos' },
     { label: 'Caja (efectivo)', routerLink: ['/pages/caja'], icon: 'pi pi-fw pi-money-bill', feature: 'caja' },
     { label: 'Cartera', routerLink: ['/pages/cartera'], icon: 'pi pi-fw pi-chart-line', feature: 'cartera' },
+    { label: 'Fidelización', routerLink: ['/pages/fidelizacion'], icon: 'pi pi-fw pi-star', feature: 'fidelizacion' },
     { label: 'Productos / Servicios', routerLink: ['/pages/productos'], icon: 'pi pi-fw pi-box', feature: 'productos' },
     { label: 'Visor de precios', routerLink: ['/pages/productos/visor-precios'], icon: 'pi pi-fw pi-qrcode', feature: 'productos' },
     { label: 'Inventario', routerLink: ['/pages/inventario'], icon: 'pi pi-fw pi-box', feature: 'inventario' },

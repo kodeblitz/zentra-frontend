@@ -35,6 +35,7 @@ import { CompraFormComponent } from './compras/compra-form/compra-form';
 import { CompraVerComponent } from './compras/compra-ver/compra-ver';
 import { GastosComponent } from './gastos/gastos';
 import { UsuariosComponent } from './usuarios/usuarios';
+import { FidelizacionComponent } from './fidelizacion/fidelizacion';
 import { featureGuard } from '../core/feature.guard';
 
 export default [
@@ -76,6 +77,7 @@ export default [
     { path: 'compras/editar/:id', component: CompraFormComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
     { path: 'compras/ver/:id', component: CompraVerComponent, data: { feature: 'compras' }, canActivate: [featureGuard] },
     { path: 'gastos', component: GastosComponent, data: { feature: 'gastos' }, canActivate: [featureGuard] },
+    { path: 'fidelizacion', component: FidelizacionComponent, data: { feature: 'fidelizacion' }, canActivate: [featureGuard] },
     { path: 'usuarios', component: UsuariosComponent, data: { feature: 'usuarios' }, canActivate: [featureGuard] },
     { path: 'backup', component: BackupComponent },
     { path: '**', redirectTo: '/notfound' }

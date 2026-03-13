@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { ApiService } from '../../core/api.service';
 
 export interface CondicionPago {
@@ -127,18 +128,40 @@ export function precioMayoristaParaCantidad(p: Producto, cantidad: number): numb
 
 @Injectable({ providedIn: 'root' })
 export class MaestrosService {
+    private caches = new Map<string, { obs$: Observable<any>; time: number }>();
+    private readonly CACHE_TTL = 5 * 60 * 1000;
+
     constructor(private api: ApiService) {}
 
+    private cached<T>(key: string, factory: () => Observable<T>): Observable<T> {
+        const entry = this.caches.get(key);
+        const now = Date.now();
+        if (entry && now - entry.time < this.CACHE_TTL) {
+            return entry.obs$ as Observable<T>;
+        }
+        const obs$ = factory().pipe(shareReplay(1));
+        this.caches.set(key, { obs$, time: now });
+        return obs$;
+    }
+
+    invalidar(key: string): void {
+        this.caches.delete(key);
+    }
+
+    invalidarTodo(): void {
+        this.caches.clear();
+    }
+
     condicionesPago(): Observable<CondicionPago[]> {
-        return this.api.get<CondicionPago[]>('/condiciones-pago');
+        return this.cached('condiciones-pago', () => this.api.get<CondicionPago[]>('/condiciones-pago'));
     }
 
     tiposDocumento(): Observable<TipoDocumento[]> {
-        return this.api.get<TipoDocumento[]>('/tipos-documento');
+        return this.cached('tipos-documento', () => this.api.get<TipoDocumento[]>('/tipos-documento'));
     }
 
     monedas(): Observable<Moneda[]> {
-        return this.api.get<Moneda[]>('/monedas');
+        return this.cached('monedas', () => this.api.get<Moneda[]>('/monedas'));
     }
 
     empresas(): Observable<Empresa[]> {
@@ -188,11 +211,11 @@ export class MaestrosService {
     }
 
     mediosPago(): Observable<MedioPago[]> {
-        return this.api.get<MedioPago[]>('/medios-pago/activos');
+        return this.cached('medios-pago', () => this.api.get<MedioPago[]>('/medios-pago/activos'));
     }
 
     productos(): Observable<Producto[]> {
-        return this.api.get<Producto[]>('/productos');
+        return this.cached('productos', () => this.api.get<Producto[]>('/productos'));
     }
 
     getProductoById(id: number): Observable<Producto> {
@@ -207,16 +230,16 @@ export class MaestrosService {
     }
 
     categorias(): Observable<Categoria[]> {
-        return this.api.get<Categoria[]>('/categorias');
+        return this.cached('categorias', () => this.api.get<Categoria[]>('/categorias'));
     }
 
     unidadesMedida(): Observable<UnidadMedida[]> {
-        return this.api.get<UnidadMedida[]>('/unidades-medida');
+        return this.cached('unidades-medida', () => this.api.get<UnidadMedida[]>('/unidades-medida'));
     }
 
     /** Todos los medios de pago (para pantalla paramétricos). */
     mediosPagoTodos(): Observable<MedioPago[]> {
-        return this.api.get<MedioPago[]>('/medios-pago');
+        return this.cached('medios-pago-todos', () => this.api.get<MedioPago[]>('/medios-pago'));
     }
 
     /**

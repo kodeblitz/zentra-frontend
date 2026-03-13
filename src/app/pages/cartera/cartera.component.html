@@ -1,129 +1,340 @@
 <p-toast />
-<p-tabs value="0">
-    <p-tablist>
-        <p-tab value="0">Saldos por cliente</p-tab>
-        <p-tab value="1">Documentos con saldo</p-tab>
-        <p-tab value="2">Aging</p-tab>
-    </p-tablist>
-    <p-tabpanels>
-        <p-tabpanel value="0">
-            <p-table
-                [value]="saldosCliente()"
-                [rows]="15"
-                [paginator]="true"
-                [tableStyle]="{ 'min-width': '40rem' }"
-                dataKey="clienteId"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-                [showCurrentPageReport]="true"
-                [rowsPerPageOptions]="[10, 25, 50]"
-            >
-                <ng-template #header>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Saldo documentos</th>
-                        <th>Saldo créditos</th>
-                        <th>Saldo total</th>
-                    </tr>
-                </ng-template>
-                <ng-template #body let-row>
-                    <tr>
-                        <td>{{ row.razonSocial }}</td>
-                        <td>{{ row.saldoDocumentos | number:'1.0-0' }} Gs.</td>
-                        <td>{{ row.saldoCreditos | number:'1.0-0' }} Gs.</td>
-                        <td>{{ row.saldoTotal | number:'1.0-0' }} Gs.</td>
-                    </tr>
-                </ng-template>
-                <ng-template #emptymessage>
-                    <tr><td colspan="4">No hay datos.</td></tr>
-                </ng-template>
-            </p-table>
-        </p-tabpanel>
-        <p-tabpanel value="1">
-            <p-table
-                [value]="documentosConSaldo()"
-                [rows]="15"
-                [paginator]="true"
-                [tableStyle]="{ 'min-width': '50rem' }"
-                dataKey="documentoVentaId"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-                [showCurrentPageReport]="true"
-            >
-                <ng-template #header>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Número</th>
-                        <th>Fecha emisión</th>
-                        <th>Vencimiento</th>
-                        <th>Total</th>
-                        <th>Saldo pendiente</th>
-                        <th>Días vencido</th>
-                    </tr>
-                </ng-template>
-                <ng-template #body let-row>
-                    <tr>
-                        <td>{{ row.razonSocial }}</td>
-                        <td>{{ row.numero }}</td>
-<td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
-                                        <td>{{ row.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
-                        <td>{{ row.total | number:'1.0-0' }} Gs.</td>
-                        <td>{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
-                        <td><p-tag [value]="row.diasVencido?.toString() ?? '0'" [severity]="row.diasVencido && row.diasVencido > 0 ? 'warn' : 'success'" /></td>
-                    </tr>
-                </ng-template>
-                <ng-template #emptymessage>
-                    <tr><td colspan="7">No hay documentos con saldo.</td></tr>
-                </ng-template>
-            </p-table>
-        </p-tabpanel>
-        <p-tabpanel value="2">
-            <div class="mb-4">
-                <p-button label="Actualizar" icon="pi pi-refresh" (onClick)="loadAging()" />
+<div class="flex flex-col gap-4">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h5 class="m-0 font-bold text-xl">Cartera por cobrar</h5>
+            <span class="text-sm text-color-secondary">Seguimiento de cuentas por cobrar, documentos pendientes y análisis de antigüedad</span>
+        </div>
+        <div class="flex gap-2">
+            <p-button label="Registrar pago" icon="pi pi-wallet" (onClick)="irAPagos()" />
+            <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [outlined]="true" (onClick)="load()" [loading]="loading()" />
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    @if (aging()) {
+        <div class="cartera-kpi-strip">
+            <div class="cartera-kpi cartera-kpi-total">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-briefcase"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Total por cobrar</span>
+                    <span class="cartera-kpi-value">{{ getTotalSaldos() | number:'1.0-0' }} Gs.</span>
+                </div>
             </div>
-            <div *ngIf="aging()" class="grid grid-cols-12 gap-4 mb-4">
-                <p-card class="col-span-3" header="0-30 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango0_30 | number:'1.0-0' }} Gs.</p>
-                </p-card>
-                <p-card class="col-span-3" header="31-60 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango31_60 | number:'1.0-0' }} Gs.</p>
-                </p-card>
-                <p-card class="col-span-3" header="61-90 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango61_90 | number:'1.0-0' }} Gs.</p>
-                </p-card>
-                <p-card class="col-span-3" header="+90 días">
-                    <p class="text-2xl font-bold">{{ aging()!.rango91Mas | number:'1.0-0' }} Gs.</p>
-                </p-card>
+            <div class="cartera-kpi cartera-kpi-ok">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-check-circle"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Al día (0-30)</span>
+                    <span class="cartera-kpi-value">{{ aging()!.rango0_30 | number:'1.0-0' }} Gs.</span>
+                    <span class="cartera-kpi-pct">{{ getPctAging(aging()!.rango0_30) }}%</span>
+                </div>
             </div>
-            <p-card *ngIf="aging()" header="Total cartera">
-                <p class="text-2xl font-bold">{{ aging()!.total | number:'1.0-0' }} Gs.</p>
-            </p-card>
-            <p-table
-                *ngIf="aging()?.detalle?.length"
-                [value]="aging()!.detalle"
-                [rows]="15"
-                [paginator]="true"
-                [tableStyle]="{ 'min-width': '50rem' }"
-                class="mt-4"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
-                [showCurrentPageReport]="true"
-                [rowsPerPageOptions]="[10, 25, 50]"
-            >
-                <ng-template #header>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Número</th>
-                        <th>Saldo</th>
-                        <th>Días vencido</th>
-                    </tr>
-                </ng-template>
-                <ng-template #body let-row>
-                    <tr>
-                        <td>{{ row.razonSocial }}</td>
-                        <td>{{ row.numero }}</td>
-                        <td>{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
-                        <td>{{ row.diasVencido }}</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-tabpanel>
-    </p-tabpanels>
-</p-tabs>
+            <div class="cartera-kpi cartera-kpi-warn">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-exclamation-triangle"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Vencido 31-60</span>
+                    <span class="cartera-kpi-value">{{ aging()!.rango31_60 | number:'1.0-0' }} Gs.</span>
+                    <span class="cartera-kpi-pct">{{ getPctAging(aging()!.rango31_60) }}%</span>
+                </div>
+            </div>
+            <div class="cartera-kpi cartera-kpi-danger">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-exclamation-circle"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Vencido 61-90</span>
+                    <span class="cartera-kpi-value">{{ aging()!.rango61_90 | number:'1.0-0' }} Gs.</span>
+                    <span class="cartera-kpi-pct">{{ getPctAging(aging()!.rango61_90) }}%</span>
+                </div>
+            </div>
+            <div class="cartera-kpi cartera-kpi-critical">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-ban"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Crítico +90</span>
+                    <span class="cartera-kpi-value">{{ aging()!.rango91Mas | number:'1.0-0' }} Gs.</span>
+                    <span class="cartera-kpi-pct">{{ getPctAging(aging()!.rango91Mas) }}%</span>
+                </div>
+            </div>
+            <div class="cartera-kpi cartera-kpi-clientes">
+                <div class="cartera-kpi-icon">
+                    <i class="pi pi-users"></i>
+                </div>
+                <div class="cartera-kpi-body">
+                    <span class="cartera-kpi-label">Clientes con saldo</span>
+                    <span class="cartera-kpi-value">{{ saldosCliente().length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aging bar visual -->
+        <div class="cartera-aging-bar">
+            @if (aging()!.total > 0) {
+                <div class="cartera-aging-segment cartera-aging-ok" [style.width.%]="getPctAging(aging()!.rango0_30)" pTooltip="Al día: {{ aging()!.rango0_30 | number:'1.0-0' }} Gs."></div>
+                <div class="cartera-aging-segment cartera-aging-warn" [style.width.%]="getPctAging(aging()!.rango31_60)" pTooltip="31-60 días: {{ aging()!.rango31_60 | number:'1.0-0' }} Gs."></div>
+                <div class="cartera-aging-segment cartera-aging-danger" [style.width.%]="getPctAging(aging()!.rango61_90)" pTooltip="61-90 días: {{ aging()!.rango61_90 | number:'1.0-0' }} Gs."></div>
+                <div class="cartera-aging-segment cartera-aging-critical" [style.width.%]="getPctAging(aging()!.rango91Mas)" pTooltip="+90 días: {{ aging()!.rango91Mas | number:'1.0-0' }} Gs."></div>
+            } @else {
+                <div class="cartera-aging-segment cartera-aging-empty" style="width: 100%"></div>
+            }
+        </div>
+    }
+
+    <!-- Tabs -->
+    <p-tabs [(value)]="activeTab">
+        <p-tablist>
+            <p-tab value="0">
+                <span class="flex items-center gap-2">
+                    <i class="pi pi-users"></i>
+                    Clientes
+                    <p-tag [value]="saldosCliente().length.toString()" severity="info" />
+                </span>
+            </p-tab>
+            <p-tab value="1">
+                <span class="flex items-center gap-2">
+                    <i class="pi pi-file"></i>
+                    Documentos pendientes
+                    <p-tag [value]="documentosConSaldo().length.toString()" severity="info" />
+                </span>
+            </p-tab>
+            <p-tab value="2">
+                <span class="flex items-center gap-2">
+                    <i class="pi pi-chart-bar"></i>
+                    Detalle aging
+                </span>
+            </p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <!-- Tab: Clientes -->
+            <p-tabpanel value="0">
+                <p-table
+                    #dtClientes
+                    [value]="saldosCliente()"
+                    [rows]="15"
+                    [paginator]="true"
+                    [globalFilterFields]="['razonSocial']"
+                    [tableStyle]="{ 'min-width': '50rem' }"
+                    dataKey="clienteId"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
+                    [showCurrentPageReport]="true"
+                    [rowsPerPageOptions]="[10, 25, 50]"
+                    [sortField]="'saldoTotal'"
+                    [sortOrder]="-1"
+                    styleClass="p-datatable-sm"
+                >
+                    <ng-template #caption>
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p-iconfield iconPosition="left">
+                                <p-inputicon styleClass="pi pi-search" />
+                                <input pInputText type="text" placeholder="Buscar cliente..." (input)="dtClientes.filterGlobal($any($event.target).value, 'contains')" />
+                            </p-iconfield>
+                        </div>
+                    </ng-template>
+                    <ng-template #header>
+                        <tr>
+                            <th pSortableColumn="razonSocial">Cliente <p-sortIcon field="razonSocial" /></th>
+                            <th pSortableColumn="saldoDocumentos" class="text-right">Saldo documentos <p-sortIcon field="saldoDocumentos" /></th>
+                            <th pSortableColumn="saldoCreditos" class="text-right">Saldo créditos <p-sortIcon field="saldoCreditos" /></th>
+                            <th pSortableColumn="saldoTotal" class="text-right">Saldo total <p-sortIcon field="saldoTotal" /></th>
+                            <th class="text-center" style="width: 7rem">Acciones</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="cartera-riesgo-dot" [ngClass]="getRiesgoClass(row.saldoTotal)"></div>
+                                    <span class="font-medium">{{ row.razonSocial }}</span>
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                @if (row.saldoDocumentos > 0) {
+                                    <span class="font-semibold">{{ row.saldoDocumentos | number:'1.0-0' }} Gs.</span>
+                                } @else {
+                                    <span class="text-color-secondary">-</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                @if (row.saldoCreditos > 0) {
+                                    <span class="font-semibold">{{ row.saldoCreditos | number:'1.0-0' }} Gs.</span>
+                                } @else {
+                                    <span class="text-color-secondary">-</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                <span class="font-bold" [ngClass]="getSaldoTotalClass(row.saldoTotal)">{{ row.saldoTotal | number:'1.0-0' }} Gs.</span>
+                            </td>
+                            <td class="text-center">
+                                <p-button icon="pi pi-wallet" pTooltip="Cobrar" [rounded]="true" [text]="true" (onClick)="irAPagosCliente(row.clienteId)" />
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr>
+                            <td colspan="5" class="text-center py-6 text-color-secondary">
+                                <i class="pi pi-check-circle text-3xl mb-2 block text-green-500"></i>
+                                No hay clientes con saldo pendiente.
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #summary>
+                        <div class="flex justify-between items-center text-sm">
+                            <span>{{ saldosCliente().length }} cliente(s) con saldo</span>
+                            <span class="font-bold">Total: {{ getTotalSaldos() | number:'1.0-0' }} Gs.</span>
+                        </div>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Tab: Documentos pendientes -->
+            <p-tabpanel value="1">
+                <p-table
+                    #dtDocs
+                    [value]="documentosConSaldo()"
+                    [rows]="15"
+                    [paginator]="true"
+                    [globalFilterFields]="['razonSocial', 'numero']"
+                    [tableStyle]="{ 'min-width': '60rem' }"
+                    dataKey="documentoVentaId"
+                    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} documentos"
+                    [showCurrentPageReport]="true"
+                    [rowsPerPageOptions]="[10, 25, 50]"
+                    [sortField]="'diasVencido'"
+                    [sortOrder]="-1"
+                    styleClass="p-datatable-sm"
+                >
+                    <ng-template #caption>
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p-iconfield iconPosition="left">
+                                <p-inputicon styleClass="pi pi-search" />
+                                <input pInputText type="text" placeholder="Buscar por cliente o número..." (input)="dtDocs.filterGlobal($any($event.target).value, 'contains')" />
+                            </p-iconfield>
+                            <div class="flex gap-2">
+                                <p-button label="Todos" [outlined]="filtroVencimiento !== 'todos'" size="small" (onClick)="filtroVencimiento = 'todos'; dtDocs.filter('', 'diasVencido', 'gte')" />
+                                <p-button label="Al día" severity="success" [outlined]="filtroVencimiento !== 'aldia'" size="small" (onClick)="filtrarVencimiento('aldia', dtDocs)" />
+                                <p-button label="Vencidos" severity="danger" [outlined]="filtroVencimiento !== 'vencido'" size="small" (onClick)="filtrarVencimiento('vencido', dtDocs)" />
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template #header>
+                        <tr>
+                            <th pSortableColumn="razonSocial">Cliente <p-sortIcon field="razonSocial" /></th>
+                            <th pSortableColumn="numero">Número <p-sortIcon field="numero" /></th>
+                            <th pSortableColumn="fechaEmision">Emisión <p-sortIcon field="fechaEmision" /></th>
+                            <th pSortableColumn="fechaVencimiento">Vencimiento <p-sortIcon field="fechaVencimiento" /></th>
+                            <th pSortableColumn="total" class="text-right">Total <p-sortIcon field="total" /></th>
+                            <th pSortableColumn="saldoPendiente" class="text-right">Saldo <p-sortIcon field="saldoPendiente" /></th>
+                            <th pSortableColumn="diasVencido" class="text-center">Estado <p-sortIcon field="diasVencido" /></th>
+                            <th class="text-center" style="width: 5rem"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-row>
+                        <tr>
+                            <td><span class="font-medium">{{ row.razonSocial }}</span></td>
+                            <td><span class="text-color-secondary">{{ row.numero }}</span></td>
+                            <td>{{ row.fechaEmision | date:'dd/MM/yyyy' }}</td>
+                            <td>
+                                <span [ngClass]="row.diasVencido > 0 ? 'font-semibold text-red-500' : ''">
+                                    {{ row.fechaVencimiento | date:'dd/MM/yyyy' }}
+                                </span>
+                            </td>
+                            <td class="text-right">{{ row.total | number:'1.0-0' }} Gs.</td>
+                            <td class="text-right font-bold">{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
+                            <td class="text-center">
+                                <p-tag
+                                    [value]="getDiasVencidoLabel(row.diasVencido)"
+                                    [severity]="getDiasVencidoSeverity(row.diasVencido)"
+                                />
+                            </td>
+                            <td class="text-center">
+                                <p-button icon="pi pi-wallet" pTooltip="Registrar pago" [rounded]="true" [text]="true" size="small" (onClick)="irAPagosCliente(row.clienteId)" />
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #emptymessage>
+                        <tr>
+                            <td colspan="8" class="text-center py-6 text-color-secondary">
+                                <i class="pi pi-check-circle text-3xl mb-2 block text-green-500"></i>
+                                No hay documentos con saldo pendiente.
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template #summary>
+                        <div class="flex justify-between items-center text-sm">
+                            <span>{{ documentosConSaldo().length }} documento(s) pendiente(s)</span>
+                            <span class="font-bold">Total saldo: {{ getTotalSaldoDocumentos() | number:'1.0-0' }} Gs.</span>
+                        </div>
+                    </ng-template>
+                </p-table>
+            </p-tabpanel>
+
+            <!-- Tab: Detalle aging -->
+            <p-tabpanel value="2">
+                @if (aging()?.detalle?.length) {
+                    <p-table
+                        #dtAging
+                        [value]="aging()!.detalle"
+                        [rows]="15"
+                        [paginator]="true"
+                        [globalFilterFields]="['razonSocial', 'numero']"
+                        [tableStyle]="{ 'min-width': '50rem' }"
+                        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                        [showCurrentPageReport]="true"
+                        [rowsPerPageOptions]="[10, 25, 50]"
+                        [sortField]="'diasVencido'"
+                        [sortOrder]="-1"
+                        styleClass="p-datatable-sm"
+                    >
+                        <ng-template #caption>
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <p-iconfield iconPosition="left">
+                                    <p-inputicon styleClass="pi pi-search" />
+                                    <input pInputText type="text" placeholder="Buscar..." (input)="dtAging.filterGlobal($any($event.target).value, 'contains')" />
+                                </p-iconfield>
+                            </div>
+                        </ng-template>
+                        <ng-template #header>
+                            <tr>
+                                <th pSortableColumn="razonSocial">Cliente <p-sortIcon field="razonSocial" /></th>
+                                <th pSortableColumn="numero">Número <p-sortIcon field="numero" /></th>
+                                <th pSortableColumn="fechaVencimiento">Vencimiento <p-sortIcon field="fechaVencimiento" /></th>
+                                <th pSortableColumn="saldoPendiente" class="text-right">Saldo <p-sortIcon field="saldoPendiente" /></th>
+                                <th pSortableColumn="diasVencido" class="text-center">Días vencido <p-sortIcon field="diasVencido" /></th>
+                                <th class="text-center">Rango</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-row>
+                            <tr>
+                                <td><span class="font-medium">{{ row.razonSocial }}</span></td>
+                                <td><span class="text-color-secondary">{{ row.numero }}</span></td>
+                                <td>{{ row.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+                                <td class="text-right font-bold">{{ row.saldoPendiente | number:'1.0-0' }} Gs.</td>
+                                <td class="text-center">
+                                    <span class="font-semibold" [ngClass]="getDiasVencidoTextClass(row.diasVencido)">
+                                        {{ row.diasVencido ?? 0 }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <p-tag [value]="getAgingRangoLabel(row.diasVencido)" [severity]="getAgingRangoSeverity(row.diasVencido)" />
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                } @else {
+                    <div class="text-center py-8 text-color-secondary">
+                        <i class="pi pi-chart-bar text-4xl mb-3 block opacity-50"></i>
+                        <p class="m-0 font-medium">No hay datos de aging disponibles.</p>
+                    </div>
+                }
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>

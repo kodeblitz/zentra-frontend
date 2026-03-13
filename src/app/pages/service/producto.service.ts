@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { ApiService } from '../../core/api.service';
-import { Producto } from './maestros.service';
+import { Producto, MaestrosService } from './maestros.service';
 
 export interface ProductoVisorPreciosDTO {
     id: number;
@@ -22,6 +23,8 @@ export interface ProductoVisorPreciosDTO {
 export class ProductoService {
     private path = '/productos';
 
+    private maestros = inject(MaestrosService);
+
     constructor(private api: ApiService) {}
 
     list(): Observable<Producto[]> {
@@ -38,15 +41,15 @@ export class ProductoService {
     }
 
     create(item: Producto): Observable<void> {
-        return this.api.post<void>(this.path, this.toPayload(item));
+        return this.api.post<void>(this.path, this.toPayload(item)).pipe(tap(() => this.maestros.invalidar('productos')));
     }
 
     update(item: Producto): Observable<void> {
-        return this.api.put<void>(this.path, this.toPayload(item));
+        return this.api.put<void>(this.path, this.toPayload(item)).pipe(tap(() => this.maestros.invalidar('productos')));
     }
 
     delete(id: number): Observable<boolean> {
-        return this.api.delete(`${this.path}/${id}`);
+        return this.api.delete(`${this.path}/${id}`).pipe(tap(() => this.maestros.invalidar('productos')));
     }
 
     private toPayload(p: Producto): Record<string, unknown> {

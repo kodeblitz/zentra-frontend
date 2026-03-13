@@ -7,6 +7,8 @@ export interface CuotaCalculada {
     fechaVencimiento: string; // YYYY-MM-DD
     montoCapital: number;
     montoInteres: number;
+    montoGastoAdmin: number;
+    montoSeguro: number;
     montoCuota: number;
     saldoInsoluto: number;
 }
@@ -54,6 +56,8 @@ function generarFrances(
             fechaVencimiento: venc,
             montoCapital: capital,
             montoInteres: interes,
+            montoGastoAdmin: 0,
+            montoSeguro: 0,
             montoCuota: cuotaFija,
             saldoInsoluto: saldo
         });
@@ -83,6 +87,8 @@ function generarAleman(
             fechaVencimiento: venc,
             montoCapital: capital,
             montoInteres: interes,
+            montoGastoAdmin: 0,
+            montoSeguro: 0,
             montoCuota: cuota,
             saldoInsoluto: saldo
         });
@@ -111,4 +117,40 @@ export function generarCuotas(
     const principal = round4(montoTotal);
     if (sistema === 'AL') return generarAleman(principal, i, nroCuotas, fechaPrimerVencimiento);
     return generarFrances(principal, i, nroCuotas, fechaPrimerVencimiento);
+}
+
+/**
+ * Genera cuotas con cargos adicionales (gastos admin y seguro) que no generan interés.
+ * @param gastoAdminTotal Monto total de gastos administrativos (se divide entre las cuotas)
+ * @param seguroPorCuota Monto fijo de seguro por cuota
+ */
+export function generarCuotasConCargos(
+    montoTotal: number,
+    tasaAnualPercent: number,
+    nroCuotas: number,
+    fechaPrimerVencimiento: string,
+    sistema: 'FR' | 'AL',
+    gastoAdminTotal: number,
+    seguroPorCuota: number
+): CuotaCalculada[] {
+    const cuotas = generarCuotas(montoTotal, tasaAnualPercent, nroCuotas, fechaPrimerVencimiento, sistema);
+    if (cuotas.length === 0) return cuotas;
+
+    const gAdmin = gastoAdminTotal ?? 0;
+    const seguro = seguroPorCuota ?? 0;
+    if (gAdmin <= 0 && seguro <= 0) return cuotas;
+
+    const n = cuotas.length;
+    const adminPorCuota = gAdmin > 0 ? round4(gAdmin / n) : 0;
+    const adminAcumulado = round4(adminPorCuota * n);
+    const adminResto = round4(gAdmin - adminAcumulado);
+
+    for (let i = 0; i < n; i++) {
+        const c = cuotas[i];
+        const ga = i === n - 1 ? round4(adminPorCuota + adminResto) : adminPorCuota;
+        c.montoGastoAdmin = ga;
+        c.montoSeguro = seguro;
+        c.montoCuota = round4(c.montoCapital + c.montoInteres + ga + seguro);
+    }
+    return cuotas;
 }

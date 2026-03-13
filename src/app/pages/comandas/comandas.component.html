@@ -1,8 +1,8 @@
 <p-toast />
 <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <h5 class="m-0 font-semibold">Comandas</h5>
-        <div class="flex gap-2">
+        <h5 class="m-0 font-semibold text-xl">Comandas</h5>
+        <div class="flex flex-wrap gap-2">
             <p-button label="Ir al PDV" icon="pi pi-shopping-cart" severity="secondary" [outlined]="true" (onClick)="irAPdv()" />
             <p-button label="Ver todos los pedidos" icon="pi pi-list" severity="secondary" [outlined]="true" (onClick)="irAPedidos()" />
         </div>
@@ -26,105 +26,196 @@
             </p-tab>
         </p-tablist>
         <p-tabpanels>
+            <!-- Mesas -->
             <p-tabpanel [value]="0">
             @if (loading()) {
                 <div class="flex justify-center py-8"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
             } @else if (mesas().length === 0) {
-                <p-card>
-                    <div class="text-center py-8 text-color-secondary">
-                        <i class="pi pi-inbox text-4xl mb-4 block"></i>
-                        <p class="m-0">No hay comandas activas en mesas.</p>
-                        <p class="text-sm mt-2">Creá pedidos desde el PDV con tipo "In situ" o "Retiro".</p>
-                        <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" class="mt-4" />
-                    </div>
-                </p-card>
+                <div class="comanda-empty">
+                    <i class="pi pi-inbox"></i>
+                    <p class="comanda-empty-title">No hay comandas activas en mesas</p>
+                    <p class="comanda-empty-hint">Creá pedidos desde el PDV con tipo "In situ" o "Retiro".</p>
+                    <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" />
+                </div>
             } @else {
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="comanda-grid">
                     @for (p of mesas(); track p.id) {
-                        <p-card [header]="getMesaLabel(p)" styleClass="comanda-card">
-                            <ng-template pTemplate="subtitle">
-                                <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" />
-                            </ng-template>
-                            <div class="flex flex-col gap-2 text-sm">
-                                <div><span class="font-semibold">Cliente:</span> {{ getClienteNombre(p.cliente?.id) }}</div>
-                                <div><span class="font-semibold">Total:</span> {{ p.total | number:'1.0-0' }} Gs.</div>
-                                @if (p.creadoEn) {
-                                    <div class="text-color-secondary text-xs">{{ p.creadoEn | date:'HH:mm' }}</div>
-                                }
-                            </div>
-                            <ng-template pTemplate="footer">
-                                <div class="flex flex-wrap gap-1">
-                                    @if (p.estado === 'PENDIENTE') {
-                                        <p-button icon="pi pi-check" pTooltip="Confirmar" [rounded]="true" [text]="true" (onClick)="confirmar(p)" />
-                                        <p-button icon="pi pi-times" severity="danger" pTooltip="Cancelar" [rounded]="true" [text]="true" (onClick)="cancelar(p)" />
-                                    }
-                                    @if (p.estado === 'CONFIRMADO') {
-                                        <p-button icon="pi pi-box" pTooltip="En preparación" [rounded]="true" [text]="true" (onClick)="enPreparacion(p)" />
-                                    }
-                                    @if (p.estado === 'EN_PREPARACION') {
-                                        <p-button icon="pi pi-check-circle" pTooltip="Entregado" [rounded]="true" [text]="true" (onClick)="entregado(p)" />
-                                    }
-                                    @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
-                                        <p-button icon="pi pi-file-edit" pTooltip="Facturar" [rounded]="true" [text]="true" (onClick)="facturar(p)" />
+                        <div class="comanda-card" [ngClass]="getEstadoBorderClass(p.estado)">
+                            <!-- Header -->
+                            <div class="comanda-card-header">
+                                <div class="comanda-card-title-row">
+                                    <span class="comanda-card-title">{{ getMesaLabel(p) }}</span>
+                                    <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" styleClass="comanda-estado-tag" />
+                                </div>
+                                <div class="comanda-card-meta">
+                                    <span class="comanda-card-numero">#{{ p.numero }}</span>
+                                    @if (p.creadoEn) {
+                                        <span class="comanda-card-time">
+                                            <i class="pi pi-clock"></i>
+                                            {{ p.creadoEn | date:'HH:mm' }}
+                                            <span class="comanda-elapsed" [ngClass]="getElapsedClass(p.creadoEn)">{{ getElapsedTime(p.creadoEn) }}</span>
+                                        </span>
                                     }
                                 </div>
-                            </ng-template>
-                        </p-card>
+                            </div>
+
+                            <!-- Items del pedido -->
+                            @if (p.detalle && p.detalle.length > 0) {
+                                <div class="comanda-items">
+                                    @for (item of p.detalle; track item.id ?? $index) {
+                                        <div class="comanda-item">
+                                            <span class="comanda-item-qty">{{ item.cantidad }}</span>
+                                            <span class="comanda-item-name">{{ item.descripcion }}</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Info -->
+                            <div class="comanda-info">
+                                <div class="comanda-info-row">
+                                    <i class="pi pi-user"></i>
+                                    <span>{{ getClienteNombre(p.cliente?.id) }}</span>
+                                </div>
+                                @if (p.observaciones && getMesaLabel(p) !== p.observaciones) {
+                                    <div class="comanda-info-row">
+                                        <i class="pi pi-comment"></i>
+                                        <span>{{ p.observaciones }}</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Total -->
+                            <div class="comanda-total">
+                                <div class="comanda-pago">
+                                    <i [class]="getFormaPagoIcon(p.formaPago)"></i>
+                                    <span>{{ getFormaPagoLabel(p.formaPago) }}</span>
+                                </div>
+                                <span class="comanda-total-valor">{{ p.total | number:'1.0-0' }} Gs.</span>
+                            </div>
+
+                            <!-- Acciones -->
+                            <div class="comanda-actions">
+                                @if (p.estado === 'PENDIENTE') {
+                                    <p-button label="Confirmar" icon="pi pi-check" size="small" (onClick)="confirmar(p)" styleClass="flex-1" />
+                                    <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [outlined]="true" (onClick)="cancelar(p)" />
+                                }
+                                @if (p.estado === 'CONFIRMADO') {
+                                    <p-button label="En preparación" icon="pi pi-box" size="small" (onClick)="enPreparacion(p)" styleClass="flex-1" />
+                                }
+                                @if (p.estado === 'EN_PREPARACION') {
+                                    <p-button label="Listo para entregar" icon="pi pi-send" size="small" severity="success" (onClick)="enEntrega(p)" styleClass="flex-1" />
+                                }
+                                @if (p.estado === 'EN_ENTREGA') {
+                                    <p-button label="Entregado" icon="pi pi-check-circle" size="small" severity="success" (onClick)="entregado(p)" styleClass="flex-1" />
+                                }
+                                @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
+                                    <p-button label="Facturar" icon="pi pi-file-edit" size="small" severity="secondary" [outlined]="true" (onClick)="facturar(p)" />
+                                }
+                            </div>
+                        </div>
                     }
                 </div>
             }
             </p-tabpanel>
+
+            <!-- Delivery -->
             <p-tabpanel [value]="1">
             @if (delivery().length === 0) {
-                <p-card>
-                    <div class="text-center py-8 text-color-secondary">
-                        <i class="pi pi-truck text-4xl mb-4 block"></i>
-                        <p class="m-0">No hay pedidos de delivery activos.</p>
-                        <p class="text-sm mt-2">Creá pedidos desde el PDV con tipo "Delivery".</p>
-                        <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" class="mt-4" />
-                    </div>
-                </p-card>
+                <div class="comanda-empty">
+                    <i class="pi pi-truck"></i>
+                    <p class="comanda-empty-title">No hay pedidos de delivery activos</p>
+                    <p class="comanda-empty-hint">Creá pedidos desde el PDV con tipo "Delivery".</p>
+                    <p-button label="Ir al PDV" icon="pi pi-shopping-cart" (onClick)="irAPdv()" />
+                </div>
             } @else {
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="comanda-grid">
                     @for (p of delivery(); track p.id) {
-                        <p-card [header]="'#' + (p.numero || p.id)" styleClass="comanda-card">
-                            <ng-template pTemplate="subtitle">
-                                <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" />
-                            </ng-template>
-                            <div class="flex flex-col gap-2 text-sm">
-                                <div><span class="font-semibold">Cliente:</span> {{ getClienteNombre(p.cliente?.id) }}</div>
-                                @if (p.direccionEntrega) {
-                                    <div class="text-color-secondary"><i class="pi pi-map-marker mr-1"></i>{{ p.direccionEntrega }}</div>
-                                }
-                                @if (p.telefonoContacto) {
-                                    <div><i class="pi pi-phone mr-1"></i>{{ p.telefonoContacto }}</div>
-                                }
-                                <div><span class="font-semibold">Total:</span> {{ p.total | number:'1.0-0' }} Gs.</div>
-                                @if (p.creadoEn) {
-                                    <div class="text-color-secondary text-xs">{{ p.creadoEn | date:'HH:mm' }}</div>
-                                }
-                            </div>
-                            <ng-template pTemplate="footer">
-                                <div class="flex flex-wrap gap-1">
-                                    @if (p.estado === 'PENDIENTE') {
-                                        <p-button icon="pi pi-check" pTooltip="Confirmar" [rounded]="true" [text]="true" (onClick)="confirmar(p)" />
-                                        <p-button icon="pi pi-times" severity="danger" pTooltip="Cancelar" [rounded]="true" [text]="true" (onClick)="cancelar(p)" />
-                                    }
-                                    @if (p.estado === 'CONFIRMADO') {
-                                        <p-button icon="pi pi-box" pTooltip="En preparación" [rounded]="true" [text]="true" (onClick)="enPreparacion(p)" />
-                                    }
-                                    @if (p.estado === 'EN_PREPARACION') {
-                                        <p-button icon="pi pi-truck" pTooltip="En entrega" [rounded]="true" [text]="true" (onClick)="enEntrega(p)" />
-                                    }
-                                    @if (p.estado === 'EN_ENTREGA') {
-                                        <p-button icon="pi pi-check-circle" pTooltip="Entregado" [rounded]="true" [text]="true" (onClick)="entregado(p)" />
-                                    }
-                                    @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
-                                        <p-button icon="pi pi-file-edit" pTooltip="Facturar" [rounded]="true" [text]="true" (onClick)="facturar(p)" />
+                        <div class="comanda-card" [ngClass]="getEstadoBorderClass(p.estado)">
+                            <!-- Header -->
+                            <div class="comanda-card-header">
+                                <div class="comanda-card-title-row">
+                                    <span class="comanda-card-title">#{{ p.numero || p.id }}</span>
+                                    <p-tag [value]="getEstadoLabel(p.estado)" [severity]="getEstadoSeverity(p.estado)" styleClass="comanda-estado-tag" />
+                                </div>
+                                <div class="comanda-card-meta">
+                                    @if (p.creadoEn) {
+                                        <span class="comanda-card-time">
+                                            <i class="pi pi-clock"></i>
+                                            {{ p.creadoEn | date:'HH:mm' }}
+                                            <span class="comanda-elapsed" [ngClass]="getElapsedClass(p.creadoEn)">{{ getElapsedTime(p.creadoEn) }}</span>
+                                        </span>
                                     }
                                 </div>
-                            </ng-template>
-                        </p-card>
+                            </div>
+
+                            <!-- Items del pedido -->
+                            @if (p.detalle && p.detalle.length > 0) {
+                                <div class="comanda-items">
+                                    @for (item of p.detalle; track item.id ?? $index) {
+                                        <div class="comanda-item">
+                                            <span class="comanda-item-qty">{{ item.cantidad }}</span>
+                                            <span class="comanda-item-name">{{ item.descripcion }}</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Info -->
+                            <div class="comanda-info">
+                                <div class="comanda-info-row">
+                                    <i class="pi pi-user"></i>
+                                    <span>{{ getClienteNombre(p.cliente?.id) }}</span>
+                                </div>
+                                @if (p.direccionEntrega) {
+                                    <div class="comanda-info-row comanda-info-direccion">
+                                        <i class="pi pi-map-marker"></i>
+                                        <span>{{ p.direccionEntrega }}</span>
+                                    </div>
+                                }
+                                @if (p.telefonoContacto) {
+                                    <div class="comanda-info-row">
+                                        <i class="pi pi-phone"></i>
+                                        <span>{{ p.telefonoContacto }}</span>
+                                    </div>
+                                }
+                                @if (p.observaciones) {
+                                    <div class="comanda-info-row">
+                                        <i class="pi pi-comment"></i>
+                                        <span>{{ p.observaciones }}</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Total -->
+                            <div class="comanda-total">
+                                <div class="comanda-pago">
+                                    <i [class]="getFormaPagoIcon(p.formaPago)"></i>
+                                    <span>{{ getFormaPagoLabel(p.formaPago) }}</span>
+                                </div>
+                                <span class="comanda-total-valor">{{ p.total | number:'1.0-0' }} Gs.</span>
+                            </div>
+
+                            <!-- Acciones -->
+                            <div class="comanda-actions">
+                                @if (p.estado === 'PENDIENTE') {
+                                    <p-button label="Confirmar" icon="pi pi-check" size="small" (onClick)="confirmar(p)" styleClass="flex-1" />
+                                    <p-button label="Cancelar" icon="pi pi-times" severity="danger" size="small" [outlined]="true" (onClick)="cancelar(p)" />
+                                }
+                                @if (p.estado === 'CONFIRMADO') {
+                                    <p-button label="En preparación" icon="pi pi-box" size="small" (onClick)="enPreparacion(p)" styleClass="flex-1" />
+                                }
+                                @if (p.estado === 'EN_PREPARACION') {
+                                    <p-button label="En entrega" icon="pi pi-truck" size="small" severity="success" (onClick)="enEntrega(p)" styleClass="flex-1" />
+                                }
+                                @if (p.estado === 'EN_ENTREGA') {
+                                    <p-button label="Entregado" icon="pi pi-check-circle" size="small" severity="success" (onClick)="entregado(p)" styleClass="flex-1" />
+                                }
+                                @if (!p.documentoVenta && p.estado !== 'PENDIENTE' && p.estado !== 'CANCELADO') {
+                                    <p-button label="Facturar" icon="pi pi-file-edit" size="small" severity="secondary" [outlined]="true" (onClick)="facturar(p)" />
+                                }
+                            </div>
+                        </div>
                     }
                 </div>
             }

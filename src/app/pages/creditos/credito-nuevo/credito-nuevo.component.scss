@@ -1,1 +1,116 @@
-// Estilos según PrimeNG/PrimeFlex; sin custom CSS.
+// ─── Secciones del formulario ───
+.credito-section {
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-card);
+}
+
+.credito-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-ground);
+    border-bottom: 1px solid var(--surface-border);
+    font-size: 0.875rem;
+
+    i { font-size: 1rem; }
+}
+
+.credito-section-body {
+    padding: 1rem;
+}
+
+// ─── Preview vacío ───
+.credito-preview-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 4rem 2rem;
+    border: 2px dashed var(--surface-border);
+    border-radius: 12px;
+    text-align: center;
+    height: 100%;
+    min-height: 300px;
+}
+
+.credito-preview-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--surface-100, var(--surface-ground));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 1.75rem;
+        color: var(--text-color-secondary);
+    }
+}
+
+// ─── KPI cards del preview ───
+.credito-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+
+    @media (min-width: 768px) { grid-template-columns: repeat(4, 1fr); }
+}
+
+.credito-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+}
+
+.credito-kpi-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.credito-kpi-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.credito-kpi-primary {
+    border-left: 3px solid var(--primary-color);
+}
+
+.credito-kpi-accent {
+    border-left: 3px solid var(--green-500, #22c55e);
+
+    .credito-kpi-value {
+        color: var(--green-500, #22c55e);
+    }
+}
+
+// ─── Table tweaks ───
+:host ::ng-deep {
+    .p-datatable-sm .p-datatable-tbody > tr > td {
+        padding: 0.5rem 0.75rem;
+    }
+    .p-datatable-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 768px) {
+    .credito-preview-empty {
+        padding: 2rem 1rem;
+        min-height: 200px;
+    }
+}

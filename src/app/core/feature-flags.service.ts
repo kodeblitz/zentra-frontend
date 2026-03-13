@@ -22,7 +22,8 @@ export const FEATURE_KEYS = {
     parametricos: 'parametricos',
     compras: 'compras',
     gastos: 'gastos',
-    usuarios: 'usuarios'
+    usuarios: 'usuarios',
+    fidelizacion: 'fidelizacion'
 } as const;
 
 export type FeatureKey = keyof typeof FEATURE_KEYS;

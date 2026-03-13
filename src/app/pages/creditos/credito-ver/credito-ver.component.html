@@ -1,150 +1,178 @@
-<div class="credito-ver-page max-w-6xl mx-auto w-full px-2 md:px-4">
-    <header class="mb-4">
-        <div class="flex align-items-center gap-3 flex-wrap">
-            <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" (onClick)="volver()" aria-label="Volver" />
-            <h1 class="m-0 text-3xl font-bold">Crédito #{{ credito()?.id }}</h1>
+<p-toast />
+<div class="flex flex-col gap-4">
+    <!-- Header -->
+    <div class="flex items-center gap-2">
+        <p-button icon="pi pi-arrow-left" [rounded]="true" [text]="true" (onClick)="volver()" aria-label="Volver" />
+        <div class="flex items-center gap-3 flex-wrap">
+            <h5 class="m-0 font-bold text-xl">Crédito #{{ credito()?.id }}</h5>
             @if (credito()?.estado) {
                 <p-tag [value]="credito()?.estado ?? ''" [severity]="getEstadoSeverity(credito()?.estado)" styleClass="text-sm px-3 py-1" />
             }
         </div>
-    </header>
+    </div>
 
     @if (loading()) {
-        <div class="flex align-items-center gap-2 py-6 text-color-secondary">
+        <div class="flex items-center gap-2 py-6 text-muted-color">
             <i class="pi pi-spin pi-spinner"></i>
             <span>Cargando...</span>
         </div>
     } @else if (credito()) {
-        <p-card header="Datos del crédito" styleClass="mb-4">
-            <div class="flex flex-wrap gap-2">
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Cliente</span>
-                        <span class="font-semibold text-lg">{{ clienteNombre() }}</span>
+        <!-- Datos + Progreso -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-8">
+                <div class="credito-card h-full">
+                    <div class="credito-card-header">
+                        <i class="pi pi-file-edit text-primary"></i>
+                        <span>Datos del crédito</span>
                     </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Monto total</span>
-                        <span class="font-semibold text-xl text-primary">{{ credito()?.montoTotal | number:'1.2-2' }} Gs.</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Estado</span>
-                        <p-tag [value]="credito()?.estado ?? '-'" [severity]="getEstadoSeverity(credito()?.estado)" />
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Sistema</span>
-                        <span class="font-semibold">{{ getSistemaLabel(credito()?.sistemaAmort) }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Nº cuotas</span>
-                        <span class="font-semibold text-xl">{{ credito()?.nroCuotas }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Tasa % anual</span>
-                        <span class="font-semibold">{{ credito()?.tasaInteresAnual ?? 0 | number:'1.2-2' }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Tasa mora % / días gracia</span>
-                        <span class="font-semibold">{{ credito()?.tasaMoraAnual != null ? (credito()?.tasaMoraAnual | number:'1.2-2') : '—' }} / {{ credito()?.diasGracia ?? 0 }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Fecha inicio</span>
-                        <span class="font-semibold">{{ credito()?.fechaInicio ? (credito()?.fechaInicio | date:'dd/MM/yyyy') : '-' }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Fecha siguiente venc.</span>
-                        <span class="font-semibold">{{ credito()?.fechaPrimerVencimiento ? (credito()?.fechaPrimerVencimiento | date:'dd/MM/yyyy') : '-' }}</span>
+                    <div class="credito-card-body">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+                            <div class="col-span-2 md:col-span-1">
+                                <span class="credito-field-label">Cliente</span>
+                                <span class="credito-field-value font-semibold">{{ clienteNombre() }}</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Monto total</span>
+                                <span class="credito-field-value text-primary font-bold text-xl">{{ credito()?.montoTotal | number:'1.0-0' }} Gs.</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Sistema</span>
+                                <span class="credito-field-value">{{ getSistemaLabel(credito()?.sistemaAmort) }}</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Nº cuotas</span>
+                                <span class="credito-field-value font-semibold text-lg">{{ credito()?.nroCuotas }}</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Tasa % anual</span>
+                                <span class="credito-field-value">{{ credito()?.tasaInteresAnual ?? 0 | number:'1.2-2' }}%</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Mora / Gracia</span>
+                                <span class="credito-field-value">{{ credito()?.tasaMoraAnual != null ? (credito()?.tasaMoraAnual | number:'1.2-2') + '%' : '—' }} / {{ credito()?.diasGracia ?? 0 }}d</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Fecha inicio</span>
+                                <span class="credito-field-value">{{ credito()?.fechaInicio ? (credito()?.fechaInicio | date:'dd/MM/yyyy') : '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="credito-field-label">Sig. vencimiento</span>
+                                <span class="credito-field-value">{{ credito()?.fechaPrimerVencimiento ? (credito()?.fechaPrimerVencimiento | date:'dd/MM/yyyy') : '-' }}</span>
+                            </div>
+                            @if ((credito()?.gastoAdministrativo ?? 0) > 0) {
+                                <div>
+                                    <span class="credito-field-label">Gastos admin.</span>
+                                    <span class="credito-field-value">{{ credito()?.gastoAdministrativo | number:'1.0-0' }} Gs.</span>
+                                </div>
+                            }
+                            @if ((credito()?.seguroCuota ?? 0) > 0) {
+                                <div>
+                                    <span class="credito-field-label">Seguro / cuota</span>
+                                    <span class="credito-field-value">{{ credito()?.seguroCuota | number:'1.0-0' }} Gs.</span>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-surface-200">
-            @if (puedePagarOCancelar()) {
-                <p-button icon="pi pi-wallet" label="Pagar cuota" severity="secondary" (onClick)="openPagarCuota()" />
-                <p-button icon="pi pi-times-circle" label="Cancelar crédito" severity="warn" [outlined]="true" (onClick)="openCancelarCredito()" />
-            }
-            <p-button icon="pi pi-refresh" label="Recalcular estado de cuotas" [outlined]="true" severity="secondary" (onClick)="recalcularCuotas()" title="Corrige cuotas en PARCIAL cuando se pagó el monto completo" />
+            <div class="lg:col-span-4">
+                <div class="credito-card h-full">
+                    <div class="credito-card-header">
+                        <i class="pi pi-chart-pie text-primary"></i>
+                        <span>Progreso de pago</span>
+                    </div>
+                    <div class="credito-card-body flex flex-col justify-center gap-3">
+                        @let resumen = getResumenCuotas();
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-color">{{ resumen.pagadas }} de {{ resumen.total }} cuotas</span>
+                            <span class="font-bold text-lg">{{ resumen.total > 0 ? (resumen.pagadas / resumen.total * 100 | number:'1.0-0') : 0 }}%</span>
+                        </div>
+                        <div class="credito-progress-bar">
+                            <div class="credito-progress-fill" [style.width.%]="resumen.total > 0 ? resumen.pagadas / resumen.total * 100 : 0"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+                            <div class="text-center">
+                                <span class="block text-xl font-bold" style="color: var(--green-500)">{{ resumen.pagadas }}</span>
+                                <span class="text-xs text-muted-color">Pagadas</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-xl font-bold" style="color: var(--orange-500)">{{ resumen.pendientes }}</span>
+                                <span class="text-xs text-muted-color">Pendientes</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-xl font-bold text-color">{{ resumen.montoTotalCuotas | number:'1.0-0' }}</span>
+                                <span class="text-xs text-muted-color">Total Gs.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        </p-card>
 
-        <p-card header="Cálculo de cuotas">
-            @let resumen = getResumenCuotas();
-            <div class="flex flex-wrap gap-2 mb-4">
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Total cuotas</span>
-                        <span class="font-semibold text-xl">{{ resumen.total }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Pagadas</span>
-                        <span class="font-semibold text-xl text-green-600">{{ resumen.pagadas }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Pendientes</span>
-                        <span class="font-semibold text-xl text-orange-600">{{ resumen.pendientes }}</span>
-                    </div>
-                </div>
-                <div class="flex-1 min-w-40">
-                    <div class="surface-100 border-round p-3 h-full">
-                        <span class="block text-color-secondary text-sm font-medium mb-1">Suma cuotas</span>
-                        <span class="font-semibold text-xl">{{ resumen.montoTotalCuotas | number:'1.2-2' }} Gs.</span>
-                    </div>
-                </div>
+        <!-- Acciones -->
+        <div class="flex flex-wrap gap-2">
+            @if (puedePagarOCancelar()) {
+                <p-button icon="pi pi-wallet" label="Pagar cuota" (onClick)="openPagarCuota()" />
+                <p-button icon="pi pi-times-circle" label="Cancelar crédito" severity="danger" [outlined]="true" (onClick)="openCancelarCredito()" />
+            }
+            <p-button icon="pi pi-refresh" label="Recalcular cuotas" [outlined]="true" severity="secondary" (onClick)="recalcularCuotas()" pTooltip="Corrige cuotas en PARCIAL cuando se pagó el monto completo" />
+        </div>
+
+        <!-- Tabla de cuotas -->
+        <div class="credito-card">
+            <div class="credito-card-header">
+                <i class="pi pi-list text-primary"></i>
+                <span>Detalle de cuotas</span>
             </div>
             <p-table
                 [value]="getCuotas()"
-                [tableStyle]="{ 'min-width': '40rem' }"
-                styleClass="p-datatable-sm p-datatable-striped"
-                [paginator]="getCuotas().length > 10"
-                [rows]="10"
-                [rowsPerPageOptions]="[10, 25, 50]"
+                [tableStyle]="{ 'min-width': '48rem' }"
+                styleClass="p-datatable-sm"
+                [paginator]="getCuotas().length > 12"
+                [rows]="12"
+                [rowsPerPageOptions]="[12, 25, 50]"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} cuotas"
+                [showCurrentPageReport]="true"
             >
                 <ng-template #header>
                     <tr>
-                        <th style="width:3.5rem">Nº</th>
-                        <th style="min-width:6rem">Vencimiento</th>
-                        <th class="text-right" style="min-width:8rem">Capital</th>
-                        <th class="text-right" style="min-width:6rem">Interés</th>
-                        <th class="text-right" style="min-width:8rem">Monto cuota</th>
-                        <th class="text-right" style="min-width:8rem" title="Si pagas hoy: capital + interés proporcional (sin interés completo)">Si pagas hoy</th>
-                        <th class="text-right" style="min-width:8rem">Saldo insoluto</th>
+                        <th style="width:3rem" class="text-center">Nº</th>
+                        <th style="min-width:7rem">Vencimiento</th>
+                        <th class="text-right" style="min-width:6rem">Capital</th>
+                        <th class="text-right" style="min-width:5rem">Interés</th>
+                        @if ((credito()?.gastoAdministrativo ?? 0) > 0) {
+                            <th class="text-right" style="min-width:5rem">G. Admin</th>
+                        }
+                        @if ((credito()?.seguroCuota ?? 0) > 0) {
+                            <th class="text-right" style="min-width:5rem">Seguro</th>
+                        }
+                        <th class="text-right" style="min-width:6rem">Monto cuota</th>
+                        <th class="text-right" style="min-width:6rem" pTooltip="Capital + interés proporcional si se paga hoy">Si pagas hoy</th>
+                        <th class="text-right" style="min-width:6rem">Saldo insoluto</th>
                         <th style="min-width:6rem">Estado</th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-c>
-                    <tr>
-                        <td>{{ c.nroCuota }}</td>
+                    <tr [ngClass]="getCuotaRowClass(c)">
+                        <td class="text-center font-medium text-muted-color">{{ c.nroCuota }}</td>
                         <td>{{ c.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
-                        <td class="text-right">{{ c.montoCapital | number:'1.2-2' }} Gs.</td>
-                        <td class="text-right">{{ c.montoInteres | number:'1.2-2' }} Gs.</td>
-                        <td class="text-right font-semibold">{{ c.montoCuota | number:'1.2-2' }} Gs.</td>
+                        <td class="text-right">{{ c.montoCapital | number:'1.0-0' }} Gs.</td>
+                        <td class="text-right text-muted-color">{{ c.montoInteres | number:'1.0-0' }} Gs.</td>
+                        @if ((credito()?.gastoAdministrativo ?? 0) > 0) {
+                            <td class="text-right text-muted-color">{{ c.montoGastoAdmin | number:'1.0-0' }} Gs.</td>
+                        }
+                        @if ((credito()?.seguroCuota ?? 0) > 0) {
+                            <td class="text-right text-muted-color">{{ c.montoSeguro | number:'1.0-0' }} Gs.</td>
+                        }
+                        <td class="text-right font-semibold">{{ c.montoCuota | number:'1.0-0' }} Gs.</td>
                         <td class="text-right">
                             @if (getMontoPagarHoy(c) != null) {
-                                <span class="text-primary font-medium" title="Monto con interés proporcional al día de hoy">{{ getMontoPagarHoy(c) | number:'1.2-2' }} Gs.</span>
+                                <span class="text-primary font-medium">{{ getMontoPagarHoy(c) | number:'1.0-0' }} Gs.</span>
                             } @else {
-                                <span class="text-color-secondary">—</span>
+                                <span class="text-muted-color">—</span>
                             }
                         </td>
-                        <td class="text-right">{{ c.saldoInsoluto | number:'1.2-2' }} Gs.</td>
+                        <td class="text-right text-muted-color">{{ c.saldoInsoluto | number:'1.0-0' }} Gs.</td>
                         <td>
                             <p-tag [value]="c.estado ?? '-'" [severity]="getCuotaEstadoSeverity(c.estado)" />
                         </td>
@@ -152,75 +180,83 @@
                 </ng-template>
                 <ng-template #emptymessage>
                     <tr>
-                        <td colspan="8" class="text-center py-6 text-color-secondary">
+                        <td colspan="10" class="text-center py-6 text-muted-color">
+                            <i class="pi pi-inbox text-4xl block mb-2"></i>
                             No hay cuotas cargadas.
                         </td>
                     </tr>
                 </ng-template>
             </p-table>
-        </p-card>
+        </div>
     }
 </div>
 
-<p-toast />
-<p-dialog [(visible)]="dialogPagarCuota" [style]="{ width: '420px' }" header="Pagar cuota" [modal]="true" (onHide)="dialogPagarCuota = false">
+<!-- Dialog Pagar Cuota -->
+<p-dialog [(visible)]="dialogPagarCuota" [style]="{ width: 'min(440px, 95vw)' }" header="Pagar cuota" [modal]="true" (onHide)="dialogPagarCuota = false">
     <ng-template #content>
         @if (getProximaCuota(); as cuota) {
-            <p class="text-color-secondary mb-3">Cuota {{ cuota.nroCuota }} — Monto a pagar:</p>
+            <div class="credito-dialog-info mb-3">
+                <i class="pi pi-info-circle"></i>
+                <span>Cuota <strong>{{ cuota.nroCuota }}</strong> — Vence {{ cuota.fechaVencimiento | date:'dd/MM/yyyy' }}</span>
+            </div>
             <div class="flex flex-col gap-3">
                 <div>
-                    <label class="block font-bold mb-2">Monto *</label>
-                    <p-inputnumber [(ngModel)]="pagarCuotaMonto" mode="decimal" [minFractionDigits]="2" [min]="0" styleClass="w-full" />
+                    <label class="block text-sm font-medium mb-1">Monto *</label>
+                    <p-inputnumber [(ngModel)]="pagarCuotaMonto" mode="decimal" [minFractionDigits]="2" [min]="0" styleClass="w-full" inputStyleClass="w-full" />
                 </div>
                 <div>
-                    <label class="block font-bold mb-2">Fecha de pago *</label>
+                    <label class="block text-sm font-medium mb-1">Fecha de pago *</label>
                     <input pInputText type="date" [(ngModel)]="pagarCuotaFecha" (ngModelChange)="actualizarMontoPagarCuota(cuota.id)" class="w-full" />
                 </div>
                 <div>
-                    <label class="block font-bold mb-2">Medio de pago</label>
-                    <p-select [(ngModel)]="pagarCuotaMedioPagoId" [options]="mediosPago" optionLabel="nombre" optionValue="id" placeholder="Medio" styleClass="w-full" appendTo="body" (onChange)="pagarCuotaMedioPagoId = $event.value ?? null" />
+                    <label class="block text-sm font-medium mb-1">Medio de pago</label>
+                    <p-select [(ngModel)]="pagarCuotaMedioPagoId" [options]="mediosPago" optionLabel="nombre" optionValue="id" placeholder="Seleccione medio" styleClass="w-full" appendTo="body" (onChange)="pagarCuotaMedioPagoId = $event.value ?? null" />
                 </div>
                 <div>
-                    <label class="block font-bold mb-2">Referencia</label>
-                    <input pInputText [(ngModel)]="pagarCuotaReferencia" class="w-full" />
+                    <label class="block text-sm font-medium mb-1">Referencia</label>
+                    <input pInputText [(ngModel)]="pagarCuotaReferencia" class="w-full" placeholder="Nº recibo, voucher..." />
                 </div>
             </div>
         }
     </ng-template>
     <ng-template #footer>
-        <p-button label="Cerrar" icon="pi pi-times" text (onClick)="dialogPagarCuota = false" />
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="dialogPagarCuota = false" />
         <p-button label="Registrar pago" icon="pi pi-check" (onClick)="confirmarPagarCuota()" />
     </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="dialogCancelar" [style]="{ width: '440px' }" header="Cancelar crédito" [modal]="true" (onHide)="dialogCancelar = false">
+<!-- Dialog Cancelar Crédito -->
+<p-dialog [(visible)]="dialogCancelar" [style]="{ width: 'min(460px, 95vw)' }" header="Cancelar crédito" [modal]="true" (onHide)="dialogCancelar = false">
     <ng-template #content>
-        <p class="text-color-secondary mb-3">Se registrará el pago del capital pendiente y se darán de baja las cuotas pendientes.</p>
-        <div class="surface-100 border-round p-3 mb-3">
-            <label class="block text-sm font-medium text-color-secondary mb-1">Monto a pagar (capital pendiente)</label>
-            <span class="text-xl font-bold">{{ cancelacionMontoTotal | number:'1.2-2' }} Gs.</span>
+        <div class="credito-dialog-info credito-dialog-warn mb-3">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Se registrará el pago del capital pendiente y se cerrarán las cuotas restantes.</span>
+        </div>
+        <div class="credito-dialog-monto mb-3">
+            <span class="text-sm text-muted-color">Monto a pagar (capital pendiente)</span>
+            <span class="text-2xl font-bold text-color">{{ cancelacionMontoTotal | number:'1.0-0' }} Gs.</span>
         </div>
         <div class="flex flex-col gap-3">
             <div>
-                <label class="block font-bold mb-2">Fecha de pago *</label>
+                <label class="block text-sm font-medium mb-1">Fecha de pago *</label>
                 <input pInputText type="date" [(ngModel)]="cancelarFecha" class="w-full" />
             </div>
             <div>
-                <label class="block font-bold mb-2">Medio de pago</label>
-                <p-select [(ngModel)]="cancelarMedioPagoId" [options]="mediosPago" optionLabel="nombre" optionValue="id" placeholder="Medio" styleClass="w-full" appendTo="body" (onChange)="cancelarMedioPagoId = $event.value ?? null" />
+                <label class="block text-sm font-medium mb-1">Medio de pago</label>
+                <p-select [(ngModel)]="cancelarMedioPagoId" [options]="mediosPago" optionLabel="nombre" optionValue="id" placeholder="Seleccione medio" styleClass="w-full" appendTo="body" (onChange)="cancelarMedioPagoId = $event.value ?? null" />
             </div>
             <div>
-                <label class="block font-bold mb-2">Referencia</label>
-                <input pInputText [(ngModel)]="cancelarReferencia" class="w-full" />
+                <label class="block text-sm font-medium mb-1">Referencia</label>
+                <input pInputText [(ngModel)]="cancelarReferencia" class="w-full" placeholder="Nº recibo, voucher..." />
             </div>
             <div>
-                <label class="block font-bold mb-2">Observaciones</label>
-                <input pInputText [(ngModel)]="cancelarObservaciones" class="w-full" />
+                <label class="block text-sm font-medium mb-1">Observaciones</label>
+                <input pInputText [(ngModel)]="cancelarObservaciones" class="w-full" placeholder="Motivo de cancelación..." />
             </div>
         </div>
     </ng-template>
     <ng-template #footer>
-        <p-button label="Cerrar" icon="pi pi-times" text (onClick)="dialogCancelar = false" />
+        <p-button label="Volver" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="dialogCancelar = false" />
         <p-button label="Confirmar cancelación" icon="pi pi-check" severity="danger" (onClick)="confirmarCancelarCredito()" />
     </ng-template>
 </p-dialog>
